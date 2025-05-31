@@ -1,0 +1,36 @@
+best_params_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\metrics\best_params_loan_data\params.json
+cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_loan_data\test.csv
+cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_loan_data\train.csv
+cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_loan_data\cleaning.pkl
+cleaning_report_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\readme\cleaning_report.md
+cleaning_timestamp: '2025-05-31 08:56:12'
+dataset_name: loan_data
+evaluation_timestamp: '2025-05-31 09:09:36'
+feature_engineering_config:
+  n_features_selected: 200
+  resampling_method: null
+  timestamp: '2025-05-31 08:59:12'
+  use_feature_tools: true
+  use_shap_selection: true
+feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_loan_data\feature_store.yaml
+model_name: XGBoost
+model_path: model\model_loan_data\model.pkl
+model_timestamp: '2025-05-31 08:59:46'
+optimization_timestamp: '2025-05-31 09:09:35'
+optimized_evaluation_timestamp: '2025-05-31 09:09:36'
+optimized_model_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\model_loan_data\optimized_model.pkl
+optimized_performance_metrics_path: reports\metrics\performance_loan_data\optimized_performance.yaml
+original_file_name: loan_data.csv
+performance_metrics_path: reports\metrics\performance_loan_data\performance.yaml
+plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_loan_data
+preprocessing_pipeline_path: model\pipelines\preprocessing_loan_data\preprocessing.pkl
+processed_timestamp: '2025-05-31 08:56:19'
+processor_pipeline_path: model\pipelines\preprocessing_loan_data\processor.pkl
+target_column: loan_status
+test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_loan_data\test.csv
+test_preprocessed_path: data\interim\data_loan_data\test_preprocessed.csv
+test_transformed_path: data\processed\data_loan_data\test_transformed.csv
+train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_loan_data\train.csv
+train_preprocessed_path: data\interim\data_loan_data\train_preprocessed.csv
+train_transformed_path: data\processed\data_loan_data\train_transformed.csv
+transformation_pipeline_path: model\pipelines\preprocessing_loan_data\transformation.pkl

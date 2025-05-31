@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Error - SemiAuto Classification{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-container {
+        margin: 2rem 0;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .error-icon {
+        font-size: 4rem;
+        color: #dc3545;
+        margin-bottom: 1rem;
+    }
+
+    .error-message {
+        font-size: 1.2rem;
+        color: #dc3545;
+        margin: 1rem 0;
+    }
+
+    .redirect-button {
+        padding: 0.8rem 1.5rem;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 1rem;
+        transition: background 0.3s ease;
+    }
+
+    .redirect-button:hover {
+        background: #0056b3;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-icon">⚠️</div>
+    <h2>Something Went Wrong</h2>
+    <p class="error-message">{{ error_message }}</p>
+    <a href="{{ redirect_url }}" class="redirect-button">
+        Go Back to Previous Step
+    </a>
+</div>
+{% endblock %}

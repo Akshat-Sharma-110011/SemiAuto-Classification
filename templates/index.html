@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}SemiAuto Classification - Home{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <h1 class="section-title">Welcome to SemiAuto Classification</h1>
+    <p>This tool helps you build Classification models in a semi-automated way. Follow these steps to create your model:</p>
+
+    <div class="card">
+        <div class="card-header">Getting Started</div>
+        <p>SemiAuto Classification guides you through the complete machine learning pipeline:</p>
+        <ol>
+            <li>
+                <strong>Data Upload</strong>: Upload your CSV dataset and select your target variable.
+            </li>
+            <li>
+                <strong>Preprocessing</strong>: Handle missing values, duplicates, outliers, and transform your data.
+            </li>
+            <li>
+                <strong>Feature Engineering</strong>: Create new features to improve model performance.
+            </li>
+            <li>
+                <strong>Model Building</strong>: Select from various Classification algorithms.
+            </li>
+            <li>
+                <strong>Optimization</strong>: Fine-tune your model with hyperparameter optimization.
+            </li>
+            <li>
+                <strong>Results</strong>: Evaluate model performance and generate reports.
+            </li>
+        </ol>
+        <div class="form-group">
+            <a href="/data-upload" class="btn btn-primary">Start New Project</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

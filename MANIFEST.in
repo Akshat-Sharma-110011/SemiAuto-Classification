@@ -1,0 +1,4 @@
+include README.md
+include requirements.txt
+recursive-include semiauto_classification/templates *
+recursive-include semiauto_classificatio/static *

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}SemiAuto Classification - Model Building{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <h1 class="section-title">Model Building</h1>
+    <p>Select a classification algorithm to build your model.</p>
+
+    <div class="card">
+        <div class="card-header">Choose Model</div>
+        <form id="modelBuildingForm">
+            <div class="form-group">
+                <label for="modelName">Classification Algorithm</label>
+                <select id="modelName" name="model_name" required>
+                    <option value="" disabled selected>Select a model</option>
+                    {% for model_name in available_models %}
+                    <option value="{{ model_name }}">{{ model_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="customParamsContainer" class="form-group hidden">
+                <label>Model Parameters</label>
+                <div id="paramFields"></div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" onclick="buildModel(event)">Build Model</button>
+            </div>
+        </form>
+        <div id="spinner" class="spinner hidden"></div>
+        <div id="buildStatus" class="alert hidden"></div>
+    </div>
+
+    <div class="card hidden" id="evaluationResults">
+        <div class="card-header">Initial Evaluation Results</div>
+        <div id="evaluationDetails"></div>
+        <div class="metrics-container" id="metricsContainer"></div>
+        <div class="form-group">
+            <a href="/optimization" class="btn btn-success">Continue to Optimization</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    let modelDefinitions = {};
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            const response = await fetch('/api/available-models');
+            modelDefinitions = await response.json();
+            const modelSelect = document.getElementById('modelName');
+            modelSelect.addEventListener('change', updateParameterForm);
+        } catch (error) {
+            console.error('Error loading models:', error);
+        }
+    });
+
+    function updateParameterForm() {
+        const modelSelect = document.getElementById('modelName');
+        const selectedModelId = modelSelect.value;
+        const customParamsContainer = document.getElementById('customParamsContainer');
+        const paramFields = document.getElementById('paramFields');
+        paramFields.innerHTML = '';
+
+        if (!selectedModelId || !modelDefinitions[selectedModelId]?.params) {
+            customParamsContainer.classList.add('hidden');
+            return;
+        }
+
+        const params = modelDefinitions[selectedModelId].params;
+        if (Object.keys(params).length > 0) {
+            customParamsContainer.classList.remove('hidden');
+            for (const [paramName, paramValue] of Object.entries(params)) {
+                const paramContainer = document.createElement('div');
+                paramContainer.className = 'form-group';
+
+                const paramLabel = document.createElement('label');
+                paramLabel.setAttribute('for', `param_${paramName}`);
+                paramLabel.textContent = paramName;
+
+                const paramInput = document.createElement('input');
+                paramInput.type = 'text';
+                paramInput.id = `param_${paramName}`;
+                paramInput.name = `params.${paramName}`;
+                paramInput.value = paramValue;
+                paramInput.className = 'param-input';
+
+                paramContainer.appendChild(paramLabel);
+                paramContainer.appendChild(paramInput);
+                paramFields.appendChild(paramContainer);
+            }
+        } else {
+            customParamsContainer.classList.add('hidden');
+        }
+    }
+
+    async function buildModel(event) {
+        event.preventDefault();
+        const buildStatus = document.getElementById('buildStatus');
+        const evaluationResults = document.getElementById('evaluationResults');
+        const modelName = document.getElementById('modelName').value;
+
+        if (!modelName) {
+            buildStatus.textContent = 'Please select a model';
+            buildStatus.className = 'alert alert-danger';
+            return;
+        }
+
+        const customParams = {};
+        document.querySelectorAll('.param-input').forEach(input => {
+            const paramName = input.name.replace('params.', '');
+            customParams[paramName] = input.value;
+        });
+
+        showSpinner();
+        buildStatus.className = 'alert hidden';
+
+        try {
+            const response = await fetch('/api/build-model', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    model_name: modelName,
+                    custom_params: Object.keys(customParams).length > 0 ? customParams : null
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                buildStatus.textContent = 'Model built successfully!';
+                buildStatus.className = 'alert alert-success';
+                evaluationResults.classList.remove('hidden');
+
+                // Update evaluation metrics
+                const metricsContainer = document.getElementById('metricsContainer');
+                metricsContainer.innerHTML = '';
+
+                if (result.evaluation_result) {
+                    const metrics = result.evaluation_result;
+                    const metricMap = {
+                        'accuracy': 'Accuracy',
+                        'precision': 'Precision',
+                        'recall': 'Recall',
+                        'f1': 'F1 Score',
+                        'roc_auc': 'ROC AUC'
+                    };
+
+                    Object.entries(metricMap).forEach(([key, label]) => {
+                        if (metrics[key]) {
+                            addMetricCard(metricsContainer, label, metrics[key].toFixed(4));
+                        }
+                    });
+                }
+            } else {
+                buildStatus.textContent = result.detail || 'Model building failed';
+                buildStatus.className = 'alert alert-danger';
+            }
+        } catch (error) {
+            buildStatus.textContent = 'Error: ' + error.message;
+            buildStatus.className = 'alert alert-danger';
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    function addMetricCard(container, title, value) {
+        const card = document.createElement('div');
+        card.className = 'metric-card';
+        card.innerHTML = `
+            <div class="metric-title">${title}</div>
+            <div class="metric-value">${value}</div>
+        `;
+        container.appendChild(card);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Results - SemiAuto Classification{% endblock %}
+
+{% block extra_css %}
+<style>
+    .results-container {
+        margin: 2rem 0;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+
+    .metric-card {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+    }
+
+    .metric-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #007bff;
+        margin: 0.5rem 0;
+    }
+
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .download-report {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .report-button {
+        padding: 1rem 2rem;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        margin: 0.5rem;
+    }
+
+    .confusion-matrix, .classification-report {
+        width: 100%;
+        margin: 2rem 0;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .confusion-matrix th, .confusion-matrix td,
+    .classification-report th, .classification-report td {
+        padding: 0.75rem;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+
+    .confusion-matrix th {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .classification-report th {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .confusion-matrix tbody tr:nth-child(odd),
+    .classification-report tbody tr:nth-child(odd) {
+        background-color: #f8f9fa;
+    }
+
+    .section-heading {
+        margin-top: 2rem;
+        color: #2c3e50;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.5rem;
+    }
+
+    .spinner-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="spinner-overlay" id="spinner">
+    <div class="spinner"></div>
+</div>
+
+<div class="results-container">
+    <h2>Classification Results for Dataset: {{ dataset_name }}</h2>
+
+    <div class="metrics-grid">
+        {% for metric, value in metrics.items() if metric not in ['confusion_matrix', 'classification_report', 'problem_type', 'num_classes', 'class_names'] %}
+            {% if value is number or value is string %}
+            <div class="metric-card">
+                <div class="metric-label">{{ metric|replace('_', ' ')|title }}</div>
+                <div class="metric-value">
+                    {% if value is number %}
+                        {{ "%.4f"|format(value) }}
+                    {% else %}
+                        {{ value }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if metrics.confusion_matrix %}
+    <h3 class="section-heading">Confusion Matrix</h3>
+    <table class="confusion-matrix">
+        <thead>
+            <tr>
+                <th>Actual \ Predicted</th>
+                {% for class_name in metrics.class_names %}
+                <th>{{ class_name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Corrected zip usage here -->
+            <!-- In the confusion matrix section of results.html -->
+            {% for row, class_name in metrics.confusion_matrix|zip(metrics.class_names) %}
+            <tr>
+                <td>{{ class_name }}</td>
+                {% for cell in row %}
+                <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if metrics.classification_report %}
+    <h3 class="section-heading">Classification Report</h3>
+    <table class="classification-report">
+        <thead>
+            <tr>
+                <th>Class</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1-Score</th>
+                <th>Support</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for class_name, report in metrics.classification_report.items() if class_name not in ['accuracy', 'macro avg', 'weighted avg'] %}
+            <tr>
+                <td>{{ class_name }}</td>
+                <td>{{ "%.4f"|format(report.precision) }}</td>
+                <td>{{ "%.4f"|format(report.recall) }}</td>
+                <td>{{ "%.4f"|format(report['f1-score']) }}</td>
+                <td>{{ report.support }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td>Accuracy</td>
+                <td colspan="4">{{ "%.4f"|format(metrics.classification_report.accuracy) }}</td>
+            </tr>
+            <tr>
+                <td>Macro Avg</td>
+                <td>{{ "%.4f"|format(metrics.classification_report['macro avg'].precision) }}</td>
+                <td>{{ "%.4f"|format(metrics.classification_report['macro avg'].recall) }}</td>
+                <td>{{ "%.4f"|format(metrics.classification_report['macro avg']['f1-score']) }}</td>
+                <td>{{ metrics.classification_report['macro avg'].support }}</td>
+            </tr>
+            <tr>
+                <td>Weighted Avg</td>
+                <td>{{ "%.4f"|format(metrics.classification_report['weighted avg'].precision) }}</td>
+                <td>{{ "%.4f"|format(metrics.classification_report['weighted avg'].recall) }}</td>
+                <td>{{ "%.4f"|format(metrics.classification_report['weighted avg']['f1-score']) }}</td>
+                <td>{{ metrics.classification_report['weighted avg'].support }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+
+    <div class="download-report">
+        <button class="report-button" onclick="generateReport()">
+            Download Full Report
+        </button>
+        <button class="report-button" onclick="downloadModel()">
+            Download Model
+        </button>
+        <button class="report-button" onclick="downloadPipeline()">
+            Download Pipeline
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showSpinner() {
+        document.getElementById('spinner').style.display = 'flex';
+    }
+
+    function hideSpinner() {
+        document.getElementById('spinner').style.display = 'none';
+    }
+
+    async function generateReport() {
+        try {
+            showSpinner();
+            const response = await fetch('/api/generate-report');
+
+            if (!response.ok) throw new Error('Report generation failed');
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'classification_report.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(a);
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    async function downloadModel() {
+        try {
+            showSpinner();
+            const response = await fetch('/api/download-model');
+            if (!response.ok) throw new Error('Model download failed');
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'model.pkl';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(a);
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    async function downloadPipeline() {
+        try {
+            showSpinner();
+            const response = await fetch('/api/download-pipeline');
+            if (!response.ok) throw new Error('Pipeline download failed');
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'pipeline.pkl';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(a);
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            hideSpinner();
+        }
+    }
+</script>
+{% endblock %}

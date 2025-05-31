@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}SemiAuto Classification - Feature Engineering{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <h1 class="section-title">Feature Engineering</h1>
+    <p>Enhance your dataset with advanced feature engineering and handle class imbalance.</p>
+
+    <div class="card">
+        <div class="card-header">Feature Engineering Options</div>
+        <form id="featureEngineeringForm">
+            <!-- Class Imbalance Handling -->
+            <div class="form-group">
+                <label for="resamplingMethod">Handle Class Imbalance</label>
+                <select id="resamplingMethod" name="resampling_method">
+                    <option value="null">None</option>
+                    <option value="SMOTE">SMOTE</option>
+                    <option value="SMOTETomek">SMOTETomek</option>
+                    <option value="SMOTEENN">SMOTEENN</option>
+                    <option value="ADASYN">ADASYN</option>
+                </select>
+                <small>Select resampling method for imbalanced datasets</small>
+            </div>
+
+            <!-- Automated Feature Engineering -->
+            <div class="form-group">
+                <label for="useFeatureTools">Automated Feature Engineering</label>
+                <select id="useFeatureTools" name="use_feature_tools">
+                    <option value="false">No</option>
+                    <option value="true" selected>Yes</option>
+                </select>
+                <small>Generate new features using FeatureTools</small>
+            </div>
+
+            <!-- Feature Selection -->
+            <div class="form-group">
+                <label for="useShap">SHAP Feature Selection</label>
+                <select id="useShap" name="use_shap">
+                    <option value="false">No</option>
+                    <option value="true" selected>Yes</option>
+                </select>
+                <small>Select important features using SHAP values</small>
+            </div>
+
+            <!-- Number of Features -->
+            <div class="form-group">
+                <label for="nFeatures">Features to Keep</label>
+                <input type="number" id="nFeatures" name="n_features" value="20" min="1" required>
+                <small>Maximum features after selection</small>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" onclick="runFeatureEngineering(event)">
+                    Run Feature Engineering
+                </button>
+            </div>
+        </form>
+
+        <!-- Status Indicators -->
+        <div id="spinner" class="spinner hidden"></div>
+        <div id="feStatus" class="alert hidden"></div>
+    </div>
+
+    <!-- Results Display -->
+    <div class="card hidden" id="featureResults">
+        <div class="card-header">Feature Engineering Report</div>
+        <div id="featureDetails" class="report-content"></div>
+        <div class="form-group">
+            <a href="/model-building" class="btn btn-success">Proceed to Model Building</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    async function runFeatureEngineering(event) {
+        event.preventDefault();
+        showSpinner();
+
+        const formData = new FormData(document.getElementById('featureEngineeringForm'));
+        const feStatus = document.getElementById('feStatus');
+        const featureResults = document.getElementById('featureResults');
+
+        // Process form data
+        const jsonData = {
+            use_feature_tools: formData.get('use_feature_tools') === 'true',
+            use_shap: formData.get('use_shap') === 'true',
+            n_features: parseInt(formData.get('n_features')),
+            resampling_method: formData.get('resampling_method') === 'null' ? null : formData.get('resampling_method')
+        };
+
+        try {
+            const response = await fetch('/api/feature-engineering', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(jsonData)
+            });
+
+            const result = await response.json();
+            feStatus.className = 'alert ' + (response.ok ? 'alert-success' : 'alert-danger');
+            feStatus.textContent = result.message || result.detail;
+            feStatus.classList.remove('hidden');
+
+            if (response.ok) {
+                featureResults.classList.remove('hidden');
+                const details = document.getElementById('featureDetails');
+                details.innerHTML = `
+                    <div class="metric-group">
+                        <h3>Dataset Statistics</h3>
+                        <p>Training Samples: ${result.metadata.train_shape[0]}</p>
+                        <p>Final Features: ${result.metadata.train_shape[1] - 1}</p>
+                        ${result.metadata.feature_engineering_config.resampling_method ?
+                            `<p>Resampling Method: <strong>${result.metadata.feature_engineering_config.resampling_method}</strong></p>` : ''}
+                    </div>
+                    <div class="metric-group">
+                        <h3>Feature Information</h3>
+                        ${result.metadata.feature_engineering_config.use_shap_selection ?
+                            `<p>Selected Features: ${result.metadata.feature_engineering_config.n_features_selected}</p>` : ''}
+                        ${result.metadata.feature_engineering_config.use_feature_tools ?
+                            `<p>Generated Features: ${result.metadata.train_shape[1] - result.original_features_count}</p>` : ''}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            feStatus.textContent = `Network Error: ${error.message}`;
+            feStatus.className = 'alert alert-danger';
+            feStatus.classList.remove('hidden');
+        } finally {
+            hideSpinner();
+        }
+    }
+</script>
+{% endblock %}

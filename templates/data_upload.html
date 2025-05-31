@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}SemiAuto Classification - Data Upload{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <h1 class="section-title">Data Upload</h1>
+    <p>Upload your dataset to begin the Classification analysis process.</p>
+
+    <div class="card">
+        <div class="card-header">Upload Dataset</div>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="datasetFile">Dataset File (CSV format only)</label>
+                <input type="file" id="datasetFile" name="file" accept=".csv" required>
+            </div>
+
+            <div class="form-group">
+                <label for="targetColumn">Target Column</label>
+                <input type="text" id="targetColumn" name="target_column" required placeholder="Enter the name of your target variable">
+                <small>This is the variable you want to predict.</small>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" onclick="uploadData(event)">Upload Data</button>
+            </div>
+        </form>
+        <div id="spinner" class="spinner hidden"></div>
+        <div id="uploadStatus" class="alert hidden"></div>
+    </div>
+
+    <div class="card hidden" id="dataOverview">
+        <div class="card-header">Data Overview</div>
+        <div id="dataDetails"></div>
+        <div class="form-group">
+            <a href="/preprocessing" class="btn btn-success">Continue to Preprocessing</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    async function uploadData(event) {
+        event.preventDefault();
+
+        const form = document.getElementById('uploadForm');
+        const formData = new FormData(form);
+        const uploadStatus = document.getElementById('uploadStatus');
+        const dataOverview = document.getElementById('dataOverview');
+
+        uploadStatus.className = 'alert hidden';
+        showSpinner();
+
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                uploadStatus.textContent = result.message;
+                uploadStatus.className = 'alert alert-success';
+
+                // Display data overview
+                // Update this part:
+                dataDetails.innerHTML = `
+                    <p><strong>Dataset uploaded successfully!</strong></p>
+                    <p><strong>Target Column:</strong> ${formData.get('target_column')}</p>
+                    <p><strong>Available Columns:</strong></p>
+                    <ul>
+                        ${result.columns.map(col => `<li>${col}</li>`).join('')}
+                    </ul>
+                `;
+
+                dataOverview.classList.remove('hidden');
+            } else {
+                uploadStatus.textContent = result.detail || 'Upload failed';
+                uploadStatus.className = 'alert alert-danger';
+            }
+        } catch (error) {
+            uploadStatus.textContent = 'Error: ' + error.message;
+            uploadStatus.className = 'alert alert-danger';
+        } finally {
+            hideSpinner();
+        }
+    }
+</script>
+{% endblock %}

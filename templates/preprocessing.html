@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}SemiAuto Classification - Preprocessing{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <h1 class="section-title">Data Preprocessing</h1>
+    <p>Clean and transform your data to prepare it for modeling.</p>
+
+    <div class="card">
+        <div class="card-header">Dataset Overview</div>
+        <p><strong>Dataset:</strong> {{ dataset_name }}</p>
+        <p><strong>Target Column:</strong> {{ target_column }}</p>
+
+        <div class="form-group">
+            <h3>Data Issues Detected:</h3>
+            <div class="metrics-container">
+                {% if nulls %}
+                <div class="metric-card">
+                    <div class="metric-title">Columns with Missing Values</div>
+                    <div class="metric-value">{{ nulls|length }}</div>
+                </div>
+                {% endif %}
+
+                {% if outliers %}
+                <div class="metric-card">
+                    <div class="metric-title">Columns with Outliers</div>
+                    <div class="metric-value">{{ outliers|length }}</div>
+                </div>
+                {% endif %}
+
+                {% if skewed %}
+                <div class="metric-card">
+                    <div class="metric-title">Skewed Columns</div>
+                    <div class="metric-value">{{ skewed|length }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Preprocessing Options</div>
+        <form id="preprocessingForm">
+            <!-- Missing Values -->
+            {% if nulls %}
+            <div class="form-group">
+                <label for="missingValues">Handle Missing Values</label>
+                <select id="missingValues" name="missing_values">
+                    <option value="">Do Nothing</option>
+                    <option value="mean" selected>Replace with Mean (numeric)</option>
+                    <option value="median">Replace with Median (numeric)</option>
+                    <option value="mode">Replace with Mode (categorical)</option>
+                    <option value="constant:0">Replace with Constant (0)</option>
+                </select>
+                <small>Columns with missing values: {{ nulls|join(', ') }}</small>
+            </div>
+            {% endif %}
+
+            <!-- Duplicates -->
+            <div class="form-group">
+                <label for="handleDuplicates">Handle Duplicates</label>
+                <select id="handleDuplicates" name="handle_duplicates">
+                    <option value="true" selected>Remove Duplicates</option>
+                    <option value="false">Keep Duplicates</option>
+                </select>
+            </div>
+
+            <!-- Outliers -->
+            {% if outliers %}
+            <!-- preprocessing.html -->
+            <div class="form-group">
+                <label for="outliers">Handle Outliers</label>
+                <select id="outliers" name="outliers">
+                    <option value="">Do Nothing</option>
+                    <option value="IQR" selected>Clip using IQR</option>
+                    <option value="Z-Score">Clip using Z-Score</option>
+                </select>
+                <small>Columns with outliers: {{ outliers|join(', ') }}</small>
+            </div>            {% endif %}
+
+            <!-- Skewedness -->
+            {% if skewed %}
+            <!-- Update the skewedness select element -->
+            <div class="form-group">
+                <label for="skewedness">Handle Skewed Data</label>
+                <select id="skewedness" name="skewedness">
+                    <option value="">Do Nothing</option>
+                    <option value="yeo-johnson" selected>Yeo-Johnson Transform</option>
+                    <option value="box-cox">Box-Cox Transform</option>
+                </select>
+                <small>Skewed columns: {{ skewed|join(', ') }}</small>
+            </div>
+            {% endif %}
+
+            <!-- Scaling -->
+            {% if numerical_cols %}
+            <div class="form-group">
+                <label for="scaling">Scale Numerical Features</label>
+                <select id="scaling" name="scaling">
+                    <option value="">Do Nothing</option>
+                    <option value="standard" selected>StandardScaler</option>
+                    <option value="minmax">MinMaxScaler</option>
+                    <option value="robust">RobustScaler</option>
+                </select>
+                <small>Numerical columns: {{ numerical_cols|join(', ') }}</small>
+            </div>
+            {% endif %}
+
+            <!-- Encoding -->
+            {% if categorical_cols %}
+            <div class="form-group">
+                <label for="encoding">Encode Categorical Features</label>
+                <select id="encoding" name="encoding">
+                    <option value="">Do Nothing</option>
+                    <option value="onehot" selected>One-Hot Encoding</option>
+                    <option value="label">Label Encoding</option>
+                </select>
+                <small>Categorical columns: {{ categorical_cols|join(', ') }}</small>
+            </div>
+
+            <div class="form-group">
+                <label for="dropFirst">Drop First Category (for One-Hot Encoding)</label>
+                <select id="dropFirst" name="drop_first">
+                    <option value="false">No</option>
+                    <option value="true" selected>Yes</option>
+                </select>
+                <small>Helps avoid the dummy variable trap</small>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" onclick="preprocess(event)">Run Preprocessing</button>
+            </div>
+        </form>
+        <div id="spinner" class="spinner hidden"></div>
+        <div id="preprocessingStatus" class="alert hidden"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    async function preprocess(event) {
+        event.preventDefault();
+
+        const form = document.getElementById('preprocessingForm');
+        const formData = new FormData(form);
+        const preprocessingStatus = document.getElementById('preprocessingStatus');
+
+        // Convert form data to JSON
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            if (key === 'handle_duplicates' || key === 'drop_first') {
+                jsonData[key] = value === 'true';
+            } else {
+                jsonData[key] = value;
+            }
+        });
+
+        preprocessingStatus.className = 'alert hidden';
+        showSpinner();
+
+        try {
+            const response = await fetch('/api/preprocess', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                preprocessingStatus.textContent = result.message;
+                preprocessingStatus.className = 'alert alert-success';
+
+                // Add continue button
+                preprocessingStatus.innerHTML += `
+                    <div class="form-group" style="margin-top: 15px;">
+                        <a href="/feature-engineering" class="btn btn-success">Continue to Feature Engineering</a>
+                    </div>
+                `;
+            } else {
+                preprocessingStatus.textContent = result.detail || 'Preprocessing failed';
+                preprocessingStatus.className = 'alert alert-danger';
+            }
+        } catch (error) {
+            preprocessingStatus.textContent = 'Error: ' + error.message;
+            preprocessingStatus.className = 'alert alert-danger';
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    // Show/hide drop_first option based on encoding selection
+    document.addEventListener('DOMContentLoaded', function() {
+        const encodingSelect = document.getElementById('encoding');
+        const dropFirstGroup = document.getElementById('dropFirst').closest('.form-group');
+
+        if (encodingSelect && dropFirstGroup) {
+            function updateDropFirst() {
+                if (encodingSelect.value === 'onehot') {
+                    dropFirstGroup.style.display = 'block';
+                } else {
+                    dropFirstGroup.style.display = 'none';
+                }
+            }
+
+            encodingSelect.addEventListener('change', updateDropFirst);
+            updateDropFirst(); // Run on page load
+        }
+    });
+</script>
+{% endblock %}
