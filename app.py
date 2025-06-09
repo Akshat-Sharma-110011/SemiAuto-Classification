@@ -38,7 +38,7 @@ logger.info("Starting SemiAuto Classification FastAPI application")
 app = FastAPI(title="SemiAuto Classification", version="1.0")
 
 # Set up static files and templates
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/classification-static", StaticFiles(directory="static"), name="classification-static")
 templates = Jinja2Templates(directory="templates")
 templates.env.filters["zip"] = zip
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"],
@@ -563,9 +563,9 @@ def generate_report():
 
 
 if __name__ == "__main__":
-    os.makedirs("static/css", exist_ok=True)
-    os.makedirs("static/js", exist_ok=True)
-    os.makedirs("static/images", exist_ok=True)
+    os.makedirs("classification-static/css", exist_ok=True)
+    os.makedirs("classification-static/js", exist_ok=True)
+    os.makedirs("classification-static/images", exist_ok=True)
     os.makedirs("templates", exist_ok=True)
 
     logger.info("Starting FastAPI server on 127.0.0.1:8020")
