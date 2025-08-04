@@ -54,10 +54,10 @@ try:
 except ImportError:
     CATBOOST_AVAILABLE = False
 
-# Import the custom logger
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys
 import logging
-from semiauto_classification.logger import section, configure_logger  # Configure logger
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from semiauto_classification.logger import get_logger, section, configure_logger
 
 # Configure logger
 configure_logger()
@@ -83,9 +83,13 @@ class ModelBuilder:
         self.dataset_name = self.intel.get('dataset_name')
         self.target_column = self.intel.get('target_column')
 
-        # Load data paths
-        self.train_data_path = self.intel.get('train_transformed_path')
-        self.test_data_path = self.intel.get('test_transformed_path')
+        # Load data paths - use selected data if available, else transformed
+        self.train_data_path = self.intel.get(
+            'train_selected_path',
+            self.intel.get('train_transformed_path'))
+        self.test_data_path = self.intel.get(
+            'test_selected_path',
+            self.intel.get('test_transformed_path'))
 
         # Setup model directory - Updated for classification
         self.model_dir = Path(f"model/model_{self.dataset_name}")
@@ -96,6 +100,8 @@ class ModelBuilder:
 
         logger.info(f"ModelBuilder initialized for dataset: {self.dataset_name}")
         logger.info(f"Target column: {self.target_column}")
+        logger.info(f"Training data path: {self.train_data_path}")
+        logger.info(f"Test data path: {self.test_data_path}")
 
     def _load_intel(self) -> Dict[str, Any]:
         """Load the intel.yaml file"""

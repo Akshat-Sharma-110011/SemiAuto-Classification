@@ -404,7 +404,7 @@ def run_evaluation(intel_path: str = "intel.yaml") -> Dict[str, Any]:
 
         # Extract required paths and config
         model_path = intel["model_path"]
-        test_path = intel["test_transformed_path"]
+        test_path = intel["test_selected_path"]
         target_column = intel["target_column"]
         dataset_name = intel["dataset_name"]
 

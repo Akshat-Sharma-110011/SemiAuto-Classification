@@ -92,7 +92,6 @@ class FeatureEngineer:
     def _setup_paths(self):
         # Construct absolute paths using project root
         self.transformation_pipeline_path = self.project_root / f"model/pipelines/preprocessing_{self.dataset_name}/transformation.pkl"
-        self.processor_pipeline_path = self.project_root / f"model/pipelines/preprocessing_{self.dataset_name}/processor.pkl"
         self.train_transformed_path = self.project_root / f"data/processed/data_{self.dataset_name}/train_transformed.csv"
         self.test_transformed_path = self.project_root / f"data/processed/data_{self.dataset_name}/test_transformed.csv"
 
@@ -103,7 +102,6 @@ class FeatureEngineer:
     def _update_intel(self, resampling_method: Optional[str], use_feature_tools: bool, use_shap: bool, n_features: int):
         self.intel.update({
             "transformation_pipeline_path": str(self.transformation_pipeline_path.relative_to(self.project_root)),
-            "processor_pipeline_path": str(self.processor_pipeline_path.relative_to(self.project_root)),
             "train_transformed_path": str(self.train_transformed_path.relative_to(self.project_root)),
             "test_transformed_path": str(self.test_transformed_path.relative_to(self.project_root)),
             "feature_engineering_config": {
@@ -164,7 +162,7 @@ class FeatureEngineer:
             test_transformed_df = pd.concat([X_test_transformed, y_test_reset], axis=1)
 
             self._save_data(train_transformed_df, test_transformed_df)
-            self._save_pipelines(transformation_pipeline)
+            self._save_transformation_pipeline(transformation_pipeline)
             self._log_feature_info(transformation_pipeline, use_feature_tools, use_shap)
             updated_intel = self._update_intel(resampling_method, use_feature_tools, use_shap, n_features)
 
@@ -177,7 +175,6 @@ class FeatureEngineer:
                     "train_path": str(self.train_transformed_path),
                     "test_path": str(self.test_transformed_path),
                     "pipeline_path": str(self.transformation_pipeline_path),
-                    "processor_path": str(self.processor_pipeline_path),
                     "feature_engineering_config": updated_intel.get("feature_engineering_config", {})
                 }
             }
@@ -214,54 +211,13 @@ class FeatureEngineer:
             self.logger.error(f"Error saving data: {str(e)}")
             raise
 
-    def _load_cleaning_pipeline(self):
-        try:
-            cleaning_path = self.project_root / f"model/pipelines/preprocessing_{self.dataset_name}/cleaning.pkl"
-            self.logger.info(f"Loading cleaning pipeline from {cleaning_path}")
-            with open(cleaning_path, 'rb') as f:
-                return cloudpickle.load(f)
-        except Exception as e:
-            self.logger.error(f"Error loading cleaning pipeline: {str(e)}")
-            raise
-
-    def _load_preprocessing_pipeline(self):
-        try:
-            preprocessing_path = self.project_root / self.intel.get("preprocessing_pipeline_path")
-            self.logger.info(f"Loading preprocessing pipeline from {preprocessing_path}")
-            with open(preprocessing_path, 'rb') as f:
-                return cloudpickle.load(f)
-        except Exception as e:
-            self.logger.error(f"Error loading preprocessing pipeline: {str(e)}")
-            raise
-
-    # Replace the _save_pipelines method in feature_engineering.py
-    def _save_pipelines(self, transformation_pipeline):
+    def _save_transformation_pipeline(self, transformation_pipeline):
         try:
             self.logger.info(f"Saving transformation pipeline to {self.transformation_pipeline_path}")
-
-            # Save with custom reducer
             with open(self.transformation_pipeline_path, 'wb') as f:
                 cloudpickle.dump(transformation_pipeline, f)
-
-            # Load cleaning and preprocessing pipelines
-            cleaning_pipeline = self._load_cleaning_pipeline()
-            preprocessing_pipeline = self._load_preprocessing_pipeline()
-
-            # Create a combined pipeline with all three components
-            processor_pipeline = Pipeline([
-                ('cleaning', cleaning_pipeline),
-                ('preprocessing', preprocessing_pipeline),
-                ('transformation', transformation_pipeline)
-            ])
-
-            self.logger.info(f"Saving processor pipeline to {self.processor_pipeline_path}")
-
-            # Save with custom reducer
-            with open(self.processor_pipeline_path, 'wb') as f:
-                cloudpickle.dump(processor_pipeline, f)
-
         except Exception as e:
-            self.logger.error(f"Error saving pipelines: {str(e)}")
+            self.logger.error(f"Error saving transformation pipeline: {str(e)}")
             raise
 
     def _log_feature_info(self, pipeline, use_feature_tools, use_shap):

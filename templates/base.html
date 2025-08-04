@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SemiAuto Regression{% endblock %}</title>
+    <title>{% block title %}SemiAuto Classification{% endblock %}</title>
     <link rel="stylesheet" href="/classification-static/css/styles.css">
     {% block extra_css %}{% endblock %}
 </head>
@@ -17,6 +17,7 @@
                     <li><a href="/data-upload">Data Upload</a></li>
                     <li><a href="/preprocessing">Preprocessing</a></li>
                     <li><a href="/feature-engineering">Feature Engineering</a></li>
+                    <li><a href="/feature-selection">Feature Selection</a></li> <!-- ✅ Added -->
                     <li><a href="/model-building">Model Building</a></li>
                     <li><a href="/optimization">Optimization</a></li>
                     <li><a href="/results">Results</a></li>
@@ -27,28 +28,32 @@
 
     <div class="container">
         <div class="workflow-steps">
-            <div class="step {% if request.url.path == '/data-upload' %}step-active{% elif request.url.path in ['/preprocessing', '/feature-engineering', '/model-building', '/optimization', '/results'] %}step-completed{% endif %}">
+            <div class="step {% if request.url.path == '/data-upload' %}step-active{% elif request.url.path in ['/preprocessing', '/feature-engineering', '/feature-selection', '/model-building', '/optimization', '/results'] %}step-completed{% endif %}">
                 <div class="step-circle">1</div>
                 <div class="step-label">Data Upload</div>
             </div>
-            <div class="step {% if request.url.path == '/preprocessing' %}step-active{% elif request.url.path in ['/feature-engineering', '/model-building', '/optimization', '/results'] %}step-completed{% endif %}">
+            <div class="step {% if request.url.path == '/preprocessing' %}step-active{% elif request.url.path in ['/feature-engineering', '/feature-selection', '/model-building', '/optimization', '/results'] %}step-completed{% endif %}">
                 <div class="step-circle">2</div>
                 <div class="step-label">Preprocessing</div>
             </div>
-            <div class="step {% if request.url.path == '/feature-engineering' %}step-active{% elif request.url.path in ['/model-building', '/optimization', '/results'] %}step-completed{% endif %}">
+            <div class="step {% if request.url.path == '/feature-engineering' %}step-active{% elif request.url.path in ['/feature-selection', '/model-building', '/optimization', '/results'] %}step-completed{% endif %}">
                 <div class="step-circle">3</div>
                 <div class="step-label">Feature Engineering</div>
             </div>
-            <div class="step {% if request.url.path == '/model-building' %}step-active{% elif request.url.path in ['/optimization', '/results'] %}step-completed{% endif %}">
+            <div class="step {% if request.url.path == '/feature-selection' %}step-active{% elif request.url.path in ['/model-building', '/optimization', '/results'] %}step-completed{% endif %}">
                 <div class="step-circle">4</div>
+                <div class="step-label">Feature Selection</div>
+            </div>
+            <div class="step {% if request.url.path == '/model-building' %}step-active{% elif request.url.path in ['/optimization', '/results'] %}step-completed{% endif %}">
+                <div class="step-circle">5</div>
                 <div class="step-label">Model Building</div>
             </div>
             <div class="step {% if request.url.path == '/optimization' %}step-active{% elif request.url.path == '/results' %}step-completed{% endif %}">
-                <div class="step-circle">5</div>
+                <div class="step-circle">6</div>
                 <div class="step-label">Optimization</div>
             </div>
             <div class="step {% if request.url.path == '/results' %}step-active{% endif %}">
-                <div class="step-circle">6</div>
+                <div class="step-circle">7</div>
                 <div class="step-label">Results</div>
             </div>
         </div>

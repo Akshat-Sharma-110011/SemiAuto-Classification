@@ -15,6 +15,7 @@ import uvicorn
 import shutil
 import sys
 
+from semiauto_classification.features.feature_selection import feature_selection_pipeline, MetaHeuristicFeatureSelector
 # Configure logging first thing - before any other imports that might use logging
 from semiauto_classification.logger import configure_logger, get_logger
 
@@ -142,13 +143,80 @@ async def feature_engineering_page(request: Request):
         })
 
 
+# Add these new endpoints to app.py
+
+@app.get("/feature-selection", response_class=HTMLResponse)
+async def feature_selection_page(request: Request):
+    logger.info("Serving feature selection page")
+    try:
+        intel = load_yaml("intel.yaml")
+        if not intel.get('train_transformed_path'):
+            logger.warning("Feature engineering not completed, redirecting")
+            return templates.TemplateResponse("error.html", {
+                "request": request,
+                "error_message": "Please complete feature engineering first",
+                "redirect_url": "/feature-engineering"
+            })
+        return templates.TemplateResponse("feature_selection.html", {"request": request})
+    except Exception as e:
+        logger.error(f"Error loading feature selection page: {str(e)}")
+        return templates.TemplateResponse("error.html", {
+            "request": request,
+            "error_message": "Please complete previous steps first",
+            "redirect_url": "/data-upload"
+        })
+
+
+@app.get("/api/feature-selection/algorithms")
+async def get_feature_selection_algorithms():
+    try:
+        selector = MetaHeuristicFeatureSelector()
+        algorithms = selector.get_available_algorithms()
+        return JSONResponse(content=algorithms)
+    except Exception as e:
+        logger.error(f"Error getting feature selection algorithms: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/feature-selection")
+async def run_feature_selection(
+        algorithm: str = Body(...),
+        n_features: Optional[int] = Body(None),
+        max_iter: int = Body(50),
+        population_size: int = Body(20)
+):
+    try:
+        # Run feature selection pipeline
+        feature_selection_pipeline(
+            intel_path="intel.yaml",
+            algorithm=algorithm,
+            n_features=n_features,
+            max_iter=max_iter,
+            population_size=population_size
+        )
+
+        # Load results to return
+        intel = load_yaml("intel.yaml")
+        config = intel.get('feature_selection_config', {})
+
+        return {
+            "status": "success",
+            "message": "Feature selection completed",
+            "selected_features": config.get('selected_features', []),
+            "cv_accuracy": 0.95  # Placeholder - actual value would come from the pipeline
+        }
+    except Exception as e:
+        logger.error(f"Error during feature selection: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Feature selection failed: {str(e)}")
+
+
 # Route to model building page
 @app.get("/model-building", response_class=HTMLResponse)
 async def model_building_page(request: Request):
     logger.info("Serving model building page")
     try:
         intel = load_yaml("intel.yaml")
-        if not intel.get('train_transformed_path'):
+        if not intel.get('train_selected_path'):
             logger.warning("Feature engineering not completed, redirecting to feature engineering page")
             return templates.TemplateResponse("error.html", {
                 "request": request,

@@ -12,6 +12,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
 import warnings
+from functools import partial
 
 warnings.filterwarnings('ignore')
 
@@ -27,6 +28,7 @@ try:
 except ImportError:
     ga = None
 
+# Update the top imports
 try:
     from mealpy.human_based import (
         BRO, BSO, CA, CHIO, FBIO, GSKA, HBO, HCO,
@@ -55,6 +57,9 @@ try:
         SSA, SSO, SSpiderA, SSpiderO, STO, SeaHO, ServalOA, TDO, TSO,
         WOA, WaOA, ZOA,
     )
+    from mealpy.bio_based import SMA
+    # Add this import for FloatVar
+    from mealpy.utils.space import FloatVar
 
     MEALPY_AVAILABLE = True
 except ImportError:
@@ -73,6 +78,50 @@ try:
     OPTUNA_AVAILABLE = True
 except ImportError:
     OPTUNA_AVAILABLE = False
+
+
+def fitness_function_wrapper(solution, X, y, n_features, random_state):
+    """Top-level fitness function wrapper to avoid pickling issues."""
+    solution_flat = solution.flatten()
+
+    # Create mask based on n_features
+    if n_features is not None:
+        # Select top n_features based on solution scores
+        sorted_indices = np.argsort(solution_flat)[::-1]  # Descending order
+        mask = np.zeros_like(solution_flat, dtype=bool)
+        mask[sorted_indices[:n_features]] = True
+    else:
+        # Thresholding for binary selection
+        if solution_flat.dtype == float:
+            mask = solution_flat > 0.5
+        else:
+            mask = solution_flat.astype(bool)
+        # Ensure at least one feature is selected
+        if not np.any(mask):
+            return 0.0
+
+    try:
+        # Select features
+        X_selected = X[:, mask]
+
+        # Use Random Forest for evaluation
+        rf = RandomForestClassifier(n_estimators=10, random_state=random_state, n_jobs=1)
+
+        # Cross-validation score (n_jobs=1 to avoid parallel issues)
+        scores = cross_val_score(rf, X_selected, y, cv=3, scoring='accuracy', n_jobs=1)
+        fitness = np.mean(scores)
+
+        # Penalize for too many features only if n_features is not set
+        if n_features is None:
+            n_selected = np.sum(mask)
+            penalty = 0.01 * (n_selected / len(mask))
+            fitness -= penalty
+
+        return fitness
+
+    except Exception as e:
+        print(f"Error in fitness function: {str(e)}")
+        return 0.0
 
 
 class MetaHeuristicFeatureSelector(BaseEstimator, TransformerMixin):
@@ -145,55 +194,6 @@ class MetaHeuristicFeatureSelector(BaseEstimator, TransformerMixin):
 
         return available
 
-    def _fitness_function(self, solution: np.ndarray, X: np.ndarray, y: np.ndarray) -> float:
-        """
-        Fitness function for feature selection optimization.
-
-        Parameters:
-        -----------
-        solution : np.ndarray
-            Binary array indicating selected features
-        X : np.ndarray
-            Feature matrix
-        y : np.ndarray
-            Target vector
-
-        Returns:
-        --------
-        float
-            Fitness score (higher is better)
-        """
-        # Convert solution to boolean mask
-        if len(solution.shape) > 1:
-            solution = solution.flatten()
-
-        mask = solution > 0.5 if solution.dtype == float else solution.astype(bool)
-
-        # Ensure at least one feature is selected
-        if not np.any(mask):
-            return 0.0
-
-        try:
-            # Select features
-            X_selected = X[:, mask]
-
-            # Use Random Forest for evaluation
-            rf = RandomForestClassifier(n_estimators=10, random_state=self.random_state, n_jobs=-1)
-
-            # Cross-validation score
-            scores = cross_val_score(rf, X_selected, y, cv=3, scoring='accuracy', n_jobs=-1)
-            fitness = np.mean(scores)
-
-            # Penalize for too many features
-            n_selected = np.sum(mask)
-            penalty = 0.01 * (n_selected / len(mask))
-
-            return fitness - penalty
-
-        except Exception as e:
-            self.logger.warning(f"Error in fitness evaluation: {str(e)}")
-            return 0.0
-
     def _genetic_algorithm(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
         """Genetic Algorithm for feature selection."""
         if ga is None:
@@ -201,8 +201,11 @@ class MetaHeuristicFeatureSelector(BaseEstimator, TransformerMixin):
 
         n_features = X.shape[1]
 
+        # Create wrapper for fitness function
         def fitness_wrapper(solution):
-            return -self._fitness_function(solution, X, y)  # GA minimizes
+            return -fitness_function_wrapper(
+                solution, X, y, self.n_features, self.random_state
+            )  # GA minimizes
 
         # GA parameters
         varbound = np.array([[0, 1]] * n_features)
@@ -226,191 +229,172 @@ class MetaHeuristicFeatureSelector(BaseEstimator, TransformerMixin):
         model.run()
         solution = model.output_dict['variable']
 
-        return solution.astype(bool)
+        return solution
 
     def _particle_swarm(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Particle Swarm Optimization for feature selection."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
 
         n_features = X.shape[1]
-
-        def fitness_wrapper(solution):
-            return self._fitness_function(solution, X, y)
-
-        # PSO parameters
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        # Update bounds to use FloatVar
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]
         problem_dict = {
-            "fit_func": fitness_wrapper,
-            "lb": [0] * n_features,
-            "ub": [1] * n_features,
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
             "minmax": "max",
         }
-
         model = PSO.OriginalPSO(epoch=self.max_iter, pop_size=self.population_size)
-        best_position, best_fitness = model.solve(problem_dict)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
-        return (best_position > 0.5).astype(bool)
-
+    # Update all other mealpy methods similarly:
     def _ant_colony(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Ant Colony Optimization approximation using ABC."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
-
-        return self._artificial_bee_colony(X, y)
+        n_features = X.shape[1]
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]  # Updated
+        problem_dict = {
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
+            "minmax": "max",
+        }
+        model = ACOR.OriginalACOR(epoch=self.max_iter, pop_size=self.population_size)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
     def _simulated_annealing(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Simulated Annealing for feature selection."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
-
         n_features = X.shape[1]
-
-        def fitness_wrapper(solution):
-            return self._fitness_function(solution, X, y)
-
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]  # Updated
         problem_dict = {
-            "fit_func": fitness_wrapper,
-            "lb": [0] * n_features,
-            "ub": [1] * n_features,
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
             "minmax": "max",
         }
-
         model = SA.OriginalSA(epoch=self.max_iter, pop_size=self.population_size)
-        best_position, best_fitness = model.solve(problem_dict)
-
-        return (best_position > 0.5).astype(bool)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
     def _whale_optimization(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Whale Optimization Algorithm for feature selection."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
-
         n_features = X.shape[1]
-
-        def fitness_wrapper(solution):
-            return self._fitness_function(solution, X, y)
-
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]  # Updated
         problem_dict = {
-            "fit_func": fitness_wrapper,
-            "lb": [0] * n_features,
-            "ub": [1] * n_features,
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
             "minmax": "max",
         }
-
         model = WOA.OriginalWOA(epoch=self.max_iter, pop_size=self.population_size)
-        best_position, best_fitness = model.solve(problem_dict)
-
-        return (best_position > 0.5).astype(bool)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
     def _grey_wolf_optimization(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Grey Wolf Optimizer for feature selection."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
-
         n_features = X.shape[1]
-
-        def fitness_wrapper(solution):
-            return self._fitness_function(solution, X, y)
-
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]  # Updated
         problem_dict = {
-            "fit_func": fitness_wrapper,
-            "lb": [0] * n_features,
-            "ub": [1] * n_features,
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
             "minmax": "max",
         }
-
         model = GWO.OriginalGWO(epoch=self.max_iter, pop_size=self.population_size)
-        best_position, best_fitness = model.solve(problem_dict)
-
-        return (best_position > 0.5).astype(bool)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
     def _differential_evolution(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Differential Evolution for feature selection."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
-
         n_features = X.shape[1]
-
-        def fitness_wrapper(solution):
-            return self._fitness_function(solution, X, y)
-
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]  # Updated
         problem_dict = {
-            "fit_func": fitness_wrapper,
-            "lb": [0] * n_features,
-            "ub": [1] * n_features,
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
             "minmax": "max",
         }
-
         model = DE.OriginalDE(epoch=self.max_iter, pop_size=self.population_size)
-        best_position, best_fitness = model.solve(problem_dict)
-
-        return (best_position > 0.5).astype(bool)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
     def _artificial_bee_colony(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Artificial Bee Colony for feature selection."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
-
         n_features = X.shape[1]
-
-        def fitness_wrapper(solution):
-            return self._fitness_function(solution, X, y)
-
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]  # Updated
         problem_dict = {
-            "fit_func": fitness_wrapper,
-            "lb": [0] * n_features,
-            "ub": [1] * n_features,
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
             "minmax": "max",
         }
-
         model = ABC.OriginalABC(epoch=self.max_iter, pop_size=self.population_size)
-        best_position, best_fitness = model.solve(problem_dict)
-
-        return (best_position > 0.5).astype(bool)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
     def _slime_mould_algorithm(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Slime Mould Algorithm for feature selection."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
-
         n_features = X.shape[1]
-
-        def fitness_wrapper(solution):
-            return self._fitness_function(solution, X, y)
-
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]  # Updated
         problem_dict = {
-            "fit_func": fitness_wrapper,
-            "lb": [0] * n_features,
-            "ub": [1] * n_features,
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
             "minmax": "max",
         }
-
         model = SMA.OriginalSMA(epoch=self.max_iter, pop_size=self.population_size)
-        best_position, best_fitness = model.solve(problem_dict)
-
-        return (best_position > 0.5).astype(bool)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
     def _sine_cosine_algorithm(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Sine Cosine Algorithm for feature selection."""
         if not MEALPY_AVAILABLE:
             raise ImportError("mealpy package not installed")
-
         n_features = X.shape[1]
-
-        def fitness_wrapper(solution):
-            return self._fitness_function(solution, X, y)
-
+        fitness_wrapper = partial(
+            fitness_function_wrapper,
+            X=X, y=y, n_features=self.n_features, random_state=self.random_state
+        )
+        bounds = [FloatVar(0.0, 1.0) for _ in range(n_features)]  # Updated
         problem_dict = {
-            "fit_func": fitness_wrapper,
-            "lb": [0] * n_features,
-            "ub": [1] * n_features,
+            "obj_func": fitness_wrapper,
+            "bounds": bounds,
             "minmax": "max",
         }
-
         model = SCA.OriginalSCA(epoch=self.max_iter, pop_size=self.population_size)
-        best_position, best_fitness = model.solve(problem_dict)
-
-        return (best_position > 0.5).astype(bool)
+        best_solution = model.solve(problem_dict)
+        return best_solution.solution
 
     def _optuna_bayesian(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
         """Optuna Bayesian Optimization for feature selection."""
@@ -420,14 +404,16 @@ class MetaHeuristicFeatureSelector(BaseEstimator, TransformerMixin):
         n_features = X.shape[1]
 
         def objective(trial):
-            # Create binary mask
-            mask = np.array([trial.suggest_categorical(f'feature_{i}', [True, False])
-                             for i in range(n_features)])
-
-            if not np.any(mask):
-                return 0.0
-
-            return self._fitness_function(mask, X, y)
+            # Use float representation if n_features is set, else boolean
+            if self.n_features is not None:
+                solution = np.array([trial.suggest_float(f'feature_{i}', 0, 1)
+                                     for i in range(n_features)])
+            else:
+                solution = np.array([trial.suggest_categorical(f'feature_{i}', [0, 1])
+                                     for i in range(n_features)])
+            return fitness_function_wrapper(
+                solution, X, y, self.n_features, self.random_state
+            )
 
         study = optuna.create_study(direction='maximize',
                                     sampler=optuna.samplers.TPESampler(seed=self.random_state))
@@ -435,9 +421,12 @@ class MetaHeuristicFeatureSelector(BaseEstimator, TransformerMixin):
 
         # Extract best solution
         best_params = study.best_params
-        mask = np.array([best_params[f'feature_{i}'] for i in range(n_features)])
+        if self.n_features is not None:
+            solution = np.array([best_params[f'feature_{i}'] for i in range(n_features)])
+        else:
+            solution = np.array([best_params[f'feature_{i}'] for i in range(n_features)])
 
-        return mask.astype(bool)
+        return solution
 
     def _random_search(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
         """Random Search for feature selection (baseline)."""
@@ -445,33 +434,30 @@ class MetaHeuristicFeatureSelector(BaseEstimator, TransformerMixin):
         np.random.seed(self.random_state)
 
         best_score = -np.inf
-        best_mask = None
+        best_solution = None
 
         n_trials = self.max_iter * self.population_size
 
         for _ in range(n_trials):
-            # Generate random binary mask
+            # Generate random solution
             if self.n_features:
-                mask = np.zeros(n_features, dtype=bool)
+                # Create solution with exactly n_features ones
+                solution = np.zeros(n_features)
                 selected_indices = np.random.choice(n_features, size=self.n_features, replace=False)
-                mask[selected_indices] = True
+                solution[selected_indices] = 1
             else:
-                # Random number of features between 1 and n_features
-                n_select = np.random.randint(1, n_features + 1)
-                mask = np.random.choice([True, False], size=n_features,
-                                        p=[n_select / n_features, 1 - n_select / n_features])
+                # Random scores
+                solution = np.random.rand(n_features)
 
-                # Ensure at least one feature is selected
-                if not np.any(mask):
-                    mask[np.random.randint(n_features)] = True
-
-            score = self._fitness_function(mask, X, y)
+            score = fitness_function_wrapper(
+                solution, X, y, self.n_features, self.random_state
+            )
 
             if score > best_score:
                 best_score = score
-                best_mask = mask.copy()
+                best_solution = solution.copy()
 
-        return best_mask
+        return best_solution
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> 'MetaHeuristicFeatureSelector':
         """
@@ -511,7 +497,21 @@ class MetaHeuristicFeatureSelector(BaseEstimator, TransformerMixin):
         # Run the selected algorithm
         try:
             algorithm_func = self.available_algorithms[self.algorithm]
-            self.selected_features_ = algorithm_func(X, y)
+            solution = algorithm_func(X, y)
+
+            # Ensure exactly n_features are selected if specified
+            solution_flat = solution.flatten()
+            if self.n_features is not None:
+                # Select top n_features
+                sorted_indices = np.argsort(solution_flat)[::-1]
+                self.selected_features_ = np.zeros_like(solution_flat, dtype=bool)
+                self.selected_features_[sorted_indices[:self.n_features]] = True
+            else:
+                # Threshold for binary selection
+                if solution_flat.dtype == float:
+                    self.selected_features_ = solution_flat > 0.5
+                else:
+                    self.selected_features_ = solution_flat.astype(bool)
 
             n_selected = np.sum(self.selected_features_)
             self.logger.info(f"Selected {n_selected} features out of {X.shape[1]} using {self.algorithm}")
@@ -619,10 +619,12 @@ def feature_selection_pipeline(intel_path: str = "intel.yaml",
 
         # Extract required information
         dataset_name = intel['dataset_name']
-        processor_pipeline_path = intel['processor_pipeline_path']
         target_column = intel['target_column']
         train_transformed_path = intel['train_transformed_path']
         test_transformed_path = intel['test_transformed_path']
+        transformation_pipeline_path = intel['transformation_pipeline_path']
+        preprocessing_pipeline_path = intel['preprocessing_pipeline_path']
+        cleaning_pipeline_path = intel['cleaning_pipeline_path']
 
         logger.info(f"Processing dataset: {dataset_name}")
         logger.info(f"Target column: {target_column}")
@@ -682,7 +684,7 @@ def feature_selection_pipeline(intel_path: str = "intel.yaml",
         selected_dir = f"data/selected/data_{dataset_name}"
         os.makedirs(selected_dir, exist_ok=True)
 
-        pipeline_dir = os.path.dirname(processor_pipeline_path)
+        pipeline_dir = f"model/pipelines/preprocessing_{dataset_name}"
         os.makedirs(pipeline_dir, exist_ok=True)
 
         # Save selected data
@@ -703,28 +705,36 @@ def feature_selection_pipeline(intel_path: str = "intel.yaml",
 
         logger.info(f"Saved selection pipeline to: {selection_pipeline_path}")
 
-        # Load existing processor pipeline
-        logger.info("Loading existing processor pipeline...")
-        with open(processor_pipeline_path, 'rb') as f:
-            processor_pipeline = cloudpickle.load(f)
+        # Create combined pipeline (cleaning -> preprocessing -> transformation -> selection)
+        logger.info("Creating combined processor pipeline...")
 
-        # Create combined pipeline
-        logger.info("Creating combined pipeline (processor + selector)...")
-        combined_pipeline = Pipeline([
-            ('processor', processor_pipeline),
-            ('selector', selector)
+        # Load individual pipelines
+        with open(cleaning_pipeline_path, 'rb') as f:
+            cleaning_pipeline = cloudpickle.load(f)
+        with open(preprocessing_pipeline_path, 'rb') as f:
+            preprocessing_pipeline = cloudpickle.load(f)
+        with open(transformation_pipeline_path, 'rb') as f:
+            transformation_pipeline = cloudpickle.load(f)
+
+        # Create the full processor pipeline
+        processor_pipeline = Pipeline([
+            ('cleaning', cleaning_pipeline),
+            ('preprocessing', preprocessing_pipeline),
+            ('transformation', transformation_pipeline),
+            ('selection', selector)
         ])
 
-        # Save combined pipeline as new processor.pkl
-        with open(processor_pipeline_path, 'wb') as f:
-            cloudpickle.dump(combined_pipeline, f)
-
-        logger.info(f"Saved combined pipeline to: {processor_pipeline_path}")
+        # Save combined pipeline
+        processor_path = os.path.join(pipeline_dir, "processor.pkl")
+        with open(processor_path, 'wb') as f:
+            cloudpickle.dump(processor_pipeline, f)
+        logger.info(f"Saved combined processor pipeline to: {processor_path}")
 
         # Update intel.yaml
         logger.info("Updating intel.yaml...")
         intel.update({
             'selection_pipeline_path': selection_pipeline_path,
+            'processor_pipeline_path': processor_path,
             'train_selected_path': train_selected_path,
             'test_selected_path': test_selected_path,
             'feature_selection_config': {

@@ -68,8 +68,8 @@ class ModelOptimizer:
         self.logger = logger
 
         # Load the data paths
-        self.train_path = self.intel_config.get("train_transformed_path")
-        self.test_path = self.intel_config.get("test_transformed_path")
+        self.train_path = self.intel_config.get("train_selected_path")
+        self.test_path = self.intel_config.get("test_selected_path")
 
         # Set up paths for saving outputs
         self.optimized_model_dir = os.path.join(ROOT_DIR, "model", f"model_{self.dataset_name}")

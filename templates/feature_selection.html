@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}SemiAuto Classification - Feature Selection{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <h1 class="section-title">Feature Selection</h1>
+    <p>Select a meta-heuristic algorithm to choose the most important features.</p>
+
+    <div class="card">
+        <div class="card-header">Feature Selection Configuration</div>
+        <form id="featureSelectionForm">
+            <div class="form-group">
+                <label for="algorithm">Meta-Heuristic Algorithm</label>
+                <select id="algorithm" name="algorithm" required>
+                    <option value="" disabled selected>Select an algorithm</option>
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="n_features">Number of Features to Select</label>
+                <input type="number" id="n_features" name="n_features" min="1" 
+                       placeholder="Enter number or leave blank for auto">
+                <small class="form-text text-muted">Leave blank to let the algorithm determine automatically</small>
+            </div>
+
+            <div class="form-group">
+                <label for="max_iter">Maximum Iterations</label>
+                <input type="number" id="max_iter" name="max_iter" min="1" value="50" required>
+            </div>
+
+            <div class="form-group">
+                <label for="population_size">Population Size</label>
+                <input type="number" id="population_size" name="population_size" min="1" value="20" required>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" onclick="runFeatureSelection(event)">Run Feature Selection</button>
+                <button type="button" class="btn btn-secondary" onclick="skipFeatureSelection()">Skip This Step</button>
+            </div>
+        </form>
+        <div id="spinner" class="spinner hidden"></div>
+        <div id="selectionStatus" class="alert hidden"></div>
+    </div>
+
+    <div class="card hidden" id="selectionResults">
+        <div class="card-header">Feature Selection Results</div>
+        <div id="selectedFeaturesList"></div>
+        <div class="form-group">
+            <a href="/model-building" class="btn btn-success">Continue to Model Building</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // Fetch available algorithms from the server
+            const response = await fetch('/api/feature-selection/algorithms');
+            const algorithms = await response.json();
+            
+            const algorithmSelect = document.getElementById('algorithm');
+            algorithms.forEach(alg => {
+                const option = document.createElement('option');
+                option.value = alg;
+                option.textContent = alg;
+                algorithmSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading algorithms:', error);
+            document.getElementById('selectionStatus').textContent = 'Error loading algorithms';
+            document.getElementById('selectionStatus').className = 'alert alert-danger';
+        }
+    });
+
+    async function runFeatureSelection(event) {
+        event.preventDefault();
+        const selectionStatus = document.getElementById('selectionStatus');
+        const selectionResults = document.getElementById('selectionResults');
+        const algorithm = document.getElementById('algorithm').value;
+        const n_features = document.getElementById('n_features').value;
+        const max_iter = document.getElementById('max_iter').value;
+        const population_size = document.getElementById('population_size').value;
+
+        if (!algorithm) {
+            selectionStatus.textContent = 'Please select an algorithm';
+            selectionStatus.className = 'alert alert-danger';
+            return;
+        }
+
+        showSpinner();
+        selectionStatus.className = 'alert hidden';
+        selectionResults.classList.add('hidden');
+
+        try {
+            const response = await fetch('/api/feature-selection', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    algorithm: algorithm,
+                    n_features: n_features ? parseInt(n_features) : null,
+                    max_iter: parseInt(max_iter),
+                    population_size: parseInt(population_size)
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                selectionStatus.textContent = 'Feature selection completed successfully!';
+                selectionStatus.className = 'alert alert-success';
+                selectionResults.classList.remove('hidden');
+
+                // Display selected features
+                const featuresList = document.getElementById('selectedFeaturesList');
+                featuresList.innerHTML = `
+                    <p><strong>Selected ${result.selected_features.length} features:</strong></p>
+                    <ul class="feature-list">
+                        ${result.selected_features.map(feat => `<li>${feat}</li>`).join('')}
+                    </ul>
+                    <p class="metrics-info">Cross-validation accuracy: ${result.cv_accuracy.toFixed(4)}</p>
+                `;
+            } else {
+                selectionStatus.textContent = result.detail || 'Feature selection failed';
+                selectionStatus.className = 'alert alert-danger';
+            }
+        } catch (error) {
+            selectionStatus.textContent = 'Error: ' + error.message;
+            selectionStatus.className = 'alert alert-danger';
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    function skipFeatureSelection() {
+        window.location.href = '/model-building';
+    }
+
+    function showSpinner() {
+        document.getElementById('spinner').classList.remove('hidden');
+    }
+
+    function hideSpinner() {
+        document.getElementById('spinner').classList.add('hidden');
+    }
+</script>
+
+<style>
+    .feature-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+    
+    .feature-list li {
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .feature-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .metrics-info {
+        margin-top: 15px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+</style>
+{% endblock %}
