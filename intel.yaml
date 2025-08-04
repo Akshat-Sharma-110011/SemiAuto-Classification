@@ -1,36 +1,86 @@
-best_params_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\metrics\best_params_loan_data\params.json
-cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_loan_data\test.csv
-cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_loan_data\train.csv
-cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_loan_data\cleaning.pkl
+cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_JEE_Dropout_After_Class_12\test.csv
+cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_JEE_Dropout_After_Class_12\train.csv
+cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_JEE_Dropout_After_Class_12\cleaning.pkl
 cleaning_report_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\readme\cleaning_report.md
-cleaning_timestamp: '2025-05-31 08:56:12'
-dataset_name: loan_data
-evaluation_timestamp: '2025-05-31 09:09:36'
+cleaning_timestamp: '2025-08-03 21:19:40'
+dataset_name: JEE_Dropout_After_Class_12
 feature_engineering_config:
-  n_features_selected: 200
+  n_features_selected: null
   resampling_method: null
-  timestamp: '2025-05-31 08:59:12'
+  timestamp: '2025-08-03 21:20:27'
   use_feature_tools: true
-  use_shap_selection: true
-feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_loan_data\feature_store.yaml
-model_name: XGBoost
-model_path: model\model_loan_data\model.pkl
-model_timestamp: '2025-05-31 08:59:46'
-optimization_timestamp: '2025-05-31 09:09:35'
-optimized_evaluation_timestamp: '2025-05-31 09:09:36'
-optimized_model_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\model_loan_data\optimized_model.pkl
-optimized_performance_metrics_path: reports\metrics\performance_loan_data\optimized_performance.yaml
-original_file_name: loan_data.csv
-performance_metrics_path: reports\metrics\performance_loan_data\performance.yaml
-plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_loan_data
-preprocessing_pipeline_path: model\pipelines\preprocessing_loan_data\preprocessing.pkl
-processed_timestamp: '2025-05-31 08:56:19'
-processor_pipeline_path: model\pipelines\preprocessing_loan_data\processor.pkl
-target_column: loan_status
-test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_loan_data\test.csv
-test_preprocessed_path: data\interim\data_loan_data\test_preprocessed.csv
-test_transformed_path: data\processed\data_loan_data\test_transformed.csv
-train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_loan_data\train.csv
-train_preprocessed_path: data\interim\data_loan_data\train_preprocessed.csv
-train_transformed_path: data\processed\data_loan_data\train_transformed.csv
-transformation_pipeline_path: model\pipelines\preprocessing_loan_data\transformation.pkl
+  use_shap_selection: false
+feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_JEE_Dropout_After_Class_12\feature_store.yaml
+original_file_name: JEE_Dropout_After_Class_12.csv
+plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_JEE_Dropout_After_Class_12
+preprocessing_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\preprocessing.pkl
+processed_timestamp: '2025-08-03 21:20:00'
+processor_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\processor.pkl
+target_column: dropout
+test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_JEE_Dropout_After_Class_12\test.csv
+test_preprocessed_path: data\interim\data_JEE_Dropout_After_Class_12\test_preprocessed.csv
+test_transformed_path: data\processed\data_JEE_Dropout_After_Class_12\test_transformed.csv
+train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_JEE_Dropout_After_Class_12\train.csv
+train_preprocessed_path: data\interim\data_JEE_Dropout_After_Class_12\train_preprocessed.csv
+train_transformed_path: data\processed\data_JEE_Dropout_After_Class_12\train_transformed.csv
+transformation_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\transformation.pkl
+selection_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\selection.pkl
+train_selected_path: data/selected/data_JEE_Dropout_After_Class_12\train_selected.csv
+test_selected_path: data/selected/data_JEE_Dropout_After_Class_12\test_selected.csv
+feature_selection_config:
+  algorithm: particle_swarm
+  n_features_selected: 50
+  selected_features:
+  - school_board_state
+  - admission_taken_True + parent_education_graduate
+  - admission_taken_True + parent_education_upto 10th
+  - coaching_institute_local + location_type_urban
+  - daily_study_hours + family_income_low
+  - daily_study_hours + peer_pressure_level_medium
+  - mock_test_score_avg + parent_education_pg
+  - peer_pressure_level_low + peer_pressure_level_medium
+  - peer_pressure_level_medium + school_board_icse
+  - admission_taken_True / daily_study_hours
+  - admission_taken_True / location_type_urban
+  - attempt_count / coaching_institute_fiitjee
+  - attempt_count / parent_education_pg
+  - class_12_percent / location_type_urban
+  - coaching_institute_fiitjee / school_board_state
+  - daily_study_hours / school_board_state
+  - jee_main_score / family_income_mid
+  - jee_main_score / location_type_urban
+  - mental_health_issues_True / peer_pressure_level_low
+  - parent_education_graduate / coaching_institute_fiitjee
+  - parent_education_upto 10th / location_type_semi-urban
+  - peer_pressure_level_low / parent_education_graduate
+  - peer_pressure_level_low / peer_pressure_level_medium
+  - peer_pressure_level_medium / family_income_mid
+  - attempt_count * jee_advanced_score
+  - attempt_count * location_type_semi-urban
+  - class_12_percent * family_income_low
+  - class_12_percent * school_board_state
+  - coaching_institute_fiitjee * coaching_institute_nan
+  - family_income_mid * mental_health_issues_True
+  - family_income_mid * mock_test_score_avg
+  - family_income_mid * school_board_state
+  - parent_education_graduate * school_board_state
+  - parent_education_upto 10th * peer_pressure_level_medium
+  - peer_pressure_level_medium * school_board_state
+  - admission_taken_True - family_income_low
+  - attempt_count - jee_main_score
+  - attempt_count - location_type_urban
+  - coaching_institute_local - school_board_icse
+  - daily_study_hours - peer_pressure_level_low
+  - family_income_mid - jee_advanced_score
+  - family_income_mid - location_type_urban
+  - family_income_mid - parent_education_graduate
+  - family_income_mid - peer_pressure_level_medium
+  - jee_advanced_score - location_type_semi-urban
+  - location_type_semi-urban - school_board_icse
+  - mental_health_issues_True - parent_education_pg
+  - mock_test_score_avg - parent_education_graduate
+  - parent_education_pg - parent_education_upto 10th
+  - parent_education_pg - peer_pressure_level_low
+  max_iter: 50
+  population_size: 20
+  timestamp: '2025-08-04 02:20:36'

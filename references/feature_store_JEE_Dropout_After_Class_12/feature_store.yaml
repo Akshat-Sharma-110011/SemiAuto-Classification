@@ -1,0 +1,59 @@
+original_cols:
+- jee_main_score
+- jee_advanced_score
+- mock_test_score_avg
+- school_board
+- class_12_percent
+- attempt_count
+- coaching_institute
+- daily_study_hours
+- family_income
+- parent_education
+- location_type
+- peer_pressure_level
+- mental_health_issues
+- admission_taken
+- dropout
+numerical_cols:
+- jee_main_score
+- jee_advanced_score
+- mock_test_score_avg
+- class_12_percent
+- attempt_count
+- daily_study_hours
+- dropout
+categorical_cols:
+- school_board
+- coaching_institute
+- family_income
+- parent_education
+- location_type
+- peer_pressure_level
+- mental_health_issues
+- admission_taken
+id_cols: []
+skewed_cols:
+- dropout
+normal_cols:
+- jee_main_score
+- jee_advanced_score
+- mock_test_score_avg
+- class_12_percent
+- attempt_count
+- daily_study_hours
+contains_null:
+- coaching_institute
+contains_outliers:
+- jee_main_score
+- jee_advanced_score
+- mock_test_score_avg
+- dropout
+correlated_cols: {}
+target_col: dropout
+timestamp: '2025-08-03 21:19:34'
+train_size: 0.8
+test_size: 0.2
+dataset_name: JEE_Dropout_After_Class_12
+original_file_name: JEE_Dropout_After_Class_12.csv
+train_rows: 4000
+test_rows: 1000

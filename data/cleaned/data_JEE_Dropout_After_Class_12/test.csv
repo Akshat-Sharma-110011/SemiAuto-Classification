@@ -1,0 +1,1001 @@
+jee_main_score,jee_advanced_score,mock_test_score_avg,school_board,class_12_percent,attempt_count,coaching_institute,daily_study_hours,family_income,parent_education,location_type,peer_pressure_level,mental_health_issues,admission_taken,dropout
+43.09,65.69,64.43,cbse,75.58,2,allen,3.8,high,graduate,semi-urban,high,False,False,0
+100.0,40.56,74.3,state,66.2,2,allen,4.4,low,upto 10th,semi-urban,medium,False,True,0
+60.14,59.08,69.38,state,90.77,2,fiitjee,2.7,high,upto 10th,rural,high,True,False,0
+59.17,48.02,69.62,cbse,61.59,1,allen,7.0,low,12th,semi-urban,high,False,True,0
+67.11,71.12,88.77,state,79.92,2,local,6.6,mid,upto 10th,semi-urban,high,False,True,0
+78.27,70.6,98.96,state,72.34,2,fiitjee,4.4,mid,graduate,rural,medium,True,False,0
+89.89,80.02,61.67,icse,76.91,2,local,5.2,low,graduate,rural,medium,True,True,0
+72.64,49.1,57.27,cbse,75.11,2,local,8.5,high,upto 10th,rural,low,True,True,0
+92.94,66.6,59.94,cbse,68.78,2,local,4.2,high,graduate,urban,medium,False,True,0
+71.21,34.24,82.5,state,80.61,2,,3.4,high,upto 10th,urban,low,True,False,0
+99.67,52.34,75.79,state,92.3,1,allen,5.3,low,graduate,rural,high,False,True,0
+80.8,38.05,80.79,icse,76.32,2,allen,6.4,high,graduate,rural,medium,False,True,0
+66.3,71.39,49.94,cbse,73.31,1,allen,6.5,mid,upto 10th,urban,medium,False,True,0
+89.58,100.0,60.32,icse,76.39,1,allen,7.4,low,12th,rural,high,True,True,0
+50.69,82.95,74.25,cbse,73.23,1,fiitjee,2.6,low,12th,semi-urban,medium,False,True,0
+100.0,58.28,90.81,icse,79.58,2,fiitjee,4.0,low,graduate,urban,high,False,False,1
+74.08,55.73,61.16,icse,73.79,2,local,6.6,high,pg,rural,low,False,False,0
+69.23,60.82,51.44,state,70.71,1,allen,2.8,mid,pg,rural,low,False,False,0
+89.12,57.05,50.52,state,79.41,2,fiitjee,0.0,high,upto 10th,semi-urban,medium,True,False,0
+95.84,76.8,73.48,cbse,80.08,1,local,6.9,mid,pg,semi-urban,high,True,False,0
+64.98,57.67,64.59,icse,85.78,2,fiitjee,4.5,low,pg,rural,low,False,False,1
+87.79,69.72,65.03,icse,82.55,1,fiitjee,3.4,low,pg,urban,low,True,True,0
+42.74,40.96,63.8,icse,68.2,2,local,4.3,low,pg,semi-urban,high,False,False,1
+65.33,61.67,51.55,icse,84.17,2,local,0.3,mid,graduate,urban,high,True,True,1
+66.57,53.41,69.72,icse,64.11,2,allen,4.7,low,graduate,urban,medium,False,True,0
+75.64,80.38,68.34,icse,70.47,2,local,2.7,mid,pg,urban,high,True,True,0
+67.04,59.75,63.4,icse,67.95,2,fiitjee,2.1,high,upto 10th,semi-urban,low,True,True,0
+72.26,80.81,74.37,cbse,87.43,2,allen,6.3,mid,12th,semi-urban,low,False,True,0
+66.5,48.03,73.57,cbse,89.22,1,local,6.0,low,upto 10th,rural,low,False,True,0
+72.54,48.63,55.16,icse,63.45,2,fiitjee,7.1,mid,pg,rural,medium,False,False,0
+66.83,70.7,65.02,icse,79.48,1,,5.8,low,pg,rural,medium,True,False,1
+62.95,68.15,65.09,icse,68.83,1,,1.4,low,pg,semi-urban,low,True,True,0
+49.16,59.82,77.41,state,76.42,1,,2.2,high,pg,rural,medium,False,False,0
+78.62,74.15,56.78,state,76.78,1,fiitjee,4.6,mid,pg,semi-urban,low,True,False,0
+55.26,74.49,65.09,icse,75.98,1,fiitjee,3.6,low,upto 10th,semi-urban,low,False,True,0
+81.76,81.15,75.59,icse,87.04,2,fiitjee,3.6,high,12th,rural,high,True,True,0
+76.07,62.05,74.66,state,64.43,1,local,5.2,high,pg,rural,high,False,True,0
+47.47,100.0,58.21,icse,82.85,1,allen,4.1,mid,pg,urban,high,False,False,0
+55.35,76.13,73.56,state,84.97,2,fiitjee,2.3,mid,graduate,rural,medium,True,False,0
+79.66,35.05,60.71,icse,84.16,1,,4.1,low,graduate,semi-urban,high,False,False,1
+81.86,53.16,62.2,cbse,76.73,1,allen,5.5,mid,graduate,urban,high,False,True,0
+55.23,58.87,53.67,state,88.74,1,,4.7,mid,12th,semi-urban,low,True,False,0
+77.45,47.53,75.27,cbse,85.13,2,fiitjee,5.7,mid,pg,rural,high,False,False,0
+100.0,70.14,65.45,cbse,60.4,2,fiitjee,1.1,high,pg,urban,medium,False,True,0
+64.57,88.28,59.25,state,67.94,2,local,5.8,mid,12th,urban,high,True,False,0
+100.0,66.25,81.42,state,57.81,1,allen,2.1,high,graduate,urban,high,False,False,0
+87.03,86.04,87.5,state,83.72,2,fiitjee,6.1,mid,12th,rural,medium,False,True,0
+60.26,79.76,71.92,cbse,81.51,2,fiitjee,3.4,low,12th,urban,medium,False,False,1
+76.99,46.37,45.63,icse,72.49,2,allen,4.7,mid,upto 10th,rural,high,False,False,0
+90.06,54.83,59.1,icse,80.95,1,allen,3.3,high,graduate,semi-urban,medium,False,True,0
+63.92,31.15,74.95,cbse,65.01,2,,4.2,mid,graduate,urban,low,False,True,0
+89.33,57.26,78.82,state,91.34,2,,4.2,mid,upto 10th,urban,high,False,True,0
+82.52,41.95,93.41,state,89.26,1,,8.1,low,graduate,rural,high,False,True,0
+72.98,53.59,69.65,state,91.01,2,,5.8,high,pg,urban,medium,False,True,0
+75.74,60.45,64.39,state,83.23,1,allen,5.6,mid,pg,rural,high,True,True,0
+52.92,81.86,77.6,state,76.54,2,allen,2.1,high,graduate,semi-urban,medium,False,False,0
+81.36,52.28,73.22,cbse,75.64,2,local,1.8,low,12th,semi-urban,low,True,True,0
+87.95,63.9,59.98,cbse,59.93,2,allen,5.5,mid,12th,rural,high,False,True,0
+97.14,37.3,64.06,state,86.04,2,allen,6.3,high,12th,semi-urban,high,True,True,0
+54.72,54.34,64.02,state,86.87,1,allen,2.7,high,pg,rural,high,False,False,0
+63.97,74.26,73.21,state,94.69,2,local,1.1,high,upto 10th,semi-urban,low,True,False,0
+66.89,86.84,65.22,icse,77.81,1,local,5.3,low,12th,rural,high,True,True,0
+64.58,81.62,56.13,cbse,83.46,1,fiitjee,3.1,low,upto 10th,semi-urban,medium,False,True,0
+81.78,48.29,65.81,cbse,93.05,2,,4.4,high,12th,urban,high,True,True,0
+69.4,82.75,70.86,cbse,66.0,1,allen,4.5,mid,12th,urban,low,True,True,0
+87.64,79.73,66.18,state,72.95,1,fiitjee,6.5,high,graduate,urban,high,True,True,0
+62.78,90.03,61.13,state,72.22,2,,1.7,low,pg,urban,high,True,False,1
+73.94,64.11,76.36,cbse,70.53,1,,6.3,high,pg,rural,medium,False,False,0
+71.4,53.91,58.13,icse,75.58,1,,4.4,high,graduate,semi-urban,medium,False,False,0
+51.79,65.71,82.44,state,64.46,1,,6.2,high,graduate,urban,medium,False,True,0
+62.45,74.3,62.93,state,79.81,2,fiitjee,6.5,low,pg,semi-urban,medium,False,False,1
+92.93,95.32,67.98,state,71.67,2,local,5.9,mid,pg,rural,high,True,True,0
+60.35,70.17,79.93,icse,80.63,2,allen,7.3,low,upto 10th,semi-urban,low,True,True,0
+100.0,71.3,70.98,state,61.02,2,allen,2.1,mid,graduate,semi-urban,high,True,False,0
+78.72,64.37,64.25,state,80.0,2,fiitjee,4.1,mid,pg,urban,medium,False,False,0
+73.97,84.21,63.55,cbse,91.0,1,fiitjee,3.1,mid,pg,urban,medium,True,True,0
+47.0,60.88,60.4,icse,75.85,1,fiitjee,6.1,low,graduate,urban,high,True,False,1
+69.41,74.33,78.32,state,72.17,2,fiitjee,6.3,high,pg,semi-urban,medium,False,True,0
+61.98,72.27,65.86,cbse,60.53,2,fiitjee,0.0,low,pg,urban,medium,True,False,1
+65.09,53.67,70.34,cbse,68.33,2,,5.7,high,pg,semi-urban,medium,True,True,0
+59.58,62.1,52.66,icse,78.88,1,fiitjee,4.4,low,graduate,semi-urban,low,True,True,0
+77.67,72.78,68.07,state,81.88,1,local,5.0,mid,upto 10th,urban,low,True,False,0
+59.09,64.34,60.02,state,80.23,1,fiitjee,3.2,mid,pg,semi-urban,low,True,False,0
+65.26,70.3,63.66,state,63.13,1,fiitjee,0.0,mid,pg,semi-urban,high,True,True,1
+70.27,77.02,71.45,cbse,80.0,1,,3.6,low,pg,urban,low,False,True,0
+55.04,55.95,66.12,cbse,94.83,2,allen,2.9,mid,12th,rural,medium,True,True,0
+56.24,80.19,75.13,state,62.4,1,fiitjee,7.8,low,12th,rural,medium,True,True,0
+79.75,70.4,72.22,state,79.72,2,,2.8,mid,12th,rural,medium,False,True,0
+94.11,82.78,80.01,cbse,76.31,1,local,3.7,mid,upto 10th,semi-urban,medium,False,True,0
+93.23,85.35,65.09,state,81.95,2,allen,3.0,low,graduate,urban,medium,True,False,1
+82.98,70.31,64.39,icse,73.81,1,,4.4,high,12th,semi-urban,high,False,True,0
+83.07,21.62,65.78,state,70.75,2,allen,3.0,low,graduate,semi-urban,medium,True,True,0
+69.98,55.26,53.86,icse,91.84,2,allen,5.2,mid,12th,urban,low,True,False,0
+62.51,65.94,72.94,icse,75.29,2,,4.1,low,12th,urban,medium,False,True,0
+78.37,38.42,70.28,icse,77.25,2,allen,6.7,high,12th,urban,high,True,True,0
+75.26,59.58,68.61,cbse,74.18,2,allen,6.6,high,pg,semi-urban,low,False,False,0
+77.34,81.94,77.95,state,51.82,2,,4.8,mid,12th,semi-urban,high,True,False,0
+79.19,47.92,73.15,cbse,78.92,2,,0.0,high,12th,urban,high,True,True,1
+100.0,86.26,73.28,state,77.71,2,,4.5,low,graduate,urban,medium,False,True,0
+70.78,94.21,33.06,cbse,75.59,2,allen,3.4,high,graduate,rural,high,True,False,0
+66.49,67.64,72.41,cbse,79.49,2,,4.2,mid,pg,rural,medium,False,False,0
+80.3,60.27,62.79,icse,74.58,2,local,0.5,mid,upto 10th,semi-urban,low,True,False,0
+77.23,78.74,86.7,state,86.4,1,fiitjee,4.1,high,upto 10th,rural,low,True,False,0
+65.36,48.49,83.26,cbse,68.48,1,allen,2.0,low,12th,urban,medium,True,True,0
+62.68,63.97,58.72,state,77.37,2,allen,3.9,mid,12th,semi-urban,medium,True,False,0
+75.03,74.1,53.63,icse,64.89,1,local,6.8,high,upto 10th,urban,high,False,True,0
+32.12,77.56,60.53,state,75.42,2,,7.9,mid,upto 10th,rural,medium,True,True,0
+57.66,62.71,72.95,state,75.09,2,fiitjee,5.2,low,pg,semi-urban,low,False,False,1
+81.1,66.02,76.25,icse,74.64,1,fiitjee,4.4,high,upto 10th,rural,medium,False,False,0
+77.35,32.02,75.1,icse,70.32,2,local,3.9,high,upto 10th,semi-urban,medium,False,False,0
+52.82,60.18,60.93,icse,86.07,2,fiitjee,5.4,low,12th,urban,medium,False,False,1
+49.83,68.81,77.56,icse,91.32,1,local,6.7,mid,pg,rural,high,False,False,0
+82.35,47.07,63.7,cbse,81.47,2,,6.4,low,graduate,semi-urban,low,False,False,1
+82.11,57.18,70.68,cbse,64.96,1,allen,3.3,mid,graduate,semi-urban,medium,False,True,0
+67.33,66.88,53.09,state,70.43,1,fiitjee,3.9,high,graduate,urban,high,True,True,0
+72.48,58.66,68.83,icse,87.63,1,,4.3,high,graduate,semi-urban,low,True,True,0
+84.5,77.63,67.13,state,77.91,2,local,4.3,low,12th,semi-urban,high,True,True,0
+55.16,67.73,72.8,state,82.12,1,fiitjee,2.9,high,upto 10th,urban,medium,True,True,0
+63.49,30.93,35.84,state,92.56,2,fiitjee,2.5,mid,pg,rural,high,True,False,0
+61.86,40.35,69.35,state,56.36,2,,3.8,mid,12th,rural,medium,False,True,0
+64.47,51.21,88.52,state,69.07,1,fiitjee,5.1,low,pg,semi-urban,low,False,False,1
+92.47,63.06,86.08,state,64.09,1,local,4.4,low,pg,rural,low,True,True,0
+77.18,88.54,82.19,cbse,90.69,2,local,1.4,mid,pg,rural,medium,False,False,0
+52.4,35.42,67.11,icse,63.98,2,allen,6.2,mid,upto 10th,urban,high,False,False,0
+76.74,78.78,86.43,state,70.52,1,,6.5,low,12th,urban,medium,False,True,0
+66.18,64.18,100.0,cbse,62.34,2,fiitjee,4.3,low,12th,semi-urban,low,True,True,0
+91.77,94.75,67.62,state,52.11,1,allen,6.8,high,pg,semi-urban,high,False,True,0
+73.19,55.99,81.52,icse,84.54,2,,7.7,mid,graduate,rural,low,False,False,0
+60.44,63.8,65.23,state,70.75,1,local,3.5,low,pg,semi-urban,medium,True,False,1
+62.03,92.63,78.81,icse,68.61,1,allen,2.7,high,12th,semi-urban,medium,True,True,0
+66.98,83.71,74.7,state,69.68,2,allen,4.2,low,12th,urban,low,False,False,1
+91.27,66.97,72.68,cbse,86.1,1,,4.9,low,12th,semi-urban,high,False,False,1
+78.58,65.6,73.17,icse,56.95,1,allen,1.9,mid,graduate,rural,medium,True,True,0
+65.24,65.05,61.47,cbse,71.76,1,allen,4.2,high,graduate,rural,high,False,True,0
+66.58,56.76,61.26,state,62.48,2,fiitjee,2.7,mid,12th,semi-urban,high,True,True,0
+58.58,61.72,82.07,state,71.43,1,fiitjee,2.1,low,upto 10th,urban,medium,False,False,1
+62.93,29.61,65.93,icse,72.13,2,,1.1,low,graduate,rural,low,True,False,1
+100.0,42.24,77.02,state,69.54,1,fiitjee,1.6,low,12th,urban,low,False,False,1
+60.42,54.04,81.62,state,76.53,2,local,7.4,low,upto 10th,urban,medium,False,False,1
+78.6,43.96,60.39,icse,56.86,2,local,7.1,high,graduate,urban,low,True,False,0
+62.51,84.04,53.21,cbse,89.3,1,allen,6.4,low,pg,urban,low,True,True,0
+61.2,63.76,66.2,cbse,79.59,2,local,3.6,low,12th,urban,medium,False,True,0
+100.0,66.12,77.13,state,68.7,2,,5.0,low,upto 10th,urban,medium,False,False,1
+57.66,72.68,66.12,icse,73.21,2,,5.9,low,pg,semi-urban,medium,True,False,1
+74.56,55.62,77.08,cbse,81.18,2,allen,3.5,low,pg,urban,low,True,True,0
+88.37,41.68,74.3,icse,76.56,2,allen,9.6,mid,upto 10th,semi-urban,medium,False,False,0
+70.84,66.14,60.66,state,70.63,1,,0.0,low,pg,semi-urban,high,False,True,1
+83.84,31.97,57.71,icse,87.52,1,local,4.8,low,12th,rural,low,True,True,0
+92.19,58.01,79.98,cbse,84.91,1,fiitjee,6.8,low,pg,rural,low,True,False,1
+73.68,62.72,81.86,icse,85.95,2,allen,4.3,mid,graduate,rural,low,False,False,0
+44.71,72.15,81.68,state,65.05,2,fiitjee,3.1,high,upto 10th,rural,high,False,False,0
+65.44,82.4,71.18,cbse,74.05,2,fiitjee,5.3,mid,pg,urban,low,True,True,0
+69.01,58.91,74.09,state,77.97,1,fiitjee,3.6,high,pg,urban,medium,False,False,0
+93.19,93.08,64.28,icse,80.76,1,fiitjee,1.1,low,graduate,rural,low,True,True,0
+84.93,74.36,81.21,state,90.12,2,,4.9,mid,graduate,semi-urban,low,True,False,0
+91.98,32.85,59.25,state,64.62,2,,5.2,low,pg,rural,high,False,True,0
+91.89,43.89,58.24,state,74.92,1,local,6.0,low,12th,urban,medium,True,False,1
+65.16,70.88,58.29,cbse,76.12,1,local,5.6,high,12th,urban,medium,False,True,0
+72.18,45.17,67.06,icse,93.91,2,,2.7,high,12th,semi-urban,high,True,True,0
+58.17,58.32,100.0,cbse,72.25,2,local,4.5,low,upto 10th,semi-urban,high,True,True,0
+85.95,44.14,76.09,state,81.21,2,,4.6,low,pg,urban,high,False,False,1
+80.33,67.82,73.39,cbse,71.83,1,allen,2.9,low,graduate,rural,high,False,False,1
+71.95,44.08,83.11,state,62.17,1,local,7.5,mid,pg,semi-urban,medium,False,True,0
+81.05,78.68,68.41,cbse,82.95,2,allen,3.5,low,pg,urban,medium,True,False,1
+41.52,64.41,39.47,icse,69.31,1,,5.5,high,12th,urban,low,False,False,0
+73.31,60.37,50.48,icse,75.33,2,allen,6.6,low,upto 10th,semi-urban,low,False,False,1
+82.39,79.12,65.23,cbse,86.8,1,fiitjee,7.4,mid,pg,rural,high,False,False,0
+56.65,67.02,59.67,cbse,68.85,2,allen,6.2,low,12th,semi-urban,high,False,False,1
+71.15,51.49,68.41,cbse,74.84,1,local,4.7,low,upto 10th,rural,medium,True,False,1
+80.01,80.77,66.66,cbse,98.48,1,allen,4.4,mid,pg,semi-urban,high,False,True,0
+84.86,32.08,71.89,state,61.99,2,local,4.3,low,12th,rural,medium,False,False,1
+57.02,79.34,82.52,cbse,83.22,2,fiitjee,5.7,high,12th,semi-urban,medium,False,True,0
+81.39,91.81,66.39,state,69.77,2,local,6.6,mid,graduate,semi-urban,medium,False,True,0
+67.88,100.0,57.39,icse,62.66,2,allen,4.4,mid,upto 10th,semi-urban,low,True,True,0
+47.35,43.49,54.78,cbse,67.2,1,allen,2.9,high,graduate,urban,high,True,False,1
+82.24,50.29,89.08,icse,78.07,2,local,5.1,mid,graduate,rural,high,True,False,0
+61.92,83.14,69.44,state,77.52,1,local,3.4,low,pg,rural,medium,True,True,0
+78.53,66.62,68.96,icse,67.62,1,local,2.4,mid,graduate,semi-urban,low,True,False,0
+68.68,57.89,35.11,state,71.45,1,local,7.0,low,pg,rural,high,True,False,1
+54.13,69.12,78.01,state,80.06,2,fiitjee,3.5,high,12th,semi-urban,medium,False,False,0
+56.03,52.38,84.13,state,50.0,2,,5.9,mid,pg,rural,low,True,False,0
+71.51,92.77,73.34,icse,86.63,2,fiitjee,8.0,mid,pg,urban,high,False,False,0
+78.61,68.51,77.11,cbse,76.39,2,local,3.7,high,graduate,urban,high,False,True,0
+72.95,68.05,94.5,cbse,70.15,1,fiitjee,6.9,high,12th,semi-urban,high,True,True,0
+71.91,59.73,86.69,cbse,64.03,2,fiitjee,2.8,high,12th,rural,high,False,True,0
+48.15,71.47,87.4,cbse,73.12,2,local,4.7,low,upto 10th,urban,low,False,True,0
+79.0,62.04,66.51,icse,66.39,1,,2.3,mid,graduate,rural,low,False,False,0
+48.75,67.51,62.54,state,68.67,2,fiitjee,2.1,mid,pg,rural,low,False,True,0
+61.77,62.61,88.9,state,75.89,2,local,4.9,low,upto 10th,semi-urban,high,True,True,0
+84.17,75.73,59.37,cbse,87.57,2,allen,5.9,low,graduate,rural,high,False,False,1
+72.58,41.52,66.17,cbse,50.58,1,fiitjee,8.0,high,graduate,semi-urban,medium,False,True,0
+77.73,45.44,87.07,cbse,77.64,2,allen,8.4,mid,graduate,rural,high,True,False,0
+56.73,57.58,72.04,state,70.37,1,local,5.3,mid,12th,urban,medium,True,False,0
+94.81,66.23,37.4,icse,84.82,1,local,5.9,mid,upto 10th,urban,medium,True,False,0
+90.36,88.01,60.94,state,65.13,2,local,7.9,high,pg,semi-urban,low,False,True,0
+81.7,60.2,61.41,icse,80.7,1,,1.3,high,upto 10th,urban,medium,True,True,0
+67.85,53.04,67.82,state,83.49,2,,6.9,low,12th,rural,low,False,False,1
+52.31,50.38,66.08,state,80.98,1,fiitjee,5.5,high,pg,rural,low,False,False,0
+60.53,38.38,70.87,icse,94.47,1,fiitjee,3.9,high,12th,semi-urban,low,False,True,0
+67.73,57.54,72.87,cbse,96.63,1,local,4.2,mid,pg,semi-urban,medium,False,False,0
+60.86,91.16,58.88,icse,66.87,1,fiitjee,2.4,mid,upto 10th,rural,high,True,True,0
+61.41,27.85,74.83,state,76.39,2,allen,4.1,mid,upto 10th,rural,high,True,False,0
+58.48,58.08,83.33,icse,59.12,2,,4.0,high,pg,rural,medium,True,False,0
+57.28,58.87,74.8,state,82.89,1,local,5.8,low,upto 10th,rural,low,True,False,1
+74.73,84.62,58.25,icse,77.96,2,local,5.6,high,graduate,semi-urban,low,True,False,0
+63.37,32.86,56.6,icse,75.21,1,allen,8.0,low,12th,urban,high,True,True,0
+69.0,95.57,74.47,cbse,72.57,1,allen,4.8,high,12th,semi-urban,high,True,True,0
+72.45,79.48,75.26,cbse,82.46,1,fiitjee,0.0,high,upto 10th,rural,low,False,True,0
+71.3,84.51,65.13,state,60.94,1,,5.4,low,upto 10th,urban,medium,False,False,1
+66.95,67.09,61.87,icse,57.73,2,local,1.5,high,12th,urban,low,False,False,0
+64.29,61.06,58.34,icse,90.19,1,,5.7,mid,upto 10th,urban,medium,False,False,0
+84.99,55.12,60.29,state,91.95,2,allen,2.4,mid,pg,rural,low,True,True,0
+73.28,71.35,72.31,cbse,90.33,1,local,3.9,high,graduate,rural,high,True,True,0
+57.51,61.56,99.59,state,60.96,1,fiitjee,1.3,low,graduate,rural,high,False,False,1
+91.25,66.94,73.84,state,87.04,1,local,6.3,high,graduate,urban,low,True,True,0
+76.47,70.45,76.62,icse,75.29,2,local,9.8,mid,graduate,semi-urban,medium,True,True,0
+82.5,64.37,81.0,cbse,62.06,1,allen,6.1,low,pg,urban,medium,True,False,1
+65.1,56.36,54.93,state,76.37,2,local,1.7,low,pg,semi-urban,low,False,True,0
+65.62,87.53,60.5,icse,92.43,2,,3.4,high,upto 10th,rural,high,False,True,0
+50.01,97.25,63.32,cbse,87.44,1,,4.2,high,12th,semi-urban,medium,False,False,0
+93.33,50.35,49.95,cbse,72.8,2,allen,4.5,high,graduate,rural,low,False,False,0
+53.81,59.99,78.33,cbse,67.47,1,allen,6.5,low,12th,rural,low,True,False,1
+63.94,66.47,79.21,icse,66.97,2,,1.7,mid,pg,semi-urban,medium,True,True,0
+56.64,89.44,68.44,cbse,79.01,1,,3.0,mid,upto 10th,rural,medium,False,True,0
+80.36,55.23,57.17,cbse,80.75,2,local,2.1,low,graduate,rural,low,False,False,1
+69.25,55.62,61.85,state,59.94,1,fiitjee,6.0,low,graduate,semi-urban,medium,True,False,1
+68.79,100.0,76.65,icse,77.81,2,fiitjee,2.8,low,pg,urban,low,True,False,1
+65.65,61.87,69.5,state,70.32,2,local,3.8,mid,12th,semi-urban,high,False,False,0
+70.37,51.5,84.16,icse,83.82,2,local,5.1,low,12th,semi-urban,medium,True,False,1
+53.96,65.61,79.21,state,85.31,2,,0.7,high,upto 10th,semi-urban,high,False,True,1
+63.4,88.39,67.24,state,78.61,1,allen,2.4,high,graduate,rural,high,False,False,0
+61.09,69.16,63.46,icse,82.45,1,allen,7.2,high,pg,urban,medium,True,True,0
+52.64,91.59,69.63,cbse,72.64,2,allen,3.8,mid,graduate,urban,high,True,True,0
+70.24,81.24,59.43,icse,85.46,2,,4.2,high,graduate,rural,low,False,True,0
+71.54,66.12,79.4,icse,71.39,1,local,5.2,high,upto 10th,urban,high,True,True,0
+80.44,71.66,64.07,cbse,76.91,1,local,2.6,low,graduate,urban,high,False,True,0
+67.97,35.5,72.79,icse,58.8,1,local,7.7,mid,12th,semi-urban,medium,False,True,0
+47.35,49.93,75.31,icse,100.0,1,local,6.9,mid,12th,semi-urban,low,True,True,1
+74.8,38.55,57.46,cbse,74.43,1,allen,0.2,high,upto 10th,rural,low,True,True,0
+60.9,48.99,96.94,state,93.72,1,fiitjee,6.2,mid,12th,urban,medium,True,True,0
+82.64,79.54,69.84,cbse,85.61,1,local,5.3,high,upto 10th,rural,medium,True,False,0
+85.14,70.72,61.19,icse,57.69,2,allen,4.5,low,pg,semi-urban,high,True,False,1
+73.16,98.35,59.02,state,71.96,2,,5.2,high,upto 10th,semi-urban,high,True,False,0
+92.59,81.8,79.26,icse,60.05,2,allen,4.5,low,graduate,urban,medium,True,True,0
+57.8,65.67,63.68,cbse,89.32,1,local,1.0,mid,pg,semi-urban,medium,True,False,0
+52.88,79.55,58.92,icse,81.58,1,fiitjee,4.6,mid,12th,semi-urban,medium,False,False,0
+100.0,59.03,79.35,icse,67.86,2,local,2.1,low,12th,urban,medium,False,False,1
+100.0,56.27,98.28,cbse,82.6,1,allen,5.9,high,12th,rural,medium,False,True,0
+67.12,90.78,78.67,icse,64.14,1,allen,4.2,high,graduate,semi-urban,high,True,True,0
+84.94,64.32,74.25,state,73.64,2,allen,7.3,mid,12th,semi-urban,low,False,True,0
+73.73,46.23,56.7,icse,68.69,1,fiitjee,2.7,low,graduate,rural,medium,False,False,1
+94.08,72.5,74.6,cbse,70.56,2,,2.7,low,12th,rural,medium,False,False,1
+59.7,53.2,67.38,icse,58.94,2,,7.7,high,graduate,urban,low,True,True,0
+71.65,63.04,66.49,icse,81.42,1,,4.3,high,pg,urban,low,True,True,0
+88.8,27.84,66.09,icse,86.48,1,local,4.0,low,12th,urban,medium,False,False,1
+82.25,71.97,64.64,state,77.04,2,allen,5.4,high,upto 10th,urban,medium,True,True,0
+68.32,65.29,64.32,state,73.81,1,fiitjee,2.2,low,upto 10th,rural,medium,True,True,0
+40.91,37.84,74.43,state,75.72,1,allen,8.8,mid,upto 10th,rural,low,False,False,0
+88.88,43.35,75.85,cbse,98.31,2,fiitjee,4.9,low,pg,semi-urban,medium,True,False,1
+87.74,69.24,65.13,icse,60.1,2,fiitjee,4.6,low,graduate,semi-urban,low,True,False,1
+36.55,28.16,69.26,state,86.91,2,fiitjee,4.5,low,upto 10th,semi-urban,medium,False,True,0
+63.02,65.64,98.55,state,62.27,1,fiitjee,3.4,low,pg,rural,low,True,False,1
+60.0,69.96,58.02,icse,81.84,1,local,4.1,high,graduate,semi-urban,high,True,False,0
+80.85,74.71,75.2,state,89.59,2,,3.7,high,upto 10th,rural,medium,False,True,0
+71.31,71.31,55.93,icse,65.45,1,,4.2,high,graduate,urban,low,True,False,0
+100.0,50.98,89.37,state,89.69,2,local,3.0,high,pg,semi-urban,high,True,True,0
+72.53,83.14,70.6,state,70.3,1,fiitjee,5.1,mid,upto 10th,rural,low,True,False,0
+90.64,56.11,56.84,cbse,69.75,1,local,3.0,high,pg,rural,high,True,True,0
+79.81,75.73,52.3,cbse,94.47,1,allen,4.9,low,upto 10th,rural,low,True,True,0
+67.69,74.09,67.1,cbse,54.89,2,,4.7,low,upto 10th,semi-urban,low,False,False,1
+89.3,72.19,81.34,state,80.41,2,allen,1.0,mid,graduate,rural,high,True,False,1
+81.31,50.25,68.43,state,67.7,1,fiitjee,2.2,high,pg,urban,low,True,True,0
+92.21,66.03,50.79,cbse,66.2,2,local,4.4,high,12th,urban,low,True,True,0
+69.74,72.4,57.7,state,79.93,2,fiitjee,2.0,low,12th,semi-urban,high,True,False,1
+71.89,67.65,45.45,cbse,62.68,1,local,4.2,mid,pg,rural,medium,False,True,0
+88.57,75.97,78.98,icse,72.66,2,,3.6,mid,graduate,rural,high,True,False,0
+46.29,83.09,87.62,state,58.38,2,allen,5.5,low,12th,rural,high,False,True,0
+100.0,80.06,63.49,icse,68.01,2,,2.9,mid,pg,urban,low,True,True,0
+78.48,78.32,53.55,state,79.0,1,local,5.7,mid,graduate,urban,high,True,True,0
+48.06,93.55,44.26,cbse,81.23,2,local,2.8,low,graduate,semi-urban,high,False,True,0
+83.1,40.89,80.26,state,60.52,2,local,5.0,mid,upto 10th,semi-urban,low,True,True,0
+68.58,53.16,70.16,cbse,80.13,1,allen,6.5,mid,upto 10th,urban,low,True,False,0
+61.16,58.88,52.05,icse,73.08,2,allen,4.6,low,graduate,urban,high,True,True,0
+46.79,83.1,54.75,cbse,100.0,2,local,3.4,mid,graduate,semi-urban,medium,False,True,0
+86.66,59.15,56.54,state,88.77,1,,1.9,high,pg,rural,low,False,True,0
+65.79,52.87,52.52,state,75.05,2,fiitjee,2.0,low,graduate,semi-urban,high,False,False,1
+87.16,60.99,75.79,icse,61.93,2,fiitjee,3.3,mid,12th,rural,low,True,True,0
+94.24,45.02,72.07,state,85.71,1,fiitjee,4.8,mid,upto 10th,rural,medium,False,False,0
+57.09,100.0,78.88,icse,65.54,1,fiitjee,2.8,mid,upto 10th,urban,high,True,False,0
+79.08,78.95,84.56,cbse,72.46,1,,4.4,high,upto 10th,semi-urban,low,False,True,0
+74.54,47.94,57.86,cbse,65.09,1,fiitjee,2.2,mid,upto 10th,rural,high,False,True,0
+83.62,41.05,68.34,state,80.67,2,,6.5,mid,upto 10th,urban,high,False,True,0
+73.83,69.78,66.13,icse,78.11,2,,3.2,mid,12th,rural,medium,True,True,0
+94.94,63.17,61.2,icse,60.07,2,,5.2,low,upto 10th,semi-urban,high,False,True,0
+58.26,65.37,77.23,state,71.9,2,fiitjee,5.5,mid,pg,urban,high,True,True,0
+59.27,59.02,62.19,state,73.93,2,allen,2.2,high,graduate,urban,low,False,False,0
+75.93,57.01,53.04,state,91.53,1,fiitjee,3.1,mid,upto 10th,semi-urban,high,True,False,0
+45.14,58.31,59.64,icse,69.31,2,local,3.1,high,upto 10th,urban,high,True,True,0
+59.63,82.47,71.27,state,59.06,2,local,3.9,mid,12th,rural,high,False,False,0
+88.83,68.65,55.61,cbse,80.07,1,fiitjee,5.0,low,pg,semi-urban,low,False,True,0
+84.06,70.54,82.05,icse,73.66,2,local,6.3,low,upto 10th,urban,low,True,True,0
+84.07,65.81,81.41,icse,83.91,1,fiitjee,2.9,mid,graduate,semi-urban,low,True,True,0
+59.61,61.21,61.63,icse,87.54,1,local,9.7,high,pg,rural,low,True,True,0
+54.13,68.23,73.3,cbse,79.42,2,,5.1,high,graduate,rural,medium,True,True,0
+73.25,74.6,68.56,icse,91.59,1,fiitjee,3.9,low,upto 10th,urban,high,True,False,1
+82.63,77.75,84.44,cbse,66.22,1,local,4.6,high,upto 10th,rural,medium,False,False,0
+66.29,77.04,50.7,icse,69.66,2,,0.0,high,pg,rural,low,False,False,0
+87.51,51.67,76.14,icse,76.42,2,allen,2.9,high,graduate,rural,high,False,False,0
+50.14,49.93,63.22,cbse,74.72,1,fiitjee,3.7,low,pg,rural,low,True,False,1
+69.9,56.55,76.01,icse,80.56,2,allen,6.3,low,upto 10th,semi-urban,medium,False,True,0
+96.19,60.92,69.49,state,74.55,2,fiitjee,4.9,low,pg,semi-urban,medium,False,False,1
+45.21,62.2,62.41,icse,85.09,2,allen,7.3,low,graduate,urban,medium,True,False,1
+89.06,44.27,72.11,cbse,59.1,2,,3.5,mid,pg,rural,high,False,False,0
+61.22,67.7,70.38,icse,95.03,1,fiitjee,5.9,high,graduate,semi-urban,medium,True,False,0
+89.69,50.19,77.43,icse,79.02,2,,10.0,high,12th,rural,medium,True,False,0
+86.09,46.28,46.17,cbse,83.17,2,local,0.0,low,upto 10th,urban,high,False,False,1
+52.09,64.68,58.75,icse,65.07,2,fiitjee,0.0,low,graduate,rural,medium,False,False,1
+73.39,46.17,49.28,cbse,71.68,2,fiitjee,6.5,high,12th,rural,high,True,False,0
+62.2,67.31,64.88,state,74.14,1,local,8.3,mid,upto 10th,semi-urban,high,True,False,0
+63.42,56.93,67.4,cbse,50.0,2,fiitjee,3.7,high,12th,urban,medium,True,False,0
+71.46,48.8,67.86,cbse,80.99,1,fiitjee,3.9,high,upto 10th,semi-urban,low,False,True,0
+84.12,76.47,74.19,icse,57.93,1,,4.1,mid,12th,urban,high,True,True,0
+63.93,43.85,74.92,cbse,87.74,2,,4.3,high,graduate,rural,medium,True,True,0
+90.56,77.75,66.43,state,88.82,1,allen,0.4,high,pg,semi-urban,low,False,False,0
+91.19,74.71,78.78,state,68.36,1,local,3.0,high,12th,semi-urban,low,True,True,0
+81.18,60.63,64.09,cbse,68.52,2,local,5.6,high,pg,urban,medium,False,False,0
+70.69,41.95,73.57,cbse,65.78,2,allen,6.6,mid,12th,urban,medium,True,True,0
+84.39,84.85,50.63,icse,78.45,1,allen,5.7,high,pg,rural,medium,False,True,0
+55.29,52.25,59.72,state,83.55,1,allen,4.9,mid,pg,semi-urban,medium,True,True,0
+81.13,68.99,73.02,icse,92.78,2,local,8.8,low,graduate,semi-urban,high,True,True,0
+55.52,40.24,65.45,cbse,70.52,1,allen,7.0,low,upto 10th,urban,high,True,False,1
+85.0,45.87,81.6,icse,81.84,2,allen,4.2,mid,12th,urban,medium,False,True,0
+45.2,54.77,76.2,icse,67.8,2,allen,2.6,low,upto 10th,urban,medium,True,False,1
+58.15,65.02,62.41,state,78.28,1,local,1.4,low,upto 10th,semi-urban,medium,True,True,0
+78.75,56.74,69.16,cbse,66.8,2,fiitjee,6.7,low,12th,urban,high,True,True,0
+54.58,60.88,69.07,icse,70.31,1,fiitjee,5.5,low,pg,urban,low,False,True,0
+67.5,59.63,76.72,state,75.95,1,,1.3,low,12th,rural,medium,False,True,0
+61.05,53.39,66.35,state,95.31,1,,2.5,low,graduate,semi-urban,medium,True,True,0
+93.43,87.09,72.19,icse,60.99,1,allen,4.8,low,graduate,urban,medium,True,False,1
+88.75,66.6,83.44,icse,79.34,1,,7.4,low,upto 10th,urban,medium,True,False,1
+70.94,60.47,55.77,state,84.29,2,fiitjee,0.8,low,pg,rural,medium,True,False,1
+73.83,74.89,57.62,state,73.22,1,allen,5.6,high,12th,rural,high,False,True,0
+78.72,49.56,73.95,state,70.05,2,allen,6.3,low,pg,urban,high,True,False,1
+78.75,47.1,56.41,state,87.17,1,local,0.5,low,pg,urban,medium,False,True,0
+74.77,52.22,68.92,state,55.89,2,,5.3,mid,upto 10th,urban,high,True,False,0
+100.0,65.58,75.34,state,75.75,1,,5.5,high,pg,semi-urban,high,False,False,0
+94.8,65.09,49.8,icse,91.54,1,allen,4.7,low,pg,rural,medium,True,False,1
+63.54,30.5,79.58,state,84.43,2,,8.6,low,graduate,rural,high,False,True,0
+75.13,61.22,73.81,cbse,64.22,2,fiitjee,5.4,high,graduate,semi-urban,medium,False,True,0
+58.1,62.06,63.72,icse,67.72,2,allen,3.3,high,12th,semi-urban,medium,True,False,0
+59.55,63.21,79.32,cbse,71.83,2,fiitjee,3.3,mid,12th,rural,high,True,False,0
+57.25,52.23,61.48,cbse,78.96,2,allen,0.0,low,12th,rural,medium,True,False,1
+60.28,67.12,53.96,icse,63.28,2,local,5.2,mid,pg,urban,medium,False,True,0
+58.13,61.62,73.67,icse,87.68,2,,3.4,high,graduate,urban,low,True,True,0
+75.96,60.78,53.5,cbse,72.38,2,allen,4.7,high,12th,semi-urban,low,True,False,0
+78.96,100.0,74.75,cbse,90.96,2,allen,2.9,high,upto 10th,semi-urban,high,True,True,0
+100.0,55.49,55.9,state,64.13,2,fiitjee,6.3,low,pg,semi-urban,high,False,True,0
+45.55,55.78,70.98,state,74.92,2,allen,0.5,mid,upto 10th,urban,medium,False,False,0
+79.49,47.51,73.93,state,62.25,2,allen,1.8,low,graduate,urban,medium,True,True,0
+92.5,31.55,86.71,state,88.69,1,fiitjee,2.6,mid,12th,rural,high,True,True,0
+75.75,82.99,83.49,cbse,76.12,1,allen,4.0,mid,12th,rural,medium,True,False,0
+66.15,66.1,48.74,state,76.73,1,,4.0,high,graduate,semi-urban,medium,False,True,0
+87.02,52.85,75.32,state,75.22,2,fiitjee,5.5,low,12th,rural,high,True,True,0
+79.0,56.13,46.48,icse,82.28,1,,3.0,high,pg,rural,medium,False,True,0
+66.56,48.95,61.29,icse,57.31,2,fiitjee,6.3,high,pg,rural,high,True,False,0
+56.88,82.53,42.88,cbse,72.45,1,,3.7,mid,upto 10th,rural,low,False,False,0
+97.64,68.39,63.69,cbse,64.39,1,local,1.0,mid,graduate,urban,high,False,False,1
+94.26,68.4,73.87,icse,72.48,1,,0.4,high,12th,urban,high,True,True,1
+53.63,43.46,66.4,cbse,72.35,1,fiitjee,5.7,mid,graduate,rural,medium,False,False,0
+77.14,49.28,62.0,icse,83.52,1,fiitjee,2.8,high,12th,semi-urban,medium,False,False,0
+47.13,46.93,61.33,icse,87.29,1,fiitjee,7.2,low,upto 10th,urban,low,True,False,1
+60.74,77.41,84.34,icse,89.04,2,,7.4,low,12th,semi-urban,high,False,False,1
+38.58,49.87,54.44,state,92.02,1,local,1.7,low,pg,urban,high,True,False,1
+72.42,55.61,82.67,cbse,54.88,2,local,3.8,mid,pg,urban,high,True,True,0
+65.89,56.54,63.55,state,85.22,1,allen,5.4,high,graduate,urban,medium,True,False,0
+54.3,85.92,70.17,state,74.34,1,allen,8.2,low,12th,semi-urban,low,True,True,0
+51.0,60.54,42.07,state,81.08,1,,2.5,high,pg,urban,high,True,True,0
+100.0,68.02,70.4,cbse,70.01,1,allen,6.8,low,pg,urban,low,True,False,1
+67.11,51.86,97.35,cbse,85.43,1,,5.1,high,upto 10th,semi-urban,medium,False,True,0
+91.73,70.3,67.23,state,80.08,1,fiitjee,7.1,high,upto 10th,semi-urban,medium,False,True,0
+79.16,50.2,71.36,cbse,65.18,1,local,5.9,high,pg,urban,low,False,False,0
+74.68,51.38,64.03,state,64.36,2,,3.3,mid,upto 10th,rural,high,True,False,0
+72.68,47.41,84.39,cbse,72.62,1,local,5.7,low,upto 10th,semi-urban,low,False,True,0
+62.28,65.65,75.58,icse,65.62,2,allen,4.7,mid,upto 10th,urban,medium,False,False,0
+81.18,96.59,56.41,icse,58.35,2,allen,2.6,mid,12th,semi-urban,low,True,False,0
+70.44,67.17,71.37,icse,89.59,2,allen,7.3,mid,graduate,urban,low,False,False,0
+44.56,55.01,64.24,state,95.14,2,local,2.4,low,graduate,semi-urban,low,True,False,1
+94.81,49.74,63.53,state,96.42,2,,3.2,high,upto 10th,rural,low,False,True,0
+54.92,89.95,64.51,state,61.78,2,,0.3,mid,upto 10th,semi-urban,high,True,False,1
+83.36,36.0,57.96,cbse,76.25,1,local,3.4,high,12th,urban,low,False,True,0
+59.86,72.38,81.33,cbse,74.26,2,,4.7,low,12th,semi-urban,high,True,True,0
+55.1,80.12,85.28,icse,66.89,2,,2.7,mid,12th,rural,high,False,False,0
+63.75,59.08,59.48,cbse,80.82,2,,6.9,low,graduate,semi-urban,medium,True,True,0
+75.38,88.7,91.67,state,71.27,1,allen,7.7,high,graduate,semi-urban,low,True,False,0
+98.93,90.39,56.76,state,85.34,2,allen,2.4,low,upto 10th,semi-urban,medium,False,True,0
+68.51,92.19,53.92,cbse,74.31,1,allen,4.0,low,pg,semi-urban,medium,False,False,1
+70.27,74.15,88.14,state,94.16,1,fiitjee,5.7,mid,upto 10th,semi-urban,low,False,True,0
+72.1,60.31,92.66,icse,69.96,1,fiitjee,8.8,mid,12th,rural,high,True,False,0
+86.41,56.81,56.19,state,67.97,1,allen,3.0,low,pg,urban,medium,False,False,1
+100.0,100.0,65.75,icse,74.23,1,fiitjee,2.8,mid,graduate,semi-urban,medium,True,True,0
+65.52,67.94,85.56,cbse,86.18,1,local,1.5,mid,graduate,rural,high,True,True,1
+60.43,73.56,63.53,icse,74.34,2,fiitjee,3.5,low,graduate,rural,high,False,False,1
+68.84,54.24,75.25,icse,69.38,1,local,6.5,low,pg,urban,high,True,False,1
+54.04,73.24,68.88,icse,74.82,1,local,5.3,mid,upto 10th,urban,medium,True,True,0
+49.93,90.53,60.94,state,78.88,1,allen,7.9,mid,12th,urban,low,False,False,0
+58.09,68.31,91.32,cbse,78.96,2,,5.6,high,pg,urban,low,True,True,0
+80.02,44.55,56.45,cbse,90.83,2,,3.8,high,12th,semi-urban,medium,True,True,0
+87.06,61.49,88.75,cbse,91.84,1,,6.0,low,pg,urban,low,False,False,1
+85.01,59.06,57.97,cbse,83.61,2,fiitjee,4.7,mid,graduate,rural,high,False,True,0
+92.31,44.21,72.82,state,99.5,1,allen,5.4,low,12th,rural,high,True,True,0
+66.06,48.0,66.8,cbse,81.13,2,fiitjee,7.8,low,upto 10th,rural,medium,False,False,1
+76.54,51.6,77.2,icse,63.19,1,allen,3.0,high,graduate,semi-urban,high,False,False,0
+92.72,82.35,69.02,icse,80.69,2,local,0.0,high,graduate,rural,low,True,True,0
+68.93,60.01,72.95,cbse,80.11,2,fiitjee,0.0,low,pg,rural,medium,True,True,0
+76.52,53.41,52.62,state,68.28,1,,8.1,mid,pg,semi-urban,high,True,False,0
+69.25,65.35,87.26,icse,57.51,2,fiitjee,2.1,mid,12th,urban,medium,False,True,0
+80.24,87.81,68.11,cbse,70.8,1,local,6.0,high,upto 10th,rural,high,True,True,0
+88.08,69.92,73.54,icse,69.78,2,fiitjee,4.9,high,graduate,urban,high,False,True,0
+63.23,61.57,37.72,icse,50.1,1,local,3.7,mid,pg,urban,high,False,False,0
+68.31,51.99,70.42,state,68.81,2,allen,5.3,low,upto 10th,urban,high,False,False,1
+82.92,58.72,57.66,cbse,73.42,2,,3.3,mid,upto 10th,semi-urban,medium,False,False,0
+66.44,59.74,64.95,state,89.51,1,local,1.9,high,pg,semi-urban,low,True,False,0
+74.65,57.9,71.6,icse,94.98,2,,1.0,low,upto 10th,semi-urban,low,True,False,1
+100.0,100.0,89.8,cbse,62.52,2,fiitjee,5.2,high,pg,urban,medium,False,False,0
+91.44,39.52,68.14,icse,81.44,2,local,3.1,high,12th,urban,medium,True,False,0
+86.98,61.23,53.83,state,70.73,1,local,1.4,high,upto 10th,urban,medium,False,True,0
+96.72,79.11,77.59,cbse,85.97,2,local,0.6,low,upto 10th,semi-urban,low,True,True,0
+72.1,66.29,73.87,icse,80.42,1,,2.7,low,pg,urban,high,True,True,0
+81.74,43.28,93.59,cbse,90.65,1,,6.5,high,pg,urban,low,False,False,0
+76.34,69.76,62.94,icse,79.01,2,allen,1.8,high,pg,rural,low,True,True,0
+62.39,53.27,57.82,cbse,74.99,1,local,2.6,high,pg,urban,high,True,False,0
+81.4,60.14,70.2,cbse,77.35,2,fiitjee,5.2,high,pg,semi-urban,medium,True,False,0
+95.47,97.59,74.8,state,81.39,1,fiitjee,4.1,mid,pg,rural,medium,False,False,0
+72.66,73.68,78.58,icse,66.71,1,fiitjee,5.5,high,pg,urban,high,True,True,0
+82.79,69.09,62.25,state,76.52,1,allen,2.6,high,graduate,rural,high,True,False,0
+63.29,63.79,59.56,state,73.16,2,allen,4.1,low,upto 10th,urban,medium,False,True,0
+68.4,39.86,60.76,icse,98.17,2,local,3.0,mid,graduate,semi-urban,high,False,True,0
+85.82,58.26,98.29,icse,66.23,2,,3.8,low,graduate,semi-urban,low,False,True,0
+86.51,71.79,65.56,icse,77.73,2,fiitjee,6.5,low,upto 10th,urban,high,False,False,1
+56.71,79.71,42.4,cbse,62.12,1,allen,5.8,mid,upto 10th,urban,high,True,True,0
+56.55,89.18,58.58,cbse,75.19,1,local,2.1,low,pg,urban,low,True,False,1
+60.93,72.7,73.16,cbse,63.48,2,allen,7.4,mid,12th,semi-urban,low,True,False,0
+70.12,52.79,73.06,state,99.66,2,fiitjee,4.5,mid,12th,urban,low,False,True,0
+70.69,61.39,80.94,cbse,54.08,2,allen,9.5,mid,graduate,urban,medium,False,True,0
+68.09,57.74,79.03,state,75.85,2,local,5.0,low,pg,semi-urban,medium,True,False,1
+85.62,52.62,84.18,icse,66.77,2,allen,6.9,high,12th,urban,high,True,True,0
+67.59,75.71,70.57,icse,71.43,2,,6.1,high,upto 10th,urban,high,True,False,0
+57.1,63.82,59.0,state,50.53,1,,2.8,high,pg,semi-urban,low,False,True,0
+80.86,55.9,61.59,state,66.75,2,,4.1,high,12th,semi-urban,medium,False,False,0
+46.15,86.52,82.74,icse,81.42,2,fiitjee,3.2,mid,upto 10th,rural,medium,True,False,0
+100.0,65.97,68.38,icse,92.98,1,allen,6.2,low,pg,urban,high,False,True,0
+78.6,37.53,73.38,cbse,72.78,2,allen,3.7,low,upto 10th,urban,low,False,False,1
+65.32,75.18,76.91,cbse,79.83,1,local,1.3,mid,upto 10th,urban,low,False,False,0
+63.59,86.61,47.54,icse,50.0,2,fiitjee,5.2,low,graduate,rural,low,True,True,0
+75.41,72.67,70.26,state,64.01,2,allen,8.0,mid,upto 10th,rural,high,True,False,0
+70.55,87.86,64.27,icse,72.49,2,allen,4.2,low,graduate,urban,medium,False,True,0
+80.57,62.86,66.88,state,78.38,1,,5.1,mid,upto 10th,urban,low,False,True,0
+83.74,72.98,90.01,state,69.31,2,allen,3.8,low,12th,rural,low,True,False,1
+77.31,75.97,55.18,icse,85.09,2,local,4.4,high,12th,urban,high,False,True,0
+96.15,64.07,65.77,cbse,64.37,2,fiitjee,3.3,mid,12th,rural,low,True,True,0
+69.54,70.51,55.54,cbse,87.65,1,local,2.2,low,graduate,urban,low,False,True,0
+49.49,84.99,44.15,cbse,75.52,1,,1.3,high,12th,urban,high,False,True,1
+60.14,51.31,70.8,icse,84.09,1,,3.1,high,graduate,rural,low,True,False,0
+69.65,94.01,74.89,icse,65.2,2,local,7.4,mid,upto 10th,rural,low,False,False,0
+62.17,59.61,73.4,state,85.09,1,fiitjee,3.0,mid,upto 10th,semi-urban,medium,True,True,0
+75.76,89.61,61.86,state,64.62,2,local,3.0,high,graduate,semi-urban,medium,False,True,0
+65.72,59.99,69.08,state,65.61,2,local,6.7,high,12th,rural,low,True,False,0
+93.46,67.83,59.23,state,80.62,1,allen,2.1,mid,pg,semi-urban,medium,False,True,0
+67.41,93.27,56.23,cbse,77.58,2,allen,6.0,low,12th,semi-urban,high,True,False,1
+80.87,64.28,59.38,cbse,71.82,1,local,6.2,mid,upto 10th,rural,medium,True,True,0
+81.61,50.05,63.29,state,84.05,2,fiitjee,5.6,mid,graduate,semi-urban,high,False,False,0
+79.47,74.17,91.62,state,91.48,1,allen,1.4,mid,upto 10th,semi-urban,low,True,True,0
+74.05,83.3,59.75,icse,66.69,2,local,6.3,high,upto 10th,rural,medium,False,False,0
+71.53,100.0,68.17,state,84.35,1,,3.4,mid,upto 10th,semi-urban,low,False,True,0
+100.0,64.87,61.78,cbse,67.47,1,,2.6,high,upto 10th,semi-urban,low,True,True,0
+72.32,71.47,61.74,icse,78.58,2,allen,4.1,low,upto 10th,urban,high,True,True,0
+90.3,74.58,77.03,cbse,73.55,1,allen,4.7,low,pg,semi-urban,high,True,True,0
+66.27,63.93,77.72,cbse,76.61,1,local,7.7,mid,upto 10th,semi-urban,low,False,True,0
+84.2,62.2,85.81,cbse,70.38,1,fiitjee,6.7,mid,12th,rural,medium,False,False,0
+58.85,58.21,68.22,icse,61.91,1,allen,6.8,high,upto 10th,rural,medium,False,True,0
+72.29,61.84,78.98,state,64.21,1,allen,5.4,low,pg,semi-urban,medium,False,False,1
+67.4,28.12,69.33,state,60.24,2,local,5.7,high,pg,urban,low,False,True,0
+82.59,56.99,59.47,state,57.29,2,local,5.3,high,upto 10th,rural,high,True,True,0
+64.13,63.37,86.94,state,92.58,2,,3.9,high,graduate,urban,low,False,False,0
+74.69,67.24,82.22,cbse,71.69,2,,3.9,mid,graduate,rural,medium,False,False,0
+77.06,96.59,48.36,cbse,71.09,2,fiitjee,2.8,low,12th,semi-urban,medium,False,False,1
+54.68,64.01,53.97,cbse,66.21,2,,5.7,high,graduate,semi-urban,medium,False,True,0
+43.29,64.16,47.14,cbse,64.95,2,allen,5.4,low,12th,rural,high,True,False,1
+66.54,93.93,75.8,icse,84.09,2,allen,4.6,high,pg,rural,medium,False,False,0
+73.09,71.93,88.13,icse,82.39,1,allen,5.4,low,12th,rural,medium,False,False,1
+76.48,67.26,75.55,icse,55.89,2,allen,4.8,high,graduate,semi-urban,low,True,False,0
+62.89,58.26,68.27,cbse,76.33,1,allen,1.2,low,pg,urban,medium,True,False,1
+90.63,44.78,97.29,icse,80.72,1,allen,5.6,high,upto 10th,semi-urban,high,False,True,0
+78.01,39.99,64.89,icse,76.72,2,fiitjee,3.9,high,upto 10th,semi-urban,high,False,True,0
+77.28,73.34,72.31,icse,71.16,1,fiitjee,3.8,mid,pg,semi-urban,high,False,True,0
+50.32,73.11,76.68,cbse,85.65,2,,4.5,mid,12th,semi-urban,high,True,True,0
+72.35,61.2,76.26,cbse,80.86,1,local,7.9,low,upto 10th,rural,low,True,True,0
+59.59,78.96,69.86,cbse,61.31,2,fiitjee,8.5,low,graduate,semi-urban,low,True,True,0
+71.32,53.26,63.67,cbse,80.56,1,local,0.5,low,12th,semi-urban,medium,True,True,0
+76.1,52.09,68.92,cbse,59.55,1,fiitjee,2.0,high,upto 10th,urban,medium,False,True,0
+77.42,64.49,65.85,icse,89.98,1,fiitjee,4.4,low,12th,urban,medium,False,True,0
+83.21,75.41,61.73,cbse,68.78,1,fiitjee,3.8,low,12th,rural,high,True,True,0
+85.97,35.19,59.62,cbse,71.12,1,,4.9,low,pg,urban,low,True,False,1
+86.68,62.28,48.15,state,68.6,2,fiitjee,1.4,mid,12th,semi-urban,medium,True,False,0
+95.0,59.8,53.99,cbse,69.95,2,allen,5.1,high,pg,rural,medium,True,False,0
+97.37,40.03,92.08,state,79.76,1,fiitjee,4.6,high,upto 10th,urban,high,False,True,0
+78.91,53.93,65.54,state,67.16,2,fiitjee,6.4,high,upto 10th,semi-urban,medium,True,True,0
+74.61,59.86,65.82,cbse,74.09,2,,6.4,high,graduate,semi-urban,medium,False,False,0
+100.0,51.49,70.17,icse,83.41,2,,6.4,mid,pg,rural,medium,False,True,0
+74.84,85.89,66.2,state,76.87,2,,2.0,high,pg,semi-urban,medium,False,False,0
+80.21,73.57,61.14,cbse,71.8,2,fiitjee,3.1,high,graduate,rural,low,False,True,0
+69.79,75.07,41.36,icse,75.25,2,local,4.1,high,12th,urban,low,True,True,0
+73.75,57.16,78.88,state,68.32,2,,1.9,high,graduate,rural,medium,False,False,0
+72.48,67.33,71.98,icse,72.26,2,local,3.2,low,pg,semi-urban,high,False,False,1
+70.05,71.6,70.84,cbse,71.61,2,local,4.9,high,graduate,rural,medium,True,True,0
+67.67,66.91,56.24,icse,95.48,2,,7.0,mid,graduate,rural,medium,True,False,0
+78.8,67.63,58.21,cbse,68.16,2,,4.3,mid,12th,semi-urban,medium,False,False,0
+75.24,53.99,65.66,state,91.05,2,allen,5.0,low,upto 10th,semi-urban,low,False,False,1
+78.23,75.01,84.12,cbse,63.22,2,allen,6.0,low,upto 10th,urban,low,False,True,0
+61.42,69.24,56.7,state,64.47,1,allen,2.2,low,upto 10th,urban,high,True,False,1
+100.0,89.47,79.11,state,62.17,1,fiitjee,0.8,high,graduate,rural,medium,True,True,0
+82.36,80.16,38.35,icse,62.45,1,allen,5.1,low,upto 10th,urban,low,False,True,0
+55.2,72.61,71.38,cbse,65.01,1,local,4.0,low,12th,urban,high,False,True,0
+76.07,87.72,68.57,cbse,84.21,2,,5.3,mid,upto 10th,urban,high,True,False,0
+73.21,70.31,56.39,icse,89.78,2,,4.2,low,upto 10th,semi-urban,low,True,False,1
+74.74,63.68,49.16,icse,67.82,2,fiitjee,4.9,low,12th,urban,low,True,True,0
+79.11,62.33,78.1,state,74.52,2,,2.7,mid,upto 10th,urban,low,True,False,0
+64.2,70.66,71.64,cbse,91.27,1,,10.0,mid,graduate,rural,high,True,False,0
+63.21,55.86,60.06,state,67.53,2,fiitjee,3.2,mid,graduate,rural,low,False,False,0
+81.31,66.84,56.92,icse,69.61,1,fiitjee,3.6,low,12th,semi-urban,low,True,True,0
+95.42,88.24,35.25,icse,72.5,1,local,5.2,high,graduate,semi-urban,low,False,False,0
+67.88,78.14,89.83,icse,79.78,1,local,3.6,high,pg,urban,high,False,True,0
+75.35,54.53,60.66,icse,90.7,1,local,4.6,low,12th,rural,low,True,True,0
+48.3,63.49,71.14,state,68.9,1,local,4.2,mid,graduate,semi-urban,high,False,False,0
+76.3,78.14,86.9,state,90.89,1,,3.3,low,graduate,rural,medium,True,True,0
+81.7,61.16,76.47,cbse,58.56,1,allen,3.7,low,pg,urban,low,False,True,0
+64.77,77.1,65.08,icse,82.27,1,,4.5,high,graduate,rural,low,True,True,0
+86.01,63.13,48.13,icse,65.25,2,,4.1,high,graduate,semi-urban,high,False,False,0
+72.3,85.69,50.11,icse,75.13,2,local,2.9,mid,graduate,semi-urban,low,False,True,0
+79.73,50.45,81.49,cbse,60.37,2,local,2.4,high,upto 10th,rural,medium,True,True,0
+80.31,48.94,71.15,icse,87.86,1,,5.9,low,12th,rural,medium,False,True,0
+68.91,65.66,59.49,icse,52.15,1,local,4.2,high,12th,urban,high,True,False,0
+62.03,71.48,93.04,cbse,68.18,1,allen,4.4,low,upto 10th,urban,high,True,False,1
+84.79,62.56,58.06,cbse,77.23,2,,6.0,low,upto 10th,urban,low,True,False,1
+67.5,85.54,74.48,icse,80.04,1,fiitjee,3.0,high,pg,semi-urban,medium,False,False,0
+78.97,34.86,52.28,cbse,71.58,1,allen,3.5,low,pg,rural,low,False,True,0
+56.91,72.65,69.04,state,76.92,2,allen,6.0,mid,graduate,semi-urban,low,True,False,0
+67.67,68.19,60.07,icse,72.53,2,fiitjee,1.7,high,upto 10th,urban,high,False,False,1
+76.91,85.06,75.24,icse,90.35,1,,1.7,high,pg,semi-urban,high,False,True,1
+100.0,56.09,55.61,cbse,78.45,1,fiitjee,0.2,low,12th,semi-urban,medium,False,False,1
+73.77,54.64,57.47,cbse,76.59,1,local,4.3,mid,graduate,semi-urban,low,True,False,0
+75.13,71.91,54.53,state,57.13,2,local,4.8,high,12th,semi-urban,low,True,False,0
+65.7,78.37,75.78,cbse,86.98,2,,5.7,low,upto 10th,semi-urban,low,False,False,1
+85.91,66.74,69.99,state,72.77,1,allen,3.2,low,12th,rural,high,True,True,0
+86.1,80.63,42.05,icse,50.0,2,allen,5.5,low,graduate,urban,low,False,False,1
+59.15,31.74,73.13,cbse,66.04,1,local,6.9,mid,12th,urban,low,True,False,0
+87.54,43.61,86.6,cbse,76.56,1,,2.5,mid,pg,semi-urban,medium,False,False,0
+58.61,38.1,85.77,state,79.72,2,local,2.6,low,graduate,rural,high,True,False,1
+67.77,58.88,59.31,cbse,63.98,2,,2.1,high,upto 10th,semi-urban,medium,False,False,0
+70.18,60.76,34.79,state,87.91,2,local,7.2,high,graduate,urban,high,True,False,0
+65.53,95.1,68.53,state,88.25,1,,5.5,low,pg,semi-urban,medium,False,False,1
+86.54,87.52,52.27,icse,59.18,1,,1.7,high,pg,semi-urban,medium,False,False,0
+93.16,54.21,52.43,state,66.62,1,local,8.7,mid,pg,semi-urban,high,False,False,0
+64.13,57.81,68.5,cbse,74.68,2,,6.0,high,graduate,semi-urban,low,False,False,0
+83.96,60.66,87.38,icse,62.02,1,,6.7,high,12th,urban,high,True,False,0
+71.63,100.0,90.37,icse,65.76,2,fiitjee,2.8,high,12th,urban,low,True,True,0
+43.49,71.2,82.35,cbse,79.5,1,local,3.6,mid,upto 10th,semi-urban,high,False,True,0
+62.91,65.81,60.72,icse,94.09,2,fiitjee,5.0,high,upto 10th,semi-urban,low,True,False,0
+32.04,36.51,66.48,state,71.77,1,allen,2.7,high,upto 10th,rural,low,True,False,1
+57.97,50.82,74.03,icse,76.9,1,allen,3.9,mid,12th,urban,low,True,True,0
+69.33,67.04,88.15,state,78.38,1,fiitjee,2.0,mid,12th,rural,low,False,True,0
+83.67,60.27,66.76,state,72.61,2,local,5.7,mid,upto 10th,rural,high,False,True,0
+70.96,91.19,73.45,icse,83.98,2,local,6.8,mid,upto 10th,rural,medium,False,True,0
+62.65,62.45,70.63,cbse,69.67,1,local,2.3,low,upto 10th,urban,medium,False,False,1
+81.0,53.0,32.32,state,63.29,1,local,6.2,high,pg,urban,medium,True,False,0
+86.5,58.39,64.13,cbse,80.39,1,allen,6.5,high,upto 10th,urban,high,True,False,0
+94.53,60.63,54.61,cbse,60.94,2,local,3.8,mid,upto 10th,rural,low,False,True,0
+57.34,71.28,66.09,cbse,77.29,1,allen,5.5,mid,12th,urban,low,True,True,0
+96.07,53.15,48.63,icse,84.07,1,,6.1,low,pg,urban,high,False,True,0
+61.47,47.89,81.34,state,64.94,1,fiitjee,4.6,low,12th,semi-urban,high,False,False,1
+71.47,64.94,34.18,icse,66.89,2,allen,2.5,high,upto 10th,rural,high,True,False,0
+100.0,51.99,57.79,cbse,69.86,1,allen,4.7,low,upto 10th,semi-urban,medium,True,False,1
+75.36,79.88,90.42,icse,79.74,2,local,7.9,high,pg,rural,low,False,False,0
+63.26,70.89,78.3,icse,60.35,2,,8.9,high,12th,semi-urban,medium,True,False,0
+50.1,55.71,79.05,cbse,66.76,1,allen,6.6,low,graduate,semi-urban,medium,True,False,1
+89.31,51.01,77.71,state,60.57,2,allen,2.6,high,graduate,urban,high,False,True,0
+63.87,61.48,61.1,cbse,64.51,2,local,4.8,high,graduate,semi-urban,high,True,False,0
+66.16,95.57,79.39,icse,66.3,1,fiitjee,6.8,mid,12th,semi-urban,medium,True,False,0
+67.15,48.6,67.74,cbse,84.62,2,fiitjee,10.0,mid,12th,semi-urban,medium,False,True,0
+83.93,79.41,78.08,cbse,78.28,1,fiitjee,4.9,low,upto 10th,semi-urban,high,False,False,1
+72.72,61.79,74.46,state,65.54,1,fiitjee,5.7,high,upto 10th,urban,high,True,True,0
+62.53,79.62,75.62,icse,69.1,1,allen,7.1,high,12th,rural,high,False,True,0
+81.85,72.72,29.0,icse,67.98,1,,1.5,low,pg,urban,medium,False,True,0
+92.52,65.07,86.54,cbse,68.95,1,local,6.7,mid,12th,rural,medium,True,False,0
+73.2,94.53,73.83,icse,61.82,2,allen,5.4,low,upto 10th,urban,high,True,True,0
+79.08,80.8,71.39,cbse,72.76,1,local,7.4,high,12th,semi-urban,high,True,True,0
+67.53,90.63,45.61,icse,81.2,1,,5.2,mid,upto 10th,urban,medium,True,False,0
+52.46,69.33,56.13,cbse,66.39,1,,3.3,mid,12th,rural,medium,True,False,0
+53.44,75.75,46.09,icse,69.19,1,fiitjee,4.5,low,pg,urban,high,False,True,0
+84.42,57.94,64.17,cbse,76.93,2,allen,4.8,mid,upto 10th,urban,low,False,False,0
+75.92,82.62,84.6,icse,70.09,2,fiitjee,6.0,low,graduate,urban,medium,False,False,1
+100.0,94.56,83.79,state,67.45,1,local,6.5,low,pg,semi-urban,low,True,True,0
+81.7,49.58,63.13,state,54.98,2,fiitjee,3.6,mid,upto 10th,rural,medium,True,False,0
+81.04,49.59,77.4,cbse,85.97,1,local,3.3,low,graduate,rural,high,True,True,0
+70.75,61.63,67.72,icse,78.6,1,fiitjee,8.8,mid,graduate,semi-urban,high,False,False,0
+77.52,65.53,66.77,cbse,86.5,1,allen,0.5,low,12th,rural,medium,True,True,0
+89.35,54.81,59.55,icse,69.17,2,local,0.2,high,12th,urban,medium,False,False,0
+73.36,69.57,71.02,icse,82.92,2,allen,3.9,mid,pg,rural,medium,True,True,0
+48.41,65.52,66.44,state,82.87,2,,1.6,high,pg,semi-urban,low,True,True,0
+75.16,64.97,68.48,cbse,72.46,1,fiitjee,3.6,high,12th,urban,low,True,False,0
+54.48,54.08,93.78,state,65.99,1,local,0.0,low,pg,semi-urban,medium,True,False,1
+65.11,70.08,73.31,cbse,72.62,1,fiitjee,4.3,mid,12th,rural,high,False,True,0
+68.38,54.88,83.69,icse,86.85,1,allen,2.6,low,upto 10th,urban,medium,False,False,1
+83.42,74.57,50.85,icse,88.63,1,local,4.5,low,pg,semi-urban,low,True,False,1
+82.08,79.01,52.28,state,70.97,2,local,4.4,high,pg,rural,medium,False,False,0
+78.47,49.1,75.28,cbse,89.09,2,fiitjee,1.7,mid,pg,rural,low,True,False,0
+69.36,84.39,56.2,icse,86.32,1,allen,5.8,mid,pg,rural,high,False,False,0
+77.59,72.37,44.92,cbse,92.46,2,allen,9.1,mid,graduate,semi-urban,low,False,True,0
+63.41,77.05,70.75,state,72.55,2,fiitjee,3.5,high,upto 10th,urban,medium,False,False,0
+81.36,77.32,71.29,state,69.45,1,allen,2.1,mid,12th,rural,low,True,False,0
+67.46,77.96,71.62,icse,82.07,1,local,6.8,high,upto 10th,urban,high,False,True,0
+50.01,47.38,74.52,cbse,50.14,1,,7.8,high,pg,semi-urban,high,True,True,0
+70.4,68.88,68.23,cbse,78.23,2,local,6.1,mid,12th,semi-urban,high,False,False,0
+73.77,38.7,55.9,icse,66.72,1,fiitjee,2.3,high,upto 10th,urban,low,False,True,0
+67.44,36.95,73.47,cbse,75.97,1,,2.5,high,upto 10th,semi-urban,medium,True,False,0
+83.55,81.48,80.9,icse,59.03,2,allen,3.9,high,upto 10th,urban,high,False,True,0
+60.41,51.92,64.31,cbse,52.72,1,fiitjee,1.4,mid,pg,urban,high,True,False,1
+57.18,74.94,57.7,cbse,93.56,1,fiitjee,7.3,high,pg,rural,high,True,True,0
+51.3,79.25,58.06,cbse,67.85,2,fiitjee,5.3,low,12th,semi-urban,medium,True,True,0
+69.72,68.61,77.16,cbse,71.57,1,allen,3.5,high,12th,urban,medium,False,True,0
+66.73,66.37,68.33,icse,62.36,1,,5.9,high,12th,rural,medium,True,False,0
+67.72,69.26,78.64,cbse,67.92,2,fiitjee,4.3,mid,upto 10th,rural,low,False,True,0
+69.82,69.34,71.54,icse,72.37,2,fiitjee,0.6,mid,12th,rural,medium,True,True,0
+88.5,41.52,74.62,cbse,75.17,2,allen,4.8,low,pg,semi-urban,low,False,True,0
+63.45,67.1,53.0,state,57.76,2,fiitjee,4.3,mid,graduate,urban,low,True,True,0
+57.48,63.94,50.15,cbse,78.7,1,fiitjee,2.4,high,12th,urban,low,False,False,0
+95.32,55.95,63.05,cbse,80.93,2,,5.7,mid,upto 10th,rural,medium,False,True,0
+60.16,53.1,77.9,cbse,70.55,1,allen,0.8,low,pg,urban,low,True,True,0
+63.07,58.52,49.9,state,78.74,2,,7.7,low,graduate,semi-urban,low,True,False,1
+77.02,75.04,59.52,cbse,67.95,1,fiitjee,5.9,low,upto 10th,urban,medium,True,False,1
+90.37,72.58,54.95,icse,56.9,1,allen,5.0,low,graduate,semi-urban,low,True,False,1
+67.31,100.0,58.76,icse,76.56,1,fiitjee,1.2,high,upto 10th,urban,high,False,True,1
+61.61,71.96,68.6,state,78.95,1,fiitjee,3.5,mid,pg,rural,medium,False,False,0
+79.54,45.59,64.87,icse,71.26,1,local,2.9,high,upto 10th,rural,medium,False,True,0
+74.73,50.7,73.06,icse,66.01,1,,4.9,high,upto 10th,urban,low,False,True,0
+44.09,100.0,57.69,icse,53.47,1,local,6.9,mid,graduate,urban,high,True,False,0
+71.31,71.73,52.64,state,92.18,1,allen,3.0,mid,pg,rural,low,False,True,0
+60.35,66.26,88.06,icse,72.65,2,fiitjee,3.0,mid,upto 10th,rural,low,False,False,0
+83.52,76.01,63.2,icse,77.02,2,,1.6,low,upto 10th,urban,medium,True,False,1
+67.37,68.24,69.94,state,75.88,1,fiitjee,4.7,mid,pg,urban,medium,True,True,0
+57.13,50.35,74.12,state,80.42,2,,6.6,mid,graduate,urban,medium,False,True,0
+80.66,65.97,66.17,state,72.34,2,allen,6.3,low,12th,urban,low,True,False,1
+82.39,73.03,65.56,cbse,73.13,1,allen,7.1,mid,pg,rural,low,True,True,0
+74.61,61.2,68.48,state,57.38,2,fiitjee,4.3,high,graduate,urban,medium,True,False,0
+79.54,47.81,70.21,icse,77.7,1,allen,2.0,high,12th,rural,high,False,False,0
+69.44,37.52,69.45,cbse,90.82,2,fiitjee,3.4,mid,graduate,rural,low,False,True,0
+76.61,47.22,74.11,cbse,63.6,2,fiitjee,6.3,mid,12th,urban,high,True,True,0
+60.49,78.77,88.06,icse,91.97,2,,3.7,low,graduate,rural,low,True,True,0
+68.07,61.79,74.12,state,73.86,2,,4.7,mid,upto 10th,semi-urban,medium,False,False,0
+63.1,63.15,64.36,state,69.84,1,local,2.4,mid,pg,semi-urban,high,False,False,0
+61.54,75.21,62.11,cbse,60.87,2,allen,4.1,low,upto 10th,rural,medium,True,True,0
+100.0,72.1,67.31,cbse,78.69,1,allen,4.7,high,upto 10th,rural,low,False,False,0
+65.8,40.3,70.64,cbse,81.73,2,local,3.6,mid,pg,urban,high,True,True,0
+70.87,90.6,43.71,cbse,71.92,2,allen,5.9,low,graduate,rural,medium,False,False,1
+74.35,80.16,53.09,state,70.6,1,fiitjee,3.8,low,graduate,rural,high,True,False,1
+58.5,51.15,62.16,icse,83.11,2,,5.0,mid,upto 10th,urban,low,False,True,0
+65.16,66.31,75.15,cbse,68.49,1,,4.0,low,upto 10th,urban,low,True,True,0
+77.66,31.42,60.62,icse,71.46,2,,9.7,high,pg,urban,medium,False,False,0
+71.68,51.21,58.96,cbse,81.94,1,fiitjee,5.2,low,12th,rural,high,True,False,1
+79.84,63.79,86.96,cbse,87.33,2,,3.3,high,pg,rural,medium,False,True,0
+82.96,91.4,63.16,cbse,76.58,2,fiitjee,2.8,high,graduate,semi-urban,medium,False,False,0
+56.3,94.6,72.56,cbse,76.47,1,local,3.5,high,pg,rural,high,True,True,0
+68.9,52.47,70.19,icse,61.36,1,fiitjee,3.4,high,pg,semi-urban,low,False,False,0
+45.23,91.56,65.76,icse,77.25,1,,1.4,low,graduate,rural,medium,True,False,1
+72.79,85.73,72.57,icse,88.17,2,,1.1,high,pg,rural,high,False,False,1
+70.15,89.93,65.82,state,75.43,2,local,7.2,mid,pg,urban,low,False,True,0
+79.51,72.86,51.87,icse,68.18,2,fiitjee,4.3,high,pg,rural,low,True,False,0
+73.55,46.25,85.73,cbse,72.85,2,allen,4.2,mid,upto 10th,urban,medium,False,True,0
+99.48,92.2,76.25,icse,78.43,1,,1.9,low,graduate,urban,low,True,False,1
+78.76,53.35,75.84,cbse,67.1,1,allen,3.6,low,graduate,semi-urban,medium,False,True,0
+74.85,66.59,75.35,state,76.36,2,local,7.6,low,upto 10th,urban,high,True,False,1
+56.53,71.76,58.61,icse,71.83,1,allen,8.1,mid,graduate,rural,high,False,False,0
+77.65,60.96,56.11,icse,73.84,1,local,4.2,low,pg,urban,high,False,False,1
+88.69,60.67,65.09,icse,87.04,2,allen,3.7,high,pg,semi-urban,medium,False,False,0
+56.5,33.97,59.88,state,72.69,1,,6.7,mid,12th,rural,high,True,True,0
+79.66,100.0,69.41,cbse,73.63,1,local,3.4,low,graduate,rural,low,True,False,1
+90.41,68.53,70.91,cbse,65.04,1,local,7.6,high,upto 10th,semi-urban,medium,False,True,0
+76.54,72.59,53.77,cbse,67.28,2,,7.7,low,upto 10th,semi-urban,medium,True,True,0
+75.62,30.75,68.26,icse,70.28,2,fiitjee,5.4,high,pg,rural,high,True,True,0
+87.41,79.3,45.65,cbse,73.95,1,fiitjee,4.6,high,upto 10th,urban,low,True,False,0
+56.32,61.63,64.08,state,83.52,1,local,3.1,mid,12th,urban,low,False,True,0
+75.1,86.5,63.2,cbse,68.87,1,fiitjee,0.4,mid,upto 10th,urban,medium,False,False,0
+46.55,49.19,62.58,cbse,68.85,2,fiitjee,5.1,low,graduate,rural,low,False,True,0
+63.87,46.68,100.0,icse,87.69,2,allen,5.0,low,pg,urban,high,True,False,1
+69.79,86.39,77.63,state,76.43,2,local,4.9,low,pg,urban,medium,False,False,1
+80.77,76.83,54.14,cbse,50.76,1,fiitjee,6.2,high,12th,urban,medium,True,False,0
+58.21,68.08,88.23,state,65.58,1,allen,7.0,high,graduate,rural,high,False,False,0
+65.63,64.67,58.54,icse,82.51,1,allen,4.0,low,upto 10th,urban,medium,True,False,1
+66.23,50.19,57.6,state,69.57,2,allen,6.4,mid,12th,semi-urban,high,True,False,0
+73.52,37.67,72.12,state,77.94,1,local,4.7,high,pg,rural,medium,False,False,0
+72.57,87.03,62.53,state,78.54,2,local,3.7,high,12th,rural,high,False,True,0
+67.67,66.31,47.82,state,66.52,1,,6.9,mid,upto 10th,urban,medium,False,False,0
+84.24,65.56,87.14,state,77.85,2,fiitjee,4.8,low,graduate,semi-urban,high,False,True,0
+74.58,59.48,58.1,icse,81.87,1,allen,7.1,high,pg,semi-urban,medium,True,False,0
+88.37,65.83,49.51,cbse,78.78,2,,4.2,mid,graduate,rural,low,True,False,0
+69.79,68.42,64.02,state,72.37,1,allen,2.3,mid,12th,semi-urban,medium,False,True,0
+69.26,36.96,68.56,icse,88.13,2,fiitjee,4.5,high,12th,urban,high,False,True,0
+64.75,62.89,63.0,state,86.94,2,local,5.3,high,pg,rural,high,False,False,0
+69.77,60.21,72.3,icse,78.48,1,fiitjee,0.0,high,pg,rural,high,False,False,1
+82.16,60.78,64.85,icse,79.63,2,,2.6,mid,12th,semi-urban,medium,False,True,0
+77.54,82.32,47.93,state,84.75,1,fiitjee,5.8,mid,graduate,rural,low,True,False,0
+65.65,66.85,82.83,icse,84.97,1,,4.7,mid,pg,urban,medium,False,True,0
+68.3,65.44,75.42,state,90.65,2,,5.6,mid,upto 10th,urban,medium,True,False,0
+95.74,53.99,63.31,cbse,88.9,1,local,6.5,low,pg,rural,medium,True,False,1
+92.34,56.6,50.13,cbse,79.23,2,fiitjee,4.7,low,pg,urban,high,True,True,0
+81.61,62.4,43.26,icse,74.55,2,fiitjee,4.2,low,pg,rural,medium,False,False,1
+79.72,55.93,55.01,icse,77.32,1,,2.8,low,pg,rural,medium,False,False,1
+65.22,76.1,82.58,state,87.9,2,fiitjee,4.8,high,upto 10th,urban,low,True,False,0
+53.16,68.29,65.98,icse,74.4,1,local,2.5,low,graduate,urban,low,True,False,1
+80.52,51.72,57.85,icse,78.92,2,,5.6,mid,pg,semi-urban,low,True,True,0
+66.17,64.57,44.54,cbse,66.92,1,fiitjee,2.9,high,upto 10th,semi-urban,high,True,False,0
+72.12,66.31,75.35,icse,63.6,1,fiitjee,3.6,low,upto 10th,rural,medium,False,False,1
+50.4,48.42,52.46,icse,69.95,2,,6.4,mid,12th,urban,high,False,False,0
+50.73,52.92,68.59,icse,61.16,1,fiitjee,3.4,high,pg,semi-urban,high,False,True,0
+92.53,84.86,80.46,icse,66.4,1,local,4.2,high,upto 10th,rural,medium,False,False,0
+65.74,71.98,59.14,cbse,71.2,1,allen,6.0,mid,12th,urban,low,True,True,0
+69.76,80.24,86.91,cbse,92.46,1,allen,8.9,high,graduate,semi-urban,high,False,False,0
+71.5,61.01,77.17,state,88.26,2,allen,2.7,high,upto 10th,semi-urban,low,False,False,0
+80.59,34.55,72.38,icse,56.79,2,local,5.0,low,upto 10th,rural,low,True,True,0
+47.56,50.75,60.54,state,84.81,1,,3.2,low,12th,semi-urban,high,False,False,1
+64.15,60.69,59.65,icse,65.44,1,local,1.5,mid,graduate,semi-urban,medium,False,True,0
+76.02,72.49,66.26,cbse,88.38,1,,6.1,high,pg,semi-urban,medium,False,False,0
+63.02,64.18,69.21,icse,58.96,1,local,7.2,mid,pg,semi-urban,low,False,False,0
+75.68,97.25,67.85,state,72.33,2,fiitjee,7.1,low,12th,rural,high,False,True,0
+51.98,57.23,66.5,cbse,88.38,1,local,6.8,mid,graduate,semi-urban,medium,True,False,0
+61.25,79.13,64.99,state,76.01,1,allen,7.5,low,pg,rural,medium,True,True,0
+87.15,94.04,81.91,cbse,69.46,2,fiitjee,6.4,low,upto 10th,semi-urban,high,False,False,1
+81.75,86.3,81.19,cbse,79.46,1,fiitjee,4.0,high,pg,semi-urban,low,False,False,0
+44.17,89.65,55.52,state,78.65,1,,4.7,low,graduate,urban,low,False,False,1
+83.0,50.02,39.89,icse,69.84,2,fiitjee,5.8,mid,pg,rural,medium,False,False,0
+77.74,100.0,39.97,icse,71.13,2,fiitjee,5.3,high,pg,semi-urban,high,True,True,0
+89.45,100.0,77.36,cbse,65.98,2,,5.5,mid,pg,urban,high,True,True,0
+71.73,58.35,71.42,state,71.64,1,allen,4.4,high,graduate,urban,low,True,True,0
+66.19,53.7,51.74,cbse,91.62,2,allen,5.2,low,12th,rural,high,True,True,0
+79.12,35.03,63.82,state,87.65,2,fiitjee,5.8,low,upto 10th,urban,low,False,False,1
+98.28,69.53,45.76,cbse,87.5,2,allen,5.7,high,graduate,semi-urban,medium,True,False,0
+72.2,59.91,45.06,icse,63.64,2,fiitjee,5.4,mid,pg,rural,low,False,True,0
+92.26,69.5,66.8,icse,66.96,1,allen,5.6,low,pg,rural,high,True,True,0
+78.63,60.1,52.67,state,82.26,1,allen,2.1,high,graduate,urban,medium,False,False,0
+79.04,72.81,71.39,cbse,96.33,2,allen,2.2,mid,upto 10th,semi-urban,medium,True,False,0
+46.23,71.41,79.66,icse,85.26,1,local,6.0,low,pg,urban,medium,False,False,1
+78.09,59.08,69.79,state,62.61,2,fiitjee,5.9,low,pg,urban,medium,True,True,0
+68.91,60.06,81.72,icse,77.93,1,local,3.4,mid,graduate,rural,low,False,False,0
+86.8,64.09,61.41,cbse,84.74,2,,8.2,low,12th,rural,medium,False,False,1
+69.33,77.0,58.14,state,75.04,2,fiitjee,2.8,high,upto 10th,rural,low,True,True,0
+56.28,62.37,70.89,icse,95.37,1,fiitjee,3.3,mid,graduate,urban,high,True,True,0
+58.02,89.11,59.78,state,61.34,2,fiitjee,0.6,high,graduate,urban,high,False,False,1
+73.35,59.43,71.48,state,77.87,2,allen,6.3,high,graduate,rural,low,True,True,0
+58.72,87.63,80.3,state,74.45,2,,5.6,mid,pg,urban,high,False,True,0
+71.15,52.59,66.07,state,74.95,2,,4.8,high,upto 10th,rural,high,False,False,0
+68.52,44.47,65.75,state,71.65,2,allen,2.1,mid,graduate,rural,medium,False,False,0
+72.02,91.73,75.33,icse,78.2,2,,6.2,mid,graduate,semi-urban,low,False,False,0
+100.0,65.03,67.45,cbse,71.47,2,fiitjee,3.9,low,12th,rural,high,False,False,1
+46.76,52.18,68.87,state,85.5,2,,3.0,high,pg,rural,low,False,False,0
+87.71,52.8,66.31,state,75.67,2,allen,3.5,mid,upto 10th,urban,high,True,True,0
+67.2,81.36,73.51,icse,75.54,1,allen,4.3,low,graduate,urban,high,True,True,0
+58.46,97.86,63.13,state,100.0,2,,1.7,high,upto 10th,urban,low,True,True,0
+68.56,78.17,58.55,icse,81.39,2,fiitjee,6.0,high,12th,urban,high,False,True,0
+80.6,70.7,58.17,icse,61.79,1,,6.3,mid,upto 10th,urban,medium,True,True,0
+63.76,51.74,89.77,state,79.79,2,local,2.9,low,pg,semi-urban,medium,True,False,1
+70.44,76.65,76.41,cbse,77.97,2,allen,2.1,mid,upto 10th,rural,medium,False,True,0
+86.45,27.04,62.48,icse,76.59,2,,3.8,high,12th,rural,low,False,True,0
+77.9,48.2,41.26,state,64.29,2,fiitjee,5.2,low,12th,semi-urban,low,False,False,1
+78.22,63.31,61.93,icse,68.54,2,fiitjee,6.0,high,graduate,urban,low,False,False,0
+78.95,79.65,94.13,icse,85.3,1,fiitjee,7.4,mid,12th,urban,medium,False,True,0
+73.95,45.95,60.43,icse,80.58,2,fiitjee,1.0,high,graduate,urban,low,False,False,0
+74.0,64.91,61.01,cbse,73.53,1,local,3.7,low,12th,semi-urban,high,False,True,0
+34.14,62.76,66.98,cbse,80.1,1,fiitjee,3.7,low,upto 10th,semi-urban,high,False,False,1
+76.32,61.63,61.02,icse,76.69,1,fiitjee,2.0,high,upto 10th,urban,low,False,True,0
+69.08,72.51,64.65,icse,75.82,1,,4.6,low,12th,rural,medium,True,True,0
+63.31,100.0,78.09,state,76.6,2,allen,4.7,mid,upto 10th,rural,high,False,True,0
+56.24,67.49,59.84,state,81.75,2,fiitjee,5.2,high,upto 10th,semi-urban,high,True,False,0
+80.01,60.78,59.41,icse,65.63,1,,2.6,low,upto 10th,rural,medium,True,False,1
+65.48,55.03,79.66,cbse,74.09,2,fiitjee,6.1,mid,12th,urban,low,True,False,0
+88.81,54.84,80.35,cbse,71.64,1,,4.2,mid,12th,rural,medium,True,True,0
+78.53,68.54,60.91,icse,75.71,1,fiitjee,2.9,mid,upto 10th,urban,medium,True,True,0
+65.55,32.81,73.41,state,90.49,2,,5.8,low,12th,semi-urban,medium,True,False,1
+56.28,42.1,58.05,icse,100.0,2,,4.1,high,pg,semi-urban,high,False,True,0
+79.92,41.9,97.3,state,96.92,1,fiitjee,4.5,low,graduate,urban,low,True,False,1
+70.8,63.26,70.09,cbse,80.89,2,,7.1,mid,upto 10th,semi-urban,medium,True,True,0
+85.62,77.23,63.25,icse,68.46,1,fiitjee,6.9,mid,pg,rural,high,False,False,0
+76.3,55.94,64.78,icse,80.55,2,allen,5.5,low,graduate,rural,high,True,True,0
+81.67,64.06,70.06,cbse,84.18,2,,4.3,low,graduate,rural,high,True,False,1
+64.51,57.12,67.04,cbse,75.82,2,allen,0.2,high,upto 10th,urban,low,True,False,0
+68.49,68.91,86.36,state,60.77,1,,4.5,low,upto 10th,rural,medium,True,False,1
+78.41,56.97,49.91,cbse,73.43,2,local,1.3,low,12th,rural,high,False,False,1
+61.94,34.02,77.37,state,62.73,1,local,4.5,low,12th,urban,low,True,True,0
+57.63,100.0,61.28,state,74.6,2,local,7.1,high,12th,rural,low,False,True,0
+67.69,44.4,72.9,cbse,86.64,1,local,8.6,mid,graduate,rural,high,True,False,0
+66.81,36.03,82.37,state,82.99,1,fiitjee,3.1,high,graduate,urban,low,False,False,0
+72.81,64.37,100.0,state,75.85,1,fiitjee,6.4,mid,upto 10th,urban,high,True,True,0
+72.34,46.12,58.71,cbse,77.5,2,,3.8,mid,graduate,rural,high,False,True,0
+58.56,52.55,45.17,cbse,67.91,2,allen,2.9,low,pg,urban,medium,True,True,0
+79.28,68.89,88.41,cbse,73.84,2,,6.4,mid,upto 10th,rural,low,True,True,0
+81.82,72.5,57.99,state,74.28,2,local,4.4,low,12th,urban,low,True,True,0
+76.33,62.25,67.55,icse,83.38,1,,6.3,low,graduate,semi-urban,low,True,True,0
+79.42,65.88,76.29,state,73.18,1,allen,4.6,high,12th,semi-urban,medium,False,True,0
+72.22,50.04,46.46,cbse,75.07,2,,7.3,low,upto 10th,semi-urban,medium,False,False,1
+82.1,93.69,84.51,state,71.38,1,,2.3,high,pg,semi-urban,medium,True,False,0
+68.32,79.16,74.16,state,76.76,1,fiitjee,3.4,high,upto 10th,urban,medium,True,False,0
+59.06,71.03,51.12,cbse,67.71,1,,2.5,high,pg,semi-urban,medium,True,True,0
+63.88,74.59,89.87,cbse,72.86,1,allen,4.4,mid,upto 10th,semi-urban,low,False,False,0
+63.84,50.97,69.94,state,55.38,2,fiitjee,5.5,mid,pg,semi-urban,medium,False,True,0
+100.0,51.58,59.64,icse,82.35,2,allen,3.2,low,graduate,rural,medium,False,True,0
+66.29,38.46,62.78,icse,72.72,1,allen,3.8,high,12th,rural,high,True,True,0
+62.85,41.06,75.58,cbse,66.23,1,allen,4.0,mid,upto 10th,semi-urban,high,False,False,0
+76.81,83.95,73.49,cbse,55.5,1,allen,4.3,mid,graduate,urban,low,False,True,0
+53.06,87.16,68.2,cbse,81.45,2,local,2.9,mid,pg,urban,low,True,False,0
+63.81,71.34,60.7,state,77.0,1,fiitjee,3.7,mid,graduate,semi-urban,high,False,False,0
+56.55,80.03,70.14,icse,58.46,2,allen,5.7,mid,graduate,semi-urban,high,False,False,0
+60.81,72.75,69.22,cbse,85.56,1,,1.5,mid,12th,semi-urban,medium,True,True,0
+89.04,66.49,68.2,state,69.86,2,allen,7.9,high,graduate,rural,high,False,False,0
+72.66,85.05,76.86,icse,74.2,2,fiitjee,5.9,mid,pg,rural,low,False,False,0
+86.13,62.43,87.49,cbse,66.42,2,allen,5.9,mid,upto 10th,urban,medium,True,False,0
+70.26,62.54,48.54,cbse,70.41,2,allen,2.9,mid,upto 10th,urban,low,True,False,0
+36.58,66.34,97.28,cbse,58.19,2,fiitjee,1.8,low,12th,urban,high,False,True,1
+71.83,81.47,78.27,state,69.47,1,fiitjee,5.8,high,pg,rural,high,True,True,0
+85.56,54.71,54.33,cbse,88.33,2,,3.2,low,pg,semi-urban,high,True,True,0
+86.42,53.8,72.42,state,85.77,1,allen,7.2,low,12th,rural,medium,False,False,1
+93.88,76.27,66.06,state,91.74,1,,6.1,low,graduate,rural,high,False,True,0
+74.73,60.64,56.73,cbse,80.4,1,allen,3.7,low,pg,urban,high,False,False,1
+73.62,51.59,72.38,cbse,67.23,2,allen,2.1,low,12th,urban,high,False,True,0
+77.03,64.94,73.64,icse,76.79,2,,5.1,low,pg,semi-urban,low,True,True,0
+81.54,55.72,50.55,icse,65.1,2,,6.2,low,12th,rural,low,True,False,1
+91.49,68.42,65.15,state,84.5,2,,5.2,high,graduate,semi-urban,medium,True,True,0
+72.2,61.89,95.62,state,82.63,1,,3.0,low,pg,semi-urban,low,False,False,1
+92.21,78.95,71.79,cbse,62.01,2,,8.6,high,12th,urban,low,False,True,0
+59.29,70.14,51.06,state,77.52,2,fiitjee,4.6,mid,upto 10th,urban,medium,False,True,0
+89.54,75.91,62.95,cbse,51.49,1,,3.5,low,upto 10th,rural,medium,False,True,0
+62.96,63.0,81.03,icse,73.27,1,local,3.7,mid,graduate,semi-urban,high,False,False,0
+67.29,76.29,60.96,icse,85.69,2,local,6.0,high,upto 10th,urban,high,True,False,0
+72.64,69.09,39.22,cbse,82.63,1,allen,5.3,low,upto 10th,rural,medium,False,False,1
+73.72,100.0,59.56,state,79.9,2,fiitjee,2.8,low,upto 10th,semi-urban,medium,False,False,1
+61.4,87.39,74.85,cbse,74.6,1,local,4.0,mid,graduate,rural,high,False,False,0
+60.25,68.2,63.9,icse,74.09,2,,6.8,low,upto 10th,rural,medium,True,True,0
+84.87,38.39,73.25,icse,57.52,2,local,7.0,mid,upto 10th,urban,medium,False,True,0
+68.65,69.85,48.64,icse,66.16,2,,6.8,mid,pg,rural,medium,False,True,0
+74.92,74.6,66.83,state,74.85,1,local,2.2,high,graduate,urban,medium,True,False,0
+77.35,64.48,83.88,state,82.15,2,,2.8,high,graduate,semi-urban,low,True,False,0
+91.8,82.75,77.85,state,78.54,1,allen,7.5,high,upto 10th,semi-urban,high,False,True,0
+68.64,86.08,48.34,state,95.24,2,allen,3.7,mid,upto 10th,urban,high,True,False,0
+63.53,51.64,71.5,icse,83.98,2,local,2.8,high,upto 10th,rural,high,False,False,0
+100.0,55.89,68.11,state,62.16,2,,7.8,mid,pg,rural,low,True,True,0
+52.14,62.35,39.41,cbse,75.82,2,fiitjee,5.4,high,12th,rural,medium,True,False,0
+62.91,56.32,83.57,state,67.68,1,,5.8,high,upto 10th,urban,low,True,False,0
+96.07,70.73,66.39,cbse,86.09,1,local,4.1,high,12th,rural,low,False,True,0
+80.44,79.94,76.35,state,64.05,2,allen,5.9,high,pg,semi-urban,high,False,False,0
+93.32,60.72,69.33,icse,73.21,1,fiitjee,2.1,low,12th,semi-urban,medium,True,True,0
+88.04,82.25,60.53,icse,78.02,2,fiitjee,3.0,mid,12th,urban,medium,False,False,0
+76.09,56.69,77.93,icse,80.16,1,local,5.0,low,graduate,semi-urban,medium,False,False,1
+59.7,56.45,78.98,cbse,87.17,2,allen,7.7,mid,graduate,semi-urban,medium,True,True,0
+82.06,56.53,77.93,icse,68.59,1,local,8.1,low,upto 10th,urban,medium,False,False,1
+50.21,60.51,75.06,cbse,51.79,1,fiitjee,7.5,mid,graduate,rural,high,True,False,0
+86.91,91.47,59.77,cbse,82.14,2,allen,3.0,mid,pg,semi-urban,high,True,False,0
+75.61,92.26,68.22,state,61.38,2,allen,4.4,mid,graduate,semi-urban,medium,False,True,0
+73.24,44.05,71.53,icse,82.85,2,allen,7.4,mid,graduate,urban,medium,False,False,0
+60.63,93.16,77.32,state,76.22,1,allen,2.1,low,upto 10th,rural,high,True,True,0
+67.98,89.9,67.02,state,78.69,1,fiitjee,2.8,high,graduate,urban,high,False,False,0
+74.52,81.43,27.49,icse,86.09,2,fiitjee,1.1,low,upto 10th,urban,medium,False,False,1
+81.54,88.57,71.94,cbse,86.37,1,local,9.1,mid,upto 10th,rural,low,False,True,0
+68.85,54.46,71.02,state,60.96,2,,7.0,high,graduate,rural,low,True,False,0
+88.38,100.0,64.29,icse,82.71,2,local,5.9,low,graduate,semi-urban,medium,False,False,1
+84.19,52.28,66.0,icse,57.24,1,allen,1.1,low,graduate,rural,medium,False,True,0
+58.16,91.46,63.66,icse,81.98,2,allen,6.2,low,graduate,urban,low,True,True,0
+98.47,63.77,72.32,cbse,84.07,1,,2.7,high,pg,urban,low,False,True,0
+79.02,35.45,56.57,cbse,77.28,1,,6.4,high,pg,rural,high,True,False,0
+71.39,82.47,78.37,cbse,58.8,1,local,2.1,low,12th,rural,medium,True,False,1
+66.56,66.39,51.5,state,72.11,2,,3.8,low,12th,semi-urban,low,True,False,1
+75.13,72.09,79.8,state,89.46,1,,2.5,mid,graduate,rural,low,True,False,0
+83.58,54.51,100.0,icse,67.06,1,local,4.9,low,12th,urban,medium,True,True,0
+56.07,6.99,88.03,cbse,82.88,2,local,5.4,mid,graduate,semi-urban,low,False,False,0
+51.01,63.55,69.11,cbse,69.9,2,,3.7,high,pg,urban,high,True,False,0
+75.93,47.31,77.6,state,72.36,2,,4.1,low,12th,semi-urban,medium,True,False,1
+72.83,50.93,81.33,state,88.57,1,allen,4.0,high,12th,rural,high,True,False,0
+63.06,50.21,73.97,cbse,63.03,1,,7.4,mid,pg,semi-urban,high,False,False,0
+83.48,65.52,75.43,cbse,77.97,2,,1.5,high,12th,rural,medium,True,False,0
+74.19,73.33,76.37,icse,70.04,2,local,3.9,high,graduate,semi-urban,medium,True,True,0
+57.92,69.17,70.19,state,68.84,1,fiitjee,4.8,low,upto 10th,urban,medium,False,True,0
+75.91,51.7,67.78,icse,74.94,1,fiitjee,1.8,low,upto 10th,semi-urban,high,False,False,1
+89.18,75.31,56.63,cbse,61.62,1,,5.7,high,pg,rural,high,False,False,0
+74.25,51.19,67.06,state,80.92,1,,6.1,low,12th,semi-urban,high,True,False,1
+43.72,76.17,69.5,icse,56.4,1,fiitjee,4.3,mid,graduate,rural,medium,True,True,0
+65.17,42.99,67.67,cbse,70.85,2,,4.5,mid,pg,semi-urban,medium,False,False,0
+75.74,51.43,50.94,state,73.88,2,allen,6.8,low,graduate,rural,high,True,True,0
+53.0,37.87,83.07,icse,77.95,1,local,1.9,low,pg,semi-urban,high,True,True,1
+93.92,84.9,55.45,cbse,86.31,2,local,4.4,low,upto 10th,urban,medium,False,True,0
+69.75,66.71,85.51,cbse,63.81,1,,2.7,high,12th,semi-urban,high,False,True,0
+61.93,42.3,73.05,icse,93.04,1,local,4.5,low,upto 10th,rural,medium,False,False,1
+94.57,99.03,72.97,state,91.83,1,fiitjee,5.5,low,pg,semi-urban,high,False,True,0
+61.52,76.31,65.66,state,85.24,2,local,0.4,low,pg,rural,medium,True,True,0
+81.04,43.2,78.51,state,76.65,2,fiitjee,4.1,low,12th,rural,medium,True,False,1
+62.52,58.85,52.15,state,69.91,1,fiitjee,7.9,low,12th,urban,low,False,False,1
+83.15,37.62,58.22,icse,91.71,2,local,4.7,high,12th,urban,high,True,True,0
+73.37,54.97,58.02,cbse,88.84,2,,5.1,mid,graduate,rural,low,False,True,0
+87.6,76.0,77.43,cbse,76.97,2,fiitjee,6.8,mid,graduate,rural,high,True,False,0
+63.24,88.03,85.33,icse,58.21,2,,2.2,mid,12th,semi-urban,medium,False,True,0
+97.13,53.9,73.29,state,63.18,2,allen,3.2,mid,upto 10th,semi-urban,medium,True,False,0
+52.98,49.98,51.4,icse,77.38,2,allen,5.7,low,pg,urban,medium,False,True,0
+77.87,44.48,68.06,icse,70.02,1,fiitjee,3.7,low,upto 10th,urban,low,True,True,0
+70.62,46.64,79.2,cbse,74.47,2,,7.8,mid,12th,urban,high,False,True,0
+75.7,50.7,49.79,cbse,75.5,1,allen,9.3,high,upto 10th,semi-urban,high,False,True,0
+68.48,82.76,50.99,state,61.65,1,,7.0,mid,12th,rural,low,True,True,0
+61.11,66.32,61.88,icse,66.54,1,allen,2.5,low,pg,urban,medium,False,False,1
+85.65,78.11,60.93,state,50.0,1,,3.6,mid,pg,rural,high,True,True,0
+82.46,79.73,90.65,icse,58.5,1,allen,4.8,high,upto 10th,semi-urban,low,False,False,0
+69.16,79.09,71.25,state,77.65,1,allen,5.5,mid,graduate,semi-urban,high,False,False,0
+81.32,30.55,81.88,state,77.71,2,,2.4,high,graduate,rural,high,False,True,0
+77.88,55.97,65.19,cbse,85.25,1,,3.8,high,12th,rural,medium,True,True,0
+74.55,84.68,57.89,state,92.47,1,allen,5.5,high,pg,semi-urban,high,True,False,0
+68.95,61.64,69.19,cbse,75.56,2,local,3.8,low,pg,rural,high,True,True,0
+73.08,59.94,54.95,icse,76.32,2,allen,3.7,high,12th,semi-urban,medium,True,True,0
+66.11,76.38,82.12,cbse,72.53,1,,2.3,mid,upto 10th,urban,high,True,False,0
+50.51,67.72,55.96,icse,88.78,1,allen,5.0,high,pg,rural,medium,False,True,0
+77.72,97.1,69.79,state,62.6,1,local,5.3,mid,12th,urban,low,True,True,0
+88.73,77.1,45.87,cbse,80.38,2,local,3.1,low,12th,rural,medium,True,True,0
+64.89,68.21,77.48,icse,77.28,1,fiitjee,5.2,low,12th,urban,high,False,True,0
+73.02,69.32,63.75,state,94.22,1,fiitjee,7.2,low,upto 10th,rural,high,True,True,0
+66.96,100.0,85.34,icse,82.87,2,,3.7,low,pg,rural,medium,False,False,1
+83.91,90.58,61.08,state,74.7,2,allen,4.8,low,graduate,semi-urban,high,False,True,0
+67.78,52.99,69.49,cbse,100.0,2,,5.0,low,upto 10th,semi-urban,low,False,True,0
+88.01,66.25,64.78,icse,57.19,1,local,4.8,low,graduate,urban,high,True,False,1
+60.82,69.33,71.38,state,80.68,1,local,4.7,high,upto 10th,semi-urban,low,False,False,0
+93.69,56.22,68.89,cbse,58.32,1,local,3.8,mid,graduate,semi-urban,medium,False,False,0
+70.62,63.29,58.74,icse,60.26,2,local,4.5,mid,graduate,urban,high,False,False,0
+76.16,71.21,63.28,cbse,91.98,1,,7.2,mid,12th,rural,medium,True,True,0
+65.18,69.78,70.04,icse,92.42,2,allen,2.2,low,12th,urban,high,True,True,0
+58.45,88.72,66.22,cbse,64.15,2,local,1.4,mid,12th,urban,medium,True,True,0
+68.01,75.64,71.83,state,79.56,1,,5.7,high,upto 10th,urban,low,True,False,0
+75.74,52.96,69.15,state,58.94,1,,7.0,mid,pg,rural,low,True,True,0
+68.08,71.32,100.0,cbse,61.78,2,fiitjee,7.7,low,graduate,urban,medium,False,False,1
+53.34,66.84,79.85,icse,76.37,2,local,5.7,low,12th,urban,low,False,True,0
+90.61,79.61,61.71,cbse,61.51,1,fiitjee,4.7,mid,12th,urban,low,False,False,0
+60.95,68.17,86.5,state,78.39,1,allen,4.0,high,pg,rural,low,False,True,0
+78.85,63.65,75.54,cbse,66.36,1,,0.6,low,12th,semi-urban,high,False,True,1
+100.0,67.0,59.74,cbse,76.67,2,fiitjee,6.6,low,12th,urban,low,False,True,0
+78.0,72.86,78.91,cbse,83.54,1,allen,4.8,high,12th,urban,medium,True,False,0
+78.32,71.49,83.08,icse,69.67,1,,4.2,low,upto 10th,rural,high,False,False,1
+64.66,69.28,50.32,state,59.81,1,allen,3.6,mid,upto 10th,semi-urban,low,False,False,0
+42.82,87.29,67.49,state,65.17,1,allen,5.2,mid,upto 10th,semi-urban,high,False,True,0
+76.22,36.66,87.28,cbse,75.66,1,,3.8,low,pg,urban,medium,False,False,1
+76.88,62.68,76.92,icse,68.4,1,local,7.7,low,upto 10th,rural,high,True,True,0
+52.29,44.9,50.27,icse,88.12,2,fiitjee,2.5,high,pg,semi-urban,high,False,True,0
+71.66,100.0,77.16,icse,73.52,2,allen,1.5,mid,pg,rural,medium,False,True,0
+38.06,62.91,53.78,state,76.12,2,local,6.2,low,pg,semi-urban,low,False,True,0
+54.8,84.28,61.51,cbse,78.11,1,local,6.0,high,pg,rural,medium,True,False,0
+75.27,38.89,82.85,icse,82.46,1,fiitjee,5.6,high,graduate,urban,medium,False,False,0
+83.45,85.39,55.12,icse,62.28,1,,4.3,high,pg,semi-urban,medium,True,True,0
+55.6,91.43,67.36,icse,84.91,2,local,3.4,low,12th,rural,medium,False,False,1
+77.94,94.89,63.8,cbse,81.21,2,,5.5,high,upto 10th,urban,high,False,True,0
+62.95,48.07,73.62,icse,81.08,1,,8.6,high,12th,semi-urban,high,True,False,0
+45.49,77.32,68.19,state,65.64,1,local,3.4,mid,pg,urban,high,False,False,0
+77.32,73.32,59.11,icse,75.73,1,,2.1,high,graduate,rural,medium,True,False,0
+70.5,59.5,62.32,icse,69.93,1,fiitjee,5.9,high,pg,rural,low,True,True,0
+87.32,71.87,89.73,state,61.26,1,fiitjee,8.4,low,upto 10th,semi-urban,high,True,True,0
+60.71,48.29,67.63,state,79.12,1,local,3.3,low,12th,urban,high,False,False,1
+94.09,71.02,50.26,icse,62.72,1,fiitjee,4.2,low,upto 10th,semi-urban,low,False,True,0
+76.36,59.74,67.46,icse,82.08,1,local,6.7,mid,graduate,urban,high,False,False,0
+55.32,63.05,74.03,state,78.44,1,,5.0,low,upto 10th,rural,medium,True,True,0
+35.17,38.72,44.82,cbse,75.26,2,allen,9.1,high,12th,urban,low,True,True,1
+92.04,89.29,81.3,cbse,72.11,1,fiitjee,6.8,high,pg,semi-urban,medium,False,True,0
+52.44,65.11,91.12,cbse,80.0,1,,7.0,mid,upto 10th,urban,low,True,True,0
+68.59,69.48,73.96,cbse,84.72,1,fiitjee,6.7,mid,graduate,semi-urban,low,False,True,0
+78.11,97.74,44.63,icse,74.09,1,,1.5,low,upto 10th,rural,low,False,True,0
+69.46,54.9,60.84,icse,76.68,1,,5.4,mid,pg,urban,low,True,True,0
+46.21,78.51,62.42,icse,70.75,2,fiitjee,6.1,mid,pg,urban,low,True,False,0
+74.79,79.95,55.15,cbse,87.33,1,local,3.7,low,graduate,urban,low,True,False,1
+75.41,42.08,94.8,icse,63.67,1,,5.2,mid,pg,urban,medium,False,True,0
+59.39,35.04,66.32,icse,67.98,2,local,4.7,high,pg,semi-urban,medium,False,False,0
+75.65,79.67,68.01,icse,65.93,1,local,0.5,mid,graduate,urban,high,True,False,1
+82.07,74.07,55.04,icse,83.29,2,allen,4.2,high,12th,semi-urban,high,False,False,0
+44.47,74.16,63.56,cbse,70.39,2,allen,8.9,mid,upto 10th,rural,medium,False,False,0
+95.34,53.41,69.56,icse,61.69,2,local,4.0,mid,12th,urban,high,False,True,0
+88.08,62.4,78.89,cbse,83.44,1,local,2.9,low,pg,urban,low,False,False,1
+90.93,72.55,72.22,cbse,64.23,2,local,1.2,mid,graduate,urban,medium,False,True,0
+68.32,48.1,93.78,cbse,85.39,2,local,6.8,mid,upto 10th,urban,high,True,False,0
+83.17,85.41,81.96,icse,84.42,1,local,6.8,mid,upto 10th,urban,medium,False,False,0
+62.63,71.72,67.9,cbse,68.2,1,local,6.1,mid,12th,urban,low,False,True,0
+100.0,96.97,49.16,state,86.8,2,,1.6,mid,upto 10th,rural,medium,False,False,0
+66.21,71.32,58.24,state,74.91,2,allen,4.0,mid,upto 10th,semi-urban,high,False,False,0
+83.77,72.17,66.83,state,78.06,2,allen,2.2,high,graduate,urban,medium,False,False,0
+64.65,95.91,57.06,state,75.74,2,fiitjee,3.5,mid,graduate,semi-urban,low,False,True,0
+81.13,66.03,85.46,icse,50.0,2,,3.4,mid,graduate,urban,low,True,True,0
+59.94,99.32,59.79,cbse,73.25,2,allen,2.2,mid,upto 10th,urban,high,True,True,0
+73.18,85.06,60.99,icse,64.75,1,,3.1,high,graduate,rural,medium,False,False,0
+54.59,81.74,79.95,cbse,80.08,2,local,6.0,mid,pg,semi-urban,high,False,False,0
+58.07,98.82,62.27,cbse,77.49,2,local,2.5,low,12th,urban,medium,True,True,0
+61.76,73.37,59.99,icse,85.23,1,fiitjee,4.8,high,pg,urban,medium,False,True,0
+59.82,67.64,66.2,cbse,75.31,2,,6.9,mid,graduate,semi-urban,low,True,True,0
+77.39,59.14,74.79,state,75.32,1,allen,1.4,mid,graduate,semi-urban,medium,True,True,0
+82.52,36.99,51.13,state,58.11,1,local,7.2,mid,upto 10th,semi-urban,low,False,False,0
