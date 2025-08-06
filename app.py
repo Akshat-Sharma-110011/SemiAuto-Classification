@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from io import BytesIO
 import pandas as pd
 import os
@@ -29,7 +29,13 @@ from semiauto_classification.data.data_ingestion import create_data_ingestion
 from semiauto_classification.utils import (load_yaml, update_intel_yaml)
 from semiauto_classification.data.data_cleaning import main as data_cleaning_main
 from semiauto_classification.features.feature_engineering import run_feature_engineering
-from semiauto_classification.model.model_building import ModelBuilder
+from semiauto_classification.model.model_building import (
+    build_single_model_api_patched,
+    build_parallel_models_api_patched,
+    build_ensemble_model_api,
+    select_best_model_api_patched,
+    EnhancedModelBuilder
+)
 from semiauto_classification.model.model_evaluation import run_evaluation, get_evaluation_summary
 from semiauto_classification.model.model_optimization import optimize_model
 
@@ -67,6 +73,39 @@ class FeatureEngineeringRequest(BaseModel):
 class ModelBuildRequest(BaseModel):
     model_name: str
     custom_params: Optional[Dict[str, Any]] = None
+
+
+class ParallelModelRequest(BaseModel):
+    models: List[Dict[str, Any]]
+    max_workers: int = 4
+
+
+class SimpleEnsembleRequest(BaseModel):
+    ensemble_type: str  # voting, stacking, bagging
+    config: Dict[str, Any]
+
+
+class MultiStageStackingRequest(BaseModel):
+    stages: List[Dict[str, Any]]
+    final_estimator: Optional[Dict[str, Any]] = None
+    cv: int = 5
+    passthrough: bool = False
+
+
+class HybridEnsembleRequest(BaseModel):
+    ensemble_type: str  # voting_stacking, bagging_stacking
+    config: Dict[str, Any]
+
+
+class EnsembleModelRequest(BaseModel):
+    ensemble_category: str = "simple"  # simple, multi_stage, hybrid
+    ensemble_type: str  # voting, stacking, bagging, etc.
+    config: Dict[str, Any] = {}
+
+
+class ModelSelectionRequest(BaseModel):
+    parallel_results: Dict[str, Any]
+    selection_metric: str = "accuracy"
 
 
 class OptimizationRequest(BaseModel):
@@ -135,15 +174,13 @@ async def feature_engineering_page(request: Request):
             })
         return templates.TemplateResponse("feature_engineering.html", {"request": request})
     except Exception as e:
-        logger.error(f"Error loading feature engineering page: {str(e)}")
+        logger.error(f"Error loading feature selection page: {str(e)}")
         return templates.TemplateResponse("error.html", {
             "request": request,
-            "error_message": "Please upload data and complete preprocessing first",
+            "error_message": "Please complete previous steps first",
             "redirect_url": "/data-upload"
         })
 
-
-# Add these new endpoints to app.py
 
 @app.get("/feature-selection", response_class=HTMLResponse)
 async def feature_selection_page(request: Request):
@@ -216,7 +253,7 @@ async def model_building_page(request: Request):
     logger.info("Serving model building page")
     try:
         intel = load_yaml("intel.yaml")
-        if not intel.get('train_selected_path'):
+        if not intel.get('train_selected_path') and not intel.get('train_transformed_path'):
             logger.warning("Feature engineering not completed, redirecting to feature engineering page")
             return templates.TemplateResponse("error.html", {
                 "request": request,
@@ -224,13 +261,13 @@ async def model_building_page(request: Request):
                 "redirect_url": "/feature-engineering"
             })
 
-        builder = ModelBuilder()
+        builder = EnhancedModelBuilder()
         available_models = builder.get_available_models()
-        logger.info(f"Loaded {len(available_models)} available model")
+        logger.info(f"Loaded {len(available_models)} available models")
 
         return templates.TemplateResponse("model_building.html", {
             "request": request,
-            "available_models": available_models
+            "available_models": list(available_models.keys())
         })
     except Exception as e:
         logger.error(f"Error loading model building page: {str(e)}")
@@ -441,36 +478,220 @@ def feature_engineering(request: FeatureEngineeringRequest):
 
 @app.get("/api/available-models")
 def get_model_list():
-    logger.info("Fetching available model")
+    logger.info("Fetching available models")
     try:
-        builder = ModelBuilder()
+        builder = EnhancedModelBuilder()
         models = builder.get_available_models()
-        logger.info(f"Retrieved {len(models)} available model")
+        logger.info(f"Retrieved {len(models)} available models")
         return models
     except Exception as e:
-        logger.error(f"Error fetching available model: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get available model: {str(e)}")
+        logger.error(f"Error fetching available models: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get available models: {str(e)}")
 
 
-@app.post("/api/build-model")
-def build_model(request: ModelBuildRequest):
-    logger.info(f"Starting model building with model: {request.model_name}")
+@app.post("/api/build-single-model")
+def build_single_model(request: ModelBuildRequest):
+    logger.info(f"Starting single model building with model: {request.model_name}")
 
     try:
-        builder = ModelBuilder()
-        result = builder.process_model_request(
+        result = build_single_model_api_patched(
             model_name=request.model_name,
             custom_params=request.custom_params
         )
-        logger.info("Model building completed successfully")
+        logger.info("Single model building completed successfully")
 
         evaluation = run_evaluation("intel.yaml")
         logger.info("Model evaluation completed successfully")
 
         return {"build_result": result, "evaluation_result": evaluation}
     except Exception as e:
-        logger.error(f"Error during model building: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Model building failed: {str(e)}")
+        logger.error(f"Error during single model building: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Single model building failed: {str(e)}")
+
+
+@app.post("/api/build-parallel-models")
+def build_parallel_models(request: ParallelModelRequest):
+    logger.info(f"Starting parallel model building with {len(request.models)} models")
+    try:
+        result = build_parallel_models_api_patched(
+            models_config=request.models,
+            max_workers=request.max_workers
+        )
+        logger.info("Parallel model building completed successfully")
+        return result
+    except Exception as e:
+        logger.error(f"Error during parallel model building: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Parallel model building failed: {str(e)}")
+
+
+@app.post("/api/build-ensemble-model")
+def build_ensemble_model(request: EnsembleModelRequest):
+    logger.info(f"Starting ensemble model building: {request.ensemble_category} - {request.ensemble_type}")
+
+    try:
+        # Prepare ensemble configuration based on category and type
+        ensemble_config = {
+            'type': request.ensemble_type,
+            **request.config
+        }
+
+        # Handle different ensemble categories
+        if request.ensemble_category == 'multi_stage':
+            ensemble_config['type'] = 'multi_stage_stacking'
+        elif request.ensemble_category == 'hybrid':
+            # Keep the original ensemble_type for hybrid ensembles
+            pass
+
+        # Add debug logging
+        logger.info(f"Ensemble config: {ensemble_config}")
+
+        result = build_ensemble_model_api(ensemble_config=ensemble_config)
+        logger.info("Ensemble model building completed successfully")
+
+        evaluation = run_evaluation("intel.yaml")
+        logger.info("Model evaluation completed successfully")
+
+        return {"build_result": result, "evaluation_result": evaluation}
+    except Exception as e:
+        logger.error(f"Error during ensemble model building: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ensemble model building failed: {str(e)}")
+
+
+@app.post("/api/debug-ensemble-config")
+def debug_ensemble_config(config: Dict[str, Any] = Body(...)):
+    """Debug endpoint to validate ensemble configuration"""
+    try:
+        logger.info(f"Debug ensemble config received: {config}")
+
+        # Validate configuration
+        required_fields = ['type']
+        for field in required_fields:
+            if field not in config:
+                return {"error": f"Missing required field: {field}"}
+
+        ensemble_type = config.get('type')
+
+        if ensemble_type == 'voting':
+            if 'models' not in config:
+                return {"error": "Voting ensemble requires 'models' field"}
+            if len(config['models']) < 2:
+                return {"error": "Voting ensemble requires at least 2 models"}
+        elif ensemble_type == 'stacking':
+            if 'base_models' not in config:
+                return {"error": "Stacking ensemble requires 'base_models' field"}
+            if 'meta_model' not in config:
+                return {"error": "Stacking ensemble requires 'meta_model' field"}
+        elif ensemble_type == 'bagging':
+            if 'base_model' not in config:
+                return {"error": "Bagging ensemble requires 'base_model' field"}
+
+        return {
+            "status": "valid",
+            "config": config,
+            "message": f"Configuration for {ensemble_type} ensemble is valid"
+        }
+    except Exception as e:
+        logger.error(f"Error in debug endpoint: {str(e)}")
+        return {"error": str(e)}
+
+
+@app.post("/api/build-simple-ensemble")
+def build_simple_ensemble(request: SimpleEnsembleRequest):
+    """Build simple ensemble models (voting, stacking, bagging)"""
+    logger.info(f"Starting simple ensemble model building: {request.ensemble_type}")
+
+    try:
+        ensemble_config = {
+            'type': request.ensemble_type,
+            **request.config
+        }
+
+        result = build_ensemble_model_api(ensemble_config=ensemble_config)
+        logger.info("Simple ensemble model building completed successfully")
+
+        evaluation = run_evaluation("intel.yaml")
+        logger.info("Model evaluation completed successfully")
+
+        return {"build_result": result, "evaluation_result": evaluation}
+    except Exception as e:
+        logger.error(f"Error during simple ensemble model building: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Simple ensemble model building failed: {str(e)}")
+
+
+@app.post("/api/build-multi-stage-stacking")
+def build_multi_stage_stacking(request: MultiStageStackingRequest):
+    """Build multi-stage stacking ensemble models"""
+    logger.info(f"Starting multi-stage stacking model building with {len(request.stages)} stages")
+
+    try:
+        ensemble_config = {
+            'type': 'multi_stage_stacking',
+            'stages': request.stages,
+            'final_estimator': request.final_estimator,
+            'cv': request.cv,
+            'passthrough': request.passthrough
+        }
+
+        result = build_ensemble_model_api(ensemble_config=ensemble_config)
+        logger.info("Multi-stage stacking model building completed successfully")
+
+        evaluation = run_evaluation("intel.yaml")
+        logger.info("Model evaluation completed successfully")
+
+        return {"build_result": result, "evaluation_result": evaluation}
+    except Exception as e:
+        logger.error(f"Error during multi-stage stacking model building: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Multi-stage stacking model building failed: {str(e)}")
+
+
+@app.post("/api/build-hybrid-ensemble")
+def build_hybrid_ensemble(request: HybridEnsembleRequest):
+    """Build hybrid ensemble models (voting+stacking, bagging+stacking)"""
+    logger.info(f"Starting hybrid ensemble model building: {request.ensemble_type}")
+
+    try:
+        ensemble_config = {
+            'type': request.ensemble_type,
+            **request.config
+        }
+
+        result = build_ensemble_model_api(ensemble_config=ensemble_config)
+        logger.info("Hybrid ensemble model building completed successfully")
+
+        evaluation = run_evaluation("intel.yaml")
+        logger.info("Model evaluation completed successfully")
+
+        return {"build_result": result, "evaluation_result": evaluation}
+    except Exception as e:
+        logger.error(f"Error during hybrid ensemble model building: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Hybrid ensemble model building failed: {str(e)}")
+
+
+@app.post("/api/select-best-model")
+def select_best_model(request: ModelSelectionRequest):
+    logger.info(f"Selecting best model based on {request.selection_metric}")
+
+    try:
+        result = select_best_model_api_patched(
+            parallel_results=request.parallel_results,
+            selection_metric=request.selection_metric
+        )
+        logger.info("Model selection completed successfully")
+
+        evaluation = run_evaluation("intel.yaml")
+        logger.info("Model evaluation completed successfully")
+
+        return {"selection_result": result, "evaluation_result": evaluation}
+    except Exception as e:
+        logger.error(f"Error during model selection: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Model selection failed: {str(e)}")
+
+
+# Keep the legacy endpoint for backwards compatibility
+@app.post("/api/build-model")
+def build_model(request: ModelBuildRequest):
+    logger.info(f"Starting model building with model: {request.model_name}")
+    return build_single_model(request)
 
 
 @app.post("/api/optimize")
@@ -507,7 +728,7 @@ def download_model():
     try:
         intel = load_yaml("intel.yaml")
         dataset_name = intel.get("dataset_name", "unnamed")
-        model_dir = Path(f"model/model_classification_{dataset_name}")
+        model_dir = Path(f"model/model_{dataset_name}")
 
         # Use absolute paths for checking existence
         optimized_model_path = model_dir / "optimized_model.pkl"
@@ -637,4 +858,4 @@ if __name__ == "__main__":
     os.makedirs("templates", exist_ok=True)
 
     logger.info("Starting FastAPI server on 127.0.0.1:8020")
-    uvicorn.run("app:app", host="127.0.0.1", port=8020, reload=True)
+    uvicorn.run("app:app", host="127.0.0.1", port=8080, reload=True)

@@ -6,14 +6,15 @@ import numpy as np
 from datetime import datetime
 import logging
 from typing import Dict, Any, Tuple, List, Optional, Union
+import json
 
 # Import optimization libraries
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import optuna
 import atexit
 from catboost.core import _custom_loggers_stack
 
-# 1. UPDATE IMPORTS - Replace regression metrics with classification metrics
+# Import classification metrics
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -25,14 +26,14 @@ from sklearn.metrics import (
     log_loss
 )
 
-# 2. UPDATE MODEL IMPORTS - Replace regressors with classifiers
+# Import all model classes for ensemble optimization
 from sklearn.linear_model import (
     LogisticRegression, RidgeClassifier, SGDClassifier, PassiveAggressiveClassifier
 )
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier,
-    ExtraTreesClassifier, VotingClassifier, BaggingClassifier
+    ExtraTreesClassifier, VotingClassifier, BaggingClassifier, StackingClassifier
 )
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -51,10 +52,105 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 # Configure logger
 configure_logger()
-logger = logging.getLogger("Model Optimization")
+logger = logging.getLogger("Enhanced Model Optimization")
 
 
-class ModelOptimizer:
+class EnsembleOptimizer:
+    """Specialized optimizer for ensemble models"""
+
+    def __init__(self, model, model_type: str):
+        self.model = model
+        self.model_type = model_type
+        self.logger = logger
+
+    def get_ensemble_param_space(self) -> Dict[str, Any]:
+        """Get parameter space for ensemble models"""
+
+        if isinstance(self.model, VotingClassifier):
+            return self._get_voting_param_space()
+        elif isinstance(self.model, StackingClassifier):
+            return self._get_stacking_param_space()
+        elif isinstance(self.model, BaggingClassifier):
+            return self._get_bagging_param_space()
+        else:
+            return {}
+
+    def _get_voting_param_space(self) -> Dict[str, Any]:
+        """Parameter space for voting classifier"""
+        return {
+            'voting': ['soft', 'hard'],
+            'flatten_transform': [True, False]
+        }
+
+    def _get_stacking_param_space(self) -> Dict[str, Any]:
+        """Parameter space for stacking classifier"""
+        param_space = {
+            'cv': [3, 5, 7, 10],
+            'stack_method': ['auto', 'predict_proba', 'decision_function', 'predict'],
+            'passthrough': [True, False]
+        }
+
+        # Add final estimator parameters if it's a simple model
+        final_estimator = self.model.final_estimator
+        if hasattr(final_estimator, 'get_params'):
+            final_params = self._get_base_model_params(final_estimator)
+            for param, values in final_params.items():
+                param_space[f'final_estimator__{param}'] = values
+
+        return param_space
+
+    def _get_bagging_param_space(self) -> Dict[str, Any]:
+        """Parameter space for bagging classifier"""
+        param_space = {
+            'n_estimators': [10, 20, 50, 100],
+            'max_samples': [0.5, 0.7, 0.9, 1.0],
+            'max_features': [0.5, 0.7, 0.9, 1.0],
+            'bootstrap': [True, False],
+            'bootstrap_features': [True, False]
+        }
+
+        # Add base estimator parameters
+        base_estimator = self.model.base_estimator
+        if hasattr(base_estimator, 'get_params'):
+            base_params = self._get_base_model_params(base_estimator)
+            for param, values in base_params.items():
+                param_space[f'base_estimator__{param}'] = values
+
+        return param_space
+
+    def _get_base_model_params(self, model) -> Dict[str, Any]:
+        """Get parameter space for base models in ensemble"""
+        model_name = model.__class__.__name__
+
+        base_params = {
+            'LogisticRegression': {
+                'C': [0.1, 1.0, 10.0],
+                'penalty': ['l1', 'l2'],
+                'solver': ['liblinear', 'lbfgs']
+            },
+            'DecisionTreeClassifier': {
+                'max_depth': [3, 5, 10, None],
+                'min_samples_split': [2, 5, 10],
+                'min_samples_leaf': [1, 2, 4]
+            },
+            'RandomForestClassifier': {
+                'n_estimators': [50, 100, 200],
+                'max_depth': [5, 10, None],
+                'min_samples_split': [2, 5, 10]
+            },
+            'SVC': {
+                'C': [0.1, 1.0, 10.0],
+                'kernel': ['rbf', 'linear'],
+                'gamma': ['scale', 'auto']
+            }
+        }
+
+        return base_params.get(model_name, {})
+
+
+class EnhancedModelOptimizer:
+    """Enhanced optimizer supporting both baseline and ensemble models"""
+
     def __init__(self, intel_path: str = INTEL_PATH, config_overrides: dict = None):
         self.intel_path = intel_path
         self.intel_config = self._load_intel()
@@ -86,9 +182,13 @@ class ModelOptimizer:
         self.X_train, self.y_train = self._load_data(self.train_path)
         self.X_test, self.y_test = self._load_data(self.test_path)
 
-        # Available model and their hyperparameter spaces
+        # Available models and their hyperparameter spaces
         self.models = self._get_available_models()
         self.param_spaces = self._get_hyperparameter_spaces()
+
+        # Load current model
+        self.current_model = self._load_current_model()
+        self.model_type = self._identify_model_type()
 
     def _load_intel(self) -> Dict[str, Any]:
         try:
@@ -119,7 +219,31 @@ class ModelOptimizer:
             logger.error(f"Error loading data: {str(e)}")
             raise
 
+    def _load_current_model(self):
+        """Load the current model for optimization"""
+        try:
+            model_path = self.intel_config.get('model_path')
+            if model_path and os.path.exists(model_path):
+                with open(model_path, 'rb') as f:
+                    model = cloudpickle.load(f)
+                logger.info(f"Loaded current model from {model_path}")
+                return model
+            else:
+                logger.error("No current model found to optimize")
+                raise ValueError("No current model found to optimize")
+        except Exception as e:
+            logger.error(f"Error loading current model: {str(e)}")
+            raise
+
+    def _identify_model_type(self) -> str:
+        """Identify the type of model (baseline or ensemble)"""
+        if isinstance(self.current_model, (VotingClassifier, StackingClassifier, BaggingClassifier)):
+            return "ensemble"
+        else:
+            return "baseline"
+
     def _get_available_models(self) -> Dict[str, Any]:
+        """Get available model classes"""
         models = {
             "Logistic Regression": LogisticRegression,
             "Ridge Classifier": RidgeClassifier,
@@ -142,37 +266,10 @@ class ModelOptimizer:
             "LightGBM": lgb.LGBMClassifier,
             "CatBoost": cb.CatBoostClassifier
         }
-
-        # Log available model
-        section("Available Classification Models", logger)
-        descriptions = {
-            "Logistic Regression": "Logistic regression for binary and multiclass classification",
-            "Ridge Classifier": "Ridge classifier with L2 regularization",
-            "SGD Classifier": "Linear classifier fitted by minimizing a regularized loss function with SGD",
-            "Passive Aggressive": "Passive Aggressive Classifier",
-            "Decision Tree": "Decision tree classifier",
-            "Random Forest": "Ensemble of decision trees using bootstrap sampling",
-            "Gradient Boosting": "Gradient boosting for classification",
-            "AdaBoost": "AdaBoost classification algorithm",
-            "Extra Trees": "Extremely randomized trees for classification",
-            "K-Nearest Neighbors": "Classification based on k-nearest neighbors",
-            "Support Vector Classifier": "Support vector classification",
-            "MLP Classifier": "Multi-layer Perceptron classifier",
-            "Gaussian Naive Bayes": "Gaussian Naive Bayes classifier",
-            "Multinomial Naive Bayes": "Multinomial Naive Bayes classifier",
-            "Bernoulli Naive Bayes": "Bernoulli Naive Bayes classifier",
-            "Linear Discriminant Analysis": "Linear Discriminant Analysis",
-            "Quadratic Discriminant Analysis": "Quadratic Discriminant Analysis",
-            "XGBoost": "XGBoost classification algorithm",
-            "LightGBM": "LightGBM classification algorithm",
-            "CatBoost": "CatBoost classification algorithm"
-        }
-        for i, (name, _) in enumerate(models.items(), 1):
-            logger.info(f"{i}. {name} - {descriptions.get(name, '')}")
-
         return models
 
     def _get_hyperparameter_spaces(self) -> Dict[str, Dict[str, Any]]:
+        """Get hyperparameter spaces for all models"""
         param_spaces = {
             "Logistic Regression": {
                 "C": [0.01, 0.1, 1.0, 10.0, 100.0],
@@ -240,7 +337,7 @@ class ModelOptimizer:
                 "kernel": ["linear", "poly", "rbf", "sigmoid"],
                 "C": [0.1, 1, 10],
                 "gamma": ["scale", "auto"],
-                "probability": [True]  # Enable probability estimates for ROC-AUC
+                "probability": [True]
             },
             "MLP Classifier": {
                 "hidden_layer_sizes": [(50,), (100,), (50, 50), (100, 50)],
@@ -273,7 +370,7 @@ class ModelOptimizer:
                 "subsample": [0.8, 0.9, 1.0],
                 "colsample_bytree": [0.8, 0.9, 1.0],
                 "gamma": [1e-5, 0.1, 0.2],
-                "objective": ["binary:logistic"]  # Will need to handle multiclass separately
+                "objective": ["binary:logistic"]
             },
             "LightGBM": {
                 "n_estimators": [50, 100, 200],
@@ -283,7 +380,7 @@ class ModelOptimizer:
                 "min_child_samples": [20, 50, 100],
                 "subsample": [0.8, 0.9, 1.0],
                 "colsample_bytree": [0.8, 0.9, 1.0],
-                "objective": ["binary"]  # Will need to handle multiclass separately
+                "objective": ["binary"]
             },
             "CatBoost": {
                 "iterations": [50, 100, 200],
@@ -296,102 +393,42 @@ class ModelOptimizer:
         }
         return param_spaces
 
-    def _get_model_class(self) -> Any:
-        for model_key, model_class in self.models.items():
-            if model_key.lower().replace(" ", "") == self.model_name.lower().replace(" ", ""):
-                logger.info(f"Found model class for '{self.model_name}': {model_key}")
-                return model_class
-
-        # Direct mapping if the above fails
-        model_mapping = {
-            "LogisticRegression": LogisticRegression,
-            "RidgeClassifier": RidgeClassifier,
-            "SGDClassifier": SGDClassifier,
-            "PassiveAggressiveClassifier": PassiveAggressiveClassifier,
-            "DecisionTree": DecisionTreeClassifier,
-            "DecisionTreeClassifier": DecisionTreeClassifier,
-            "RandomForest": RandomForestClassifier,
-            "RandomForestClassifier": RandomForestClassifier,
-            "GradientBoosting": GradientBoostingClassifier,
-            "GradientBoostingClassifier": GradientBoostingClassifier,
-            "AdaBoost": AdaBoostClassifier,
-            "AdaBoostClassifier": AdaBoostClassifier,
-            "ExtraTrees": ExtraTreesClassifier,
-            "ExtraTreesClassifier": ExtraTreesClassifier,
-            "KNN": KNeighborsClassifier,
-            "KNeighborsClassifier": KNeighborsClassifier,
-            "SVC": SVC,
-            "SupportVectorClassifier": SVC,
-            "MLP": MLPClassifier,
-            "MLPClassifier": MLPClassifier,
-            "GaussianNB": GaussianNB,
-            "MultinomialNB": MultinomialNB,
-            "BernoulliNB": BernoulliNB,
-            "LDA": LinearDiscriminantAnalysis,
-            "QDA": QuadraticDiscriminantAnalysis,
-            "XGBoost": xgb.XGBClassifier,
-            "XGBClassifier": xgb.XGBClassifier,
-            "LightGBM": lgb.LGBMClassifier,
-            "LGBMClassifier": lgb.LGBMClassifier,
-            "CatBoost": cb.CatBoostClassifier,
-            "CatBoostClassifier": cb.CatBoostClassifier
-        }
-
-        if self.model_name in model_mapping:
-            logger.info(f"Found model class for '{self.model_name}' in direct mapping")
-            return model_mapping[self.model_name]
-
-        logger.error(f"Model '{self.model_name}' not found in available model")
-        raise ValueError(f"Model '{self.model_name}' not found in available model")
-
     def _get_param_space(self) -> Dict[str, Any]:
-        for model_key, param_space in self.param_spaces.items():
-            if model_key.lower().replace(" ", "") == self.model_name.lower().replace(" ", ""):
-                return param_space
+        """Get parameter space for the current model"""
+        if self.model_type == "ensemble":
+            # Use ensemble optimizer
+            ensemble_optimizer = EnsembleOptimizer(self.current_model, self.model_type)
+            return ensemble_optimizer.get_ensemble_param_space()
+        else:
+            # Use baseline model parameter space
+            model_class_name = self.current_model.__class__.__name__
 
-        # Try additional mappings
-        model_mapping = {
-            "LinearRegression": "Linear Regression",
-            "Ridge": "Ridge Regression",
-            "RidgeRegression": "Ridge Regression",
-            "Lasso": "Lasso Regression",
-            "LassoRegression": "Lasso Regression",
-            "ElasticNet": "ElasticNet",
-            "SGDRegressor": "SGD Regressor",
-            "BayesianRidge": "Bayesian Ridge",
-            "HuberRegressor": "Huber Regressor",
-            "RANSACRegressor": "RANSAC Regressor",
-            "DecisionTree": "Decision Tree",
-            "DecisionTreeRegressor": "Decision Tree",
-            "RandomForest": "Random Forest",
-            "RandomForestRegressor": "Random Forest",
-            "GradientBoosting": "Gradient Boosting",
-            "GradientBoostingRegressor": "Gradient Boosting",
-            "AdaBoost": "AdaBoost",
-            "AdaBoostRegressor": "AdaBoost",
-            "ExtraTrees": "Extra Trees",
-            "ExtraTreesRegressor": "Extra Trees",
-            "KNN": "K-Nearest Neighbors",
-            "KNeighborsRegressor": "K-Nearest Neighbors",
-            "SVR": "Support Vector Regression",
-            "SupportVectorRegression": "Support Vector Regression",
-            "MLP": "MLP Regressor",
-            "MLPRegressor": "MLP Regressor",
-            "XGBoost": "XGBoost",
-            "XGBRegressor": "XGBoost",
-            "LightGBM": "LightGBM",
-            "LGBMRegressor": "LightGBM",
-            "CatBoost": "CatBoost",
-            "CatBoostRegressor": "CatBoost"
-        }
+            # Map class names to our parameter spaces
+            for model_key, param_space in self.param_spaces.items():
+                if model_key.lower().replace(" ", "") == model_class_name.lower().replace("classifier", ""):
+                    return param_space
 
-        if self.model_name in model_mapping:
-            mapped_name = model_mapping[self.model_name]
-            if mapped_name in self.param_spaces:
-                return self.param_spaces[mapped_name]
+            # If no direct match, try to infer from class name
+            if hasattr(self.current_model, 'get_params'):
+                # Generate a basic parameter space based on current parameters
+                current_params = self.current_model.get_params()
+                basic_param_space = {}
 
-        logger.error(f"Parameter space for model '{self.model_name}' not found")
-        raise ValueError(f"Parameter space for model '{self.model_name}' not found")
+                for param_name, param_value in current_params.items():
+                    if isinstance(param_value, (int, float)):
+                        if param_name in ['n_estimators', 'max_iter', 'n_neighbors']:
+                            basic_param_space[param_name] = [max(1, int(param_value * 0.5)),
+                                                             param_value,
+                                                             int(param_value * 1.5)]
+                        elif param_name in ['learning_rate', 'alpha', 'C']:
+                            basic_param_space[param_name] = [param_value * 0.1,
+                                                             param_value,
+                                                             param_value * 10]
+
+                return basic_param_space
+
+            logger.warning(f"No parameter space found for {model_class_name}")
+            return {}
 
     def _calculate_metric(
             self,
@@ -400,6 +437,7 @@ class ModelOptimizer:
             metric_name: str,
             y_pred_proba: Optional[np.ndarray] = None
     ) -> float:
+        """Calculate specified metric"""
         if metric_name == "accuracy":
             return accuracy_score(y_true, y_pred)
         elif metric_name == "precision":
@@ -427,20 +465,23 @@ class ModelOptimizer:
     def optimize_with_grid_search(
             self,
             cv: int = 5,
-            scoring: str = "accuracy",  # Changed from "neg_mean_squared_error"
+            scoring: str = "accuracy",
             n_jobs: int = -1
     ) -> Tuple[Any, Dict[str, Any]]:
-        section("Grid Search Optimization", logger)
+        """Grid search optimization for any model type"""
+        section(f"Grid Search Optimization for {self.model_type} model", logger)
 
-        model_class = self._get_model_class()
         param_grid = self._get_param_space()
 
-        logger.info(f"Starting grid search for {self.model_name}")
+        if not param_grid:
+            logger.warning("No parameters to optimize")
+            return self.current_model, {}
+
+        logger.info(f"Starting grid search optimization")
         logger.info(f"Hyperparameter grid: {param_grid}")
 
-        model = model_class()
         grid_search = GridSearchCV(
-            estimator=model,
+            estimator=self.current_model,
             param_grid=param_grid,
             cv=cv,
             scoring=scoring,
@@ -463,12 +504,14 @@ class ModelOptimizer:
     def _objective(
             self,
             trial: optuna.Trial,
-            model_class: Any,
             param_space: Dict[str, Any],
             metric_name: str,
             maximize: bool
     ) -> float:
+        """Optuna objective function"""
         params = {}
+
+        # Generate parameters for this trial
         for param_name, param_values in param_space.items():
             if isinstance(param_values, list):
                 if all(isinstance(val, (int, float)) for val in param_values) and len(param_values) > 1:
@@ -489,46 +532,135 @@ class ModelOptimizer:
                 else:
                     params[param_name] = trial.suggest_categorical(param_name, param_values)
 
+        # Handle special parameters
         if "hidden_layer_sizes" in param_space:
             params["hidden_layer_sizes"] = trial.suggest_categorical("hidden_layer_sizes",
                                                                      param_space["hidden_layer_sizes"])
 
-        if model_class.__name__ == "CatBoostClassifier":
-            params["verbose"] = False  # Force silent mode
-            params["allow_writing_files"] = False  # Disable log files
-            params["thread_count"] = 1  # Prevent threading issues
+        # Create model with suggested parameters
+        try:
+            if self.model_type == "ensemble":
+                # Clone the ensemble model and update parameters
+                model = self._clone_ensemble_with_params(params)
+            else:
+                # Create new instance of baseline model with parameters
+                model_class = self.current_model.__class__
+                current_params = self.current_model.get_params()
+                current_params.update(params)
 
-        model = model_class(**params)
-        model.fit(self.X_train, self.y_train)
+                # Handle CatBoost specific parameters
+                if model_class.__name__ == "CatBoostClassifier":
+                    current_params["verbose"] = False
+                    current_params["allow_writing_files"] = False
+                    current_params["thread_count"] = 1
 
-        y_pred = model.predict(self.X_test)
+                model = model_class(**current_params)
 
-        # Get probability predictions if needed for certain metrics
-        y_pred_proba = None
-        if metric_name in ["roc_auc", "log_loss"] and hasattr(model, "predict_proba"):
-            y_pred_proba = model.predict_proba(self.X_test)
+            # Train and evaluate
+            model.fit(self.X_train, self.y_train)
+            y_pred = model.predict(self.X_test)
 
-        metric_value = self._calculate_metric(self.y_test, y_pred, metric_name, y_pred_proba)
+            # Get probability predictions if needed
+            y_pred_proba = None
+            if metric_name in ["roc_auc", "log_loss"] and hasattr(model, "predict_proba"):
+                try:
+                    y_pred_proba = model.predict_proba(self.X_test)
+                except:
+                    pass
 
-        logger.info(
-            f"Trial {trial.number} - Params: {params}, "
-            f"Metric ({metric_name}): {metric_value:.4f}"
-        )
+            metric_value = self._calculate_metric(self.y_test, y_pred, metric_name, y_pred_proba)
 
-        return metric_value if maximize else -metric_value
+            logger.info(
+                f"Trial {trial.number} - Params: {params}, "
+                f"Metric ({metric_name}): {metric_value:.4f}"
+            )
+
+            return metric_value if maximize else -metric_value
+
+        except Exception as e:
+            logger.warning(f"Trial {trial.number} failed: {str(e)}")
+            return -float('inf') if maximize else float('inf')
+
+    def _clone_ensemble_with_params(self, params: Dict[str, Any]):
+        """Clone ensemble model with new parameters"""
+        if isinstance(self.current_model, VotingClassifier):
+            # For voting classifier, update top-level parameters
+            current_params = self.current_model.get_params()
+            current_params.update(params)
+            return VotingClassifier(
+                estimators=self.current_model.estimators,
+                **{k: v for k, v in current_params.items() if k in ['voting', 'n_jobs', 'flatten_transform']}
+            )
+        elif isinstance(self.current_model, StackingClassifier):
+            # For stacking classifier, handle nested parameters
+            current_params = self.current_model.get_params()
+            current_params.update(params)
+
+            # Separate final estimator parameters
+            final_estimator_params = {}
+            stacking_params = {}
+            for k, v in current_params.items():
+                if k.startswith('final_estimator__'):
+                    final_estimator_params[k.replace('final_estimator__', '')] = v
+                elif k in ['cv', 'stack_method', 'passthrough', 'n_jobs']:
+                    stacking_params[k] = v
+
+            # Update final estimator if needed
+            final_estimator = self.current_model.final_estimator
+            if final_estimator_params:
+                final_estimator_class = final_estimator.__class__
+                final_estimator = final_estimator_class(**final_estimator_params)
+
+            return StackingClassifier(
+                estimators=self.current_model.estimators,
+                final_estimator=final_estimator,
+                **stacking_params
+            )
+        elif isinstance(self.current_model, BaggingClassifier):
+            # For bagging classifier, handle base estimator parameters
+            current_params = self.current_model.get_params()
+            current_params.update(params)
+
+            # Separate base estimator parameters
+            base_estimator_params = {}
+            bagging_params = {}
+            for k, v in current_params.items():
+                if k.startswith('base_estimator__'):
+                    base_estimator_params[k.replace('base_estimator__', '')] = v
+                elif k in ['n_estimators', 'max_samples', 'max_features', 'bootstrap', 'bootstrap_features', 'n_jobs',
+                           'random_state']:
+                    bagging_params[k] = v
+
+            # Update base estimator if needed
+            base_estimator = self.current_model.base_estimator
+            if base_estimator_params:
+                base_estimator_class = base_estimator.__class__
+                base_estimator = base_estimator_class(**base_estimator_params)
+
+            return BaggingClassifier(
+                base_estimator=base_estimator,
+                **bagging_params
+            )
+        else:
+            # Fallback: return original model
+            return self.current_model
 
     def optimize_with_optuna(
             self,
             n_trials: int,
-            metric_name: str = "rmse",
-            maximize: bool = False
+            metric_name: str = "accuracy",
+            maximize: bool = True
     ) -> Tuple[Any, Dict[str, Any]]:
-        section("Optuna Optimization", logger)
+        """Optuna optimization for any model type"""
+        section(f"Optuna Optimization for {self.model_type} model", logger)
 
-        model_class = self._get_model_class()
         param_space = self._get_param_space()
 
-        logger.info(f"Starting Optuna optimization for {self.model_name}")
+        if not param_space:
+            logger.warning("No parameters to optimize")
+            return self.current_model, {}
+
+        logger.info(f"Starting Optuna optimization")
         logger.info(f"Number of trials: {n_trials}")
         logger.info(f"Metric to {'maximize' if maximize else 'minimize'}: {metric_name}")
 
@@ -536,7 +668,7 @@ class ModelOptimizer:
         study = optuna.create_study(direction=direction)
 
         study.optimize(
-            lambda trial: self._objective(trial, model_class, param_space, metric_name, maximize),
+            lambda trial: self._objective(trial, param_space, metric_name, maximize),
             n_trials=n_trials
         )
 
@@ -550,16 +682,24 @@ class ModelOptimizer:
             logger.info(f"Optimization complete. Best {metric_name}: {-best_value:.4f}")
         logger.info(f"Best parameters: {best_params}")
 
-        best_model = model_class(**best_params)
+        # Create best model
+        if self.model_type == "ensemble":
+            best_model = self._clone_ensemble_with_params(best_params)
+        else:
+            model_class = self.current_model.__class__
+            current_params = self.current_model.get_params()
+            current_params.update(best_params)
+            best_model = model_class(**current_params)
+
         best_model.fit(self.X_train, self.y_train)
 
         return best_model, best_params
 
     def save_optimized_model(self, model: Any, best_params: Dict[str, Any]) -> None:
+        """Save optimized model and parameters"""
         section("Saving Optimized Model", logger)
 
         try:
-            # FIX: Open file in binary write mode instead of passing path string
             with open(self.optimized_model_path, 'wb') as file:
                 cloudpickle.dump(model, file)
             logger.info(f"Optimized model saved to {self.optimized_model_path}")
@@ -576,12 +716,14 @@ class ModelOptimizer:
             raise
 
     def update_intel_yaml(self) -> None:
+        """Update intel YAML with optimization results"""
         section("Updating Intel YAML", logger)
 
         try:
             self.intel_config["optimized_model_path"] = self.optimized_model_path
             self.intel_config["best_params_path"] = self.best_params_path
             self.intel_config["optimization_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.intel_config["model_type"] = self.model_type
 
             with open(self.intel_path, "w") as file:
                 yaml.dump(self.intel_config, file)
@@ -591,16 +733,21 @@ class ModelOptimizer:
             logger.error(f"Error updating intel.yaml: {str(e)}")
             raise
 
+
 def reset_catboost_logging():
+    """Reset CatBoost logging"""
     while _custom_loggers_stack:
         try:
             _custom_loggers_stack.pop()
         except IndexError:
             break
 
+
 atexit.register(reset_catboost_logging)
 
+
 def get_available_metrics():
+    """Get available optimization metrics"""
     return {
         "1": ("accuracy", True, "Accuracy Score"),
         "2": ("f1_score", True, "F1 Score (Weighted)"),
@@ -612,6 +759,7 @@ def get_available_metrics():
 
 
 def get_optimization_methods():
+    """Get available optimization methods"""
     return {
         "1": "Grid Search",
         "2": "Optuna"
@@ -625,12 +773,14 @@ def optimize_model(
         metric: str = "1",
         config_overrides: dict = None
 ) -> dict:
+    """Main optimization function supporting both baseline and ensemble models"""
     result = {
         "status": "success",
         "message": "",
         "best_params": None,
         "model_path": None,
-        "metrics": {}
+        "metrics": {},
+        "model_type": "unknown"
     }
 
     try:
@@ -638,8 +788,11 @@ def optimize_model(
             result["message"] = "Optimization skipped by user choice"
             return result
 
-        logger.info("Starting model optimization process")
-        optimizer = ModelOptimizer(config_overrides=config_overrides)
+        logger.info("Starting enhanced model optimization process")
+        optimizer = EnhancedModelOptimizer(config_overrides=config_overrides)
+
+        result["model_type"] = optimizer.model_type
+        logger.info(f"Detected model type: {optimizer.model_type}")
 
         if method == "1":
             optimized_model, best_params = optimizer.optimize_with_grid_search()
@@ -660,7 +813,7 @@ def optimize_model(
         optimizer.save_optimized_model(optimized_model, best_params)
         optimizer.update_intel_yaml()
 
-        # Generate predictions
+        # Generate predictions for evaluation
         y_pred = optimized_model.predict(optimizer.X_test)
         y_pred_proba = None
 
@@ -671,7 +824,7 @@ def optimize_model(
             except Exception as e:
                 logger.warning(f"Could not get probability predictions: {str(e)}")
 
-        # Calculate classification metrics
+        # Calculate comprehensive metrics
         metrics = {
             "accuracy": accuracy_score(optimizer.y_test, y_pred),
             "f1_score": f1_score(optimizer.y_test, y_pred, average='weighted', zero_division=0),
@@ -679,7 +832,7 @@ def optimize_model(
             "recall": recall_score(optimizer.y_test, y_pred, average='weighted', zero_division=0)
         }
 
-        # Add ROC-AUC if probability predictions are available
+        # Add probability-based metrics if available
         if y_pred_proba is not None:
             try:
                 unique_classes = len(np.unique(optimizer.y_test))
@@ -701,7 +854,7 @@ def optimize_model(
                 logger.warning(f"Error calculating probability-based metrics: {str(e)}")
 
         # Log the final metrics
-        logger.info("Final Model Performance:")
+        logger.info(f"Final {optimizer.model_type.title()} Model Performance:")
         for metric_name, metric_value in metrics.items():
             logger.info(f"{metric_name.upper()}: {metric_value:.4f}")
 
@@ -709,7 +862,7 @@ def optimize_model(
             "best_params": best_params,
             "model_path": optimizer.optimized_model_path,
             "metrics": metrics,
-            "message": "Optimization completed successfully"
+            "message": f"{optimizer.model_type.title()} model optimization completed successfully"
         })
 
     except Exception as e:
@@ -720,3 +873,21 @@ def optimize_model(
         })
 
     return result
+
+
+if __name__ == "__main__":
+    print("Enhanced Model Optimization Script")
+    print("Supports optimization of both baseline and ensemble models")
+
+    # Example usage
+    result = optimize_model(
+        optimize=True,
+        method="2",  # Optuna
+        n_trials=30,
+        metric="1"  # Accuracy
+    )
+
+    print(f"Optimization result: {result['status']}")
+    print(f"Message: {result['message']}")
+    if result['best_params']:
+        print(f"Best parameters: {result['best_params']}")

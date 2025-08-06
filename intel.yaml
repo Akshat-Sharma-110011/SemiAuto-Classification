@@ -1,141 +1,91 @@
-cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_train\test.csv
-cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_train\train.csv
-cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_train\cleaning.pkl
+cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_JEE_Dropout_After_Class_12\test.csv
+cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_JEE_Dropout_After_Class_12\train.csv
+cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_JEE_Dropout_After_Class_12\cleaning.pkl
 cleaning_report_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\readme\cleaning_report.md
-cleaning_timestamp: '2025-08-05 00:35:53'
-dataset_name: train
-evaluation_timestamp: '2025-08-05 01:17:22'
+cleaning_timestamp: '2025-08-05 02:14:29'
+dataset_name: JEE_Dropout_After_Class_12
+evaluation_timestamp: '2025-08-06 21:54:09'
 feature_engineering_config:
-  n_features_selected: 600
+  n_features_selected: 500
   resampling_method: null
-  timestamp: '2025-08-05 01:08:00'
+  timestamp: '2025-08-05 02:15:14'
   use_feature_tools: true
   use_shap_selection: true
 feature_selection_config:
-  algorithm: whale_optimization
+  algorithm: grey_wolf
   max_iter: 50
-  n_features_selected: 100
+  n_features_selected: 50
   population_size: 20
   selected_features:
-  - n_cores / ram
-  - blue / ram
-  - sc_w / ram
-  - talk_time / ram
-  - sc_h / px_width
-  - blue / px_width
-  - clock_speed / px_width
-  - ram / px_width
-  - battery_power / px_width
-  - m_dep / battery_power
-  - four_g / battery_power
-  - int_memory / battery_power
-  - wifi / battery_power
-  - sc_w / int_memory
-  - px_height / m_dep
-  - fc / battery_power
-  - sc_w / m_dep
-  - four_g / int_memory
-  - m_dep / int_memory
-  - sc_h / m_dep
-  - three_g / battery_power
-  - wifi / talk_time
-  - battery_power / pc
-  - n_cores / pc
-  - touch_screen / pc
-  - wifi / pc
-  - px_width / pc
-  - fc / clock_speed
-  - fc / sc_h
-  - ram / sc_h
-  - px_height / n_cores
-  - sc_h / n_cores
-  - clock_speed / three_g
-  - battery_power + talk_time
-  - px_height * ram
-  - px_height * wifi
-  - blue * px_height
-  - px_height / four_g
-  - px_height * talk_time
-  - mobile_wt * px_height
-  - four_g - talk_time
-  - ram - touch_screen
-  - dual_sim + wifi
-  - dual_sim - talk_time
-  - battery_power + clock_speed
-  - m_dep - sc_h
-  - mobile_wt - touch_screen
-  - m_dep + px_width
-  - px_width + wifi
-  - four_g - mobile_wt
-  - clock_speed - px_width
-  - mobile_wt + wifi
-  - battery_power + int_memory
-  - battery_power + mobile_wt
-  - mobile_wt - talk_time
-  - m_dep + n_cores
-  - pc - px_width
-  - battery_power + ram
-  - blue + m_dep
-  - clock_speed + m_dep
-  - dual_sim + sc_h
-  - battery_power - mobile_wt
-  - int_memory + touch_screen
-  - battery_power + px_width
-  - int_memory - m_dep
-  - mobile_wt - wifi
-  - blue - talk_time
-  - mobile_wt - px_width
-  - four_g + mobile_wt
-  - dual_sim - px_width
-  - battery_power + sc_h
-  - talk_time - touch_screen
-  - sc_h - wifi
-  - m_dep - pc
-  - clock_speed + four_g
-  - int_memory + pc
-  - blue + px_width
-  - four_g - sc_h
-  - n_cores - px_width
-  - four_g + n_cores
-  - battery_power + dual_sim
-  - clock_speed * sc_w
-  - n_cores * sc_w
-  - blue * sc_w
-  - dual_sim * sc_w
-  - ram * sc_w
-  - px_width * sc_w
-  - fc + pc
-  - int_memory / fc
-  - sc_h / fc
-  - fc - n_cores
-  - mobile_wt - sc_w
-  - battery_power - sc_w
-  - fc * ram
-  - fc + m_dep
-  - fc + sc_h
-  - fc + px_width
-  - dual_sim * fc
-  - fc - mobile_wt
-  - fc + n_cores
-  timestamp: '2025-08-05 01:15:08'
-feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_train\feature_store.yaml
-model_name: XGBoost
-model_path: model\model_train\model.pkl
-model_timestamp: '2025-08-05 01:17:22'
-original_file_name: train.csv
-performance_metrics_path: reports\metrics\performance_train\performance.yaml
-plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_train
-preprocessing_pipeline_path: model\pipelines\preprocessing_train\preprocessing.pkl
-processed_timestamp: '2025-08-05 00:36:00'
-processor_pipeline_path: model/pipelines/preprocessing_train\processor.pkl
-selection_pipeline_path: model/pipelines/preprocessing_train\selection.pkl
-target_column: price_range
-test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_train\test.csv
-test_preprocessed_path: data\interim\data_train\test_preprocessed.csv
-test_selected_path: data/selected/data_train\test_selected.csv
-test_transformed_path: data\processed\data_train\test_transformed.csv
-train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_train\train.csv
-train_preprocessed_path: data\interim\data_train\train_preprocessed.csv
-train_selected_path: data/selected/data_train\train_selected.csv
-train_transformed_path: data\processed\data_train\train_transformed.csv
-transformation_pipeline_path: model\pipelines\preprocessing_train\transformation.pkl
+  - jee_main_score / class_12_percent
+  - peer_pressure_level_medium / class_12_percent
+  - coaching_institute_fiitjee / jee_advanced_score
+  - admission_taken_True / jee_advanced_score
+  - mental_health_issues_True / jee_advanced_score
+  - jee_advanced_score / daily_study_hours
+  - attempt_count - jee_advanced_score
+  - class_12_percent - jee_advanced_score
+  - attempt_count - mental_health_issues_True
+  - coaching_institute_fiitjee + jee_advanced_score
+  - family_income_mid - jee_advanced_score
+  - class_12_percent + peer_pressure_level_low
+  - class_12_percent - mental_health_issues_True
+  - attempt_count - coaching_institute_fiitjee
+  - class_12_percent + location_type_urban
+  - attempt_count - peer_pressure_level_medium
+  - family_income_mid + mock_test_score_avg
+  - jee_main_score - peer_pressure_level_medium
+  - daily_study_hours + peer_pressure_level_low
+  - daily_study_hours - peer_pressure_level_medium
+  - class_12_percent + location_type_semi-urban
+  - daily_study_hours - parent_education_upto 10th
+  - family_income_low + jee_main_score
+  - jee_advanced_score - school_board_icse
+  - coaching_institute_local - mock_test_score_avg
+  - mock_test_score_avg - parent_education_pg
+  - attempt_count - parent_education_upto 10th
+  - jee_advanced_score - parent_education_pg
+  - class_12_percent
+  - coaching_institute_nan - daily_study_hours
+  - daily_study_hours
+  - coaching_institute_nan + daily_study_hours
+  - daily_study_hours * jee_main_score
+  - peer_pressure_level_low - peer_pressure_level_medium
+  - coaching_institute_fiitjee + mental_health_issues_True
+  - jee_main_score / admission_taken_True
+  - parent_education_pg - parent_education_upto 10th
+  - attempt_count * coaching_institute_fiitjee
+  - mock_test_score_avg / admission_taken_True
+  - coaching_institute_fiitjee + peer_pressure_level_low
+  - admission_taken_True - peer_pressure_level_low
+  - admission_taken_True + peer_pressure_level_medium
+  - admission_taken_True - peer_pressure_level_medium
+  - location_type_semi-urban + mental_health_issues_True
+  - admission_taken_True - family_income_mid
+  - mental_health_issues_True + school_board_state
+  - location_type_semi-urban - peer_pressure_level_medium
+  - family_income_low - peer_pressure_level_low
+  - family_income_mid - location_type_semi-urban
+  - family_income_low - peer_pressure_level_medium
+  timestamp: '2025-08-05 02:21:56'
+feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_JEE_Dropout_After_Class_12\feature_store.yaml
+model_name: ensemble_stacking
+model_path: model\model_JEE_Dropout_After_Class_12\model.pkl
+model_timestamp: '2025-08-06 21:54:08'
+original_file_name: JEE_Dropout_After_Class_12.csv
+performance_metrics_path: reports\metrics\performance_JEE_Dropout_After_Class_12\performance.yaml
+plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_JEE_Dropout_After_Class_12
+preprocessing_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\preprocessing.pkl
+processed_timestamp: '2025-08-05 02:14:38'
+processor_pipeline_path: model/pipelines/preprocessing_JEE_Dropout_After_Class_12\processor.pkl
+selection_pipeline_path: model/pipelines/preprocessing_JEE_Dropout_After_Class_12\selection.pkl
+target_column: dropout
+test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_JEE_Dropout_After_Class_12\test.csv
+test_preprocessed_path: data\interim\data_JEE_Dropout_After_Class_12\test_preprocessed.csv
+test_selected_path: data/selected/data_JEE_Dropout_After_Class_12\test_selected.csv
+test_transformed_path: data\processed\data_JEE_Dropout_After_Class_12\test_transformed.csv
+train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_JEE_Dropout_After_Class_12\train.csv
+train_preprocessed_path: data\interim\data_JEE_Dropout_After_Class_12\train_preprocessed.csv
+train_selected_path: data/selected/data_JEE_Dropout_After_Class_12\train_selected.csv
+train_transformed_path: data\processed\data_JEE_Dropout_After_Class_12\train_transformed.csv
+transformation_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\transformation.pkl

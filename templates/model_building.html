@@ -1,18 +1,32 @@
 {% extends "base.html" %}
 
-{% block title %}SemiAuto Classification - Model Building{% endblock %}
+{% block title %}Enhanced SemiAuto Classification - Model Building{% endblock %}
 
 {% block content %}
 <div class="main-content">
-    <h1 class="section-title">Model Building</h1>
-    <p>Select a classification algorithm to build your model.</p>
+    <h1 class="section-title">Enhanced Model Building</h1>
+    <p>Build single models, parallel models, or custom ensemble architectures for your classification task.</p>
 
+    <!-- Model Building Mode Selection -->
     <div class="card">
-        <div class="card-header">Choose Model</div>
-        <form id="modelBuildingForm">
+        <div class="card-header">Select Building Mode</div>
+        <div class="form-group">
+            <label for="buildingMode">Building Mode</label>
+            <select id="buildingMode" onchange="switchBuildingMode()">
+                <option value="single">Single Model</option>
+                <option value="parallel">Parallel Models</option>
+                <option value="ensemble">Custom Ensemble</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Single Model Building -->
+    <div id="singleModelSection" class="card">
+        <div class="card-header">Single Model Building</div>
+        <form id="singleModelForm">
             <div class="form-group">
-                <label for="modelName">Classification Algorithm</label>
-                <select id="modelName" name="model_name" required>
+                <label for="singleModelName">Classification Algorithm</label>
+                <select id="singleModelName" name="model_name" required>
                     <option value="" disabled selected>Select a model</option>
                     {% for model_name in available_models %}
                     <option value="{{ model_name }}">{{ model_name }}</option>
@@ -20,21 +34,140 @@
                 </select>
             </div>
 
-            <div id="customParamsContainer" class="form-group hidden">
+            <div id="singleCustomParamsContainer" class="form-group hidden">
                 <label>Model Parameters</label>
-                <div id="paramFields"></div>
+                <div id="singleParamFields"></div>
             </div>
 
             <div class="form-group">
-                <button type="submit" class="btn btn-primary" onclick="buildModel(event)">Build Model</button>
+                <button type="submit" class="btn btn-primary" onclick="buildSingleModel(event)">Build Single Model</button>
             </div>
         </form>
-        <div id="spinner" class="spinner hidden"></div>
-        <div id="buildStatus" class="alert hidden"></div>
     </div>
 
+    <!-- Parallel Model Building -->
+    <div id="parallelModelSection" class="card hidden">
+        <div class="card-header">Parallel Model Building</div>
+        <div class="form-group">
+            <label for="maxWorkers">Max Parallel Workers</label>
+            <input type="number" id="maxWorkers" value="4" min="1" max="8">
+            <small>Number of models to train simultaneously</small>
+        </div>
+
+        <div id="parallelModelsContainer">
+            <h4>Selected Models</h4>
+            <div id="parallelModelsList"></div>
+        </div>
+
+        <div class="form-group">
+            <button type="button" class="btn btn-secondary" onclick="addParallelModel()">Add Model</button>
+            <button type="button" class="btn btn-primary" onclick="buildParallelModels()" id="buildParallelBtn" disabled>Build Parallel Models</button>
+        </div>
+
+        <!-- Model Selection Interface -->
+        <div id="modelSelectionSection" class="hidden">
+            <h4>Model Selection</h4>
+            <div class="form-group">
+                <label for="selectionMetric">Selection Metric</label>
+                <select id="selectionMetric">
+                    <option value="accuracy">Accuracy</option>
+                    <option value="f1_score">F1 Score</option>
+                    <option value="precision">Precision</option>
+                    <option value="recall">Recall</option>
+                    <option value="roc_auc">ROC-AUC</option>
+                </select>
+            </div>
+            <div id="parallelResults"></div>
+            <button type="button" class="btn btn-success" onclick="selectBestModel()">Select Best Model</button>
+        </div>
+    </div>
+
+    <!-- Ensemble Model Building -->
+    <div id="ensembleModelSection" class="card hidden">
+        <div class="card-header">Custom Ensemble Model Building</div>
+
+        <div class="form-group">
+            <label for="ensembleType">Ensemble Type</label>
+            <select id="ensembleType" onchange="updateEnsembleConfig()">
+                <option value="voting">Voting Classifier</option>
+                <option value="stacking">Stacking Classifier</option>
+                <option value="bagging">Bagging Classifier</option>
+            </select>
+        </div>
+
+        <!-- Voting Ensemble Config -->
+        <div id="votingConfig" class="ensemble-config">
+            <div class="form-group">
+                <label for="votingMethod">Voting Method</label>
+                <select id="votingMethod">
+                    <option value="soft">Soft Voting (Probabilities)</option>
+                    <option value="hard">Hard Voting (Predictions)</option>
+                </select>
+            </div>
+            <div id="votingModels">
+                <h4>Base Models</h4>
+                <div id="votingModelsList"></div>
+                <button type="button" class="btn btn-secondary" onclick="addVotingModel()">Add Model</button>
+            </div>
+        </div>
+
+        <!-- Stacking Ensemble Config -->
+        <div id="stackingConfig" class="ensemble-config hidden">
+            <div class="form-group">
+                <label for="stackingCV">Cross-Validation Folds</label>
+                <input type="number" id="stackingCV" value="5" min="2" max="10">
+            </div>
+            <div id="stackingBaseModels">
+                <h4>Base Models</h4>
+                <div id="stackingBaseModelsList"></div>
+                <button type="button" class="btn btn-secondary" onclick="addStackingBaseModel()">Add Base Model</button>
+            </div>
+            <div id="stackingMetaModel">
+                <h4>Meta Model (Final Estimator)</h4>
+                <div class="form-group">
+                    <label for="metaModelSelect">Meta Model</label>
+                    <select id="metaModelSelect">
+                        {% for model_name in available_models %}
+                        <option value="{{ model_name }}">{{ model_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="metaModelParams"></div>
+            </div>
+        </div>
+
+        <!-- Bagging Ensemble Config -->
+        <div id="baggingConfig" class="ensemble-config hidden">
+            <div class="form-group">
+                <label for="baggingEstimators">Number of Estimators</label>
+                <input type="number" id="baggingEstimators" value="10" min="2" max="100">
+            </div>
+            <div id="baggingBaseModel">
+                <h4>Base Model</h4>
+                <div class="form-group">
+                    <label for="baggingModelSelect">Base Model</label>
+                    <select id="baggingModelSelect">
+                        {% for model_name in available_models %}
+                        <option value="{{ model_name }}">{{ model_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="baggingModelParams"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <button type="button" class="btn btn-primary" onclick="buildEnsembleModel()">Build Ensemble Model</button>
+        </div>
+    </div>
+
+    <!-- Status and Spinner -->
+    <div id="spinner" class="spinner hidden"></div>
+    <div id="buildStatus" class="alert hidden"></div>
+
+    <!-- Results Section -->
     <div class="card hidden" id="evaluationResults">
-        <div class="card-header">Initial Evaluation Results</div>
+        <div class="card-header">Model Evaluation Results</div>
         <div id="evaluationDetails"></div>
         <div class="metrics-container" id="metricsContainer"></div>
         <div class="form-group">
@@ -42,29 +175,211 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-{{ super() }}
+<style>
+.ensemble-config {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+.model-config-item {
+    border: 1px solid #eee;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 3px;
+    background-color: #f9f9f9;
+}
+
+.model-config-item .model-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.parallel-result-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.parallel-result-item.success {
+    border-color: #28a745;
+    background-color: #d4edda;
+}
+
+.parallel-result-item.failed {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.metric-title {
+    font-weight: bold;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.metric-value {
+    font-size: 1.2em;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none;
+}
+
+.alert {
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-secondary {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #6c757d;
+}
+
+.btn-success {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+
+.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+</style>
+
 <script>
     let modelDefinitions = {};
+    let parallelModelCounter = 0;
+    let votingModelCounter = 0;
+    let stackingBaseModelCounter = 0;
+    let parallelTrainingResults = null;
 
     document.addEventListener('DOMContentLoaded', async function() {
         try {
             const response = await fetch('/api/available-models');
             modelDefinitions = await response.json();
-            const modelSelect = document.getElementById('modelName');
-            modelSelect.addEventListener('change', updateParameterForm);
+
+            // Add event listeners
+            document.getElementById('singleModelName').addEventListener('change', updateSingleParameterForm);
+            document.getElementById('metaModelSelect').addEventListener('change', updateMetaModelParams);
+            document.getElementById('baggingModelSelect').addEventListener('change', updateBaggingModelParams);
         } catch (error) {
             console.error('Error loading models:', error);
         }
     });
 
-    function updateParameterForm() {
-        const modelSelect = document.getElementById('modelName');
+    function switchBuildingMode() {
+        const mode = document.getElementById('buildingMode').value;
+
+        // Hide all sections
+        document.getElementById('singleModelSection').classList.add('hidden');
+        document.getElementById('parallelModelSection').classList.add('hidden');
+        document.getElementById('ensembleModelSection').classList.add('hidden');
+
+        // Show selected section
+        if (mode === 'single') {
+            document.getElementById('singleModelSection').classList.remove('hidden');
+        } else if (mode === 'parallel') {
+            document.getElementById('parallelModelSection').classList.remove('hidden');
+        } else if (mode === 'ensemble') {
+            document.getElementById('ensembleModelSection').classList.remove('hidden');
+        }
+    }
+
+    // Single Model Functions
+    function updateSingleParameterForm() {
+        const modelSelect = document.getElementById('singleModelName');
         const selectedModelId = modelSelect.value;
-        const customParamsContainer = document.getElementById('customParamsContainer');
-        const paramFields = document.getElementById('paramFields');
+        const customParamsContainer = document.getElementById('singleCustomParamsContainer');
+        const paramFields = document.getElementById('singleParamFields');
         paramFields.innerHTML = '';
 
         if (!selectedModelId || !modelDefinitions[selectedModelId]?.params) {
@@ -80,15 +395,15 @@
                 paramContainer.className = 'form-group';
 
                 const paramLabel = document.createElement('label');
-                paramLabel.setAttribute('for', `param_${paramName}`);
+                paramLabel.setAttribute('for', `single_param_${paramName}`);
                 paramLabel.textContent = paramName;
 
                 const paramInput = document.createElement('input');
                 paramInput.type = 'text';
-                paramInput.id = `param_${paramName}`;
+                paramInput.id = `single_param_${paramName}`;
                 paramInput.name = `params.${paramName}`;
                 paramInput.value = paramValue;
-                paramInput.className = 'param-input';
+                paramInput.className = 'single-param-input';
 
                 paramContainer.appendChild(paramLabel);
                 paramContainer.appendChild(paramInput);
@@ -99,29 +414,30 @@
         }
     }
 
-    async function buildModel(event) {
+    async function buildSingleModel(event) {
         event.preventDefault();
         const buildStatus = document.getElementById('buildStatus');
         const evaluationResults = document.getElementById('evaluationResults');
-        const modelName = document.getElementById('modelName').value;
+        const modelName = document.getElementById('singleModelName').value;
 
         if (!modelName) {
             buildStatus.textContent = 'Please select a model';
             buildStatus.className = 'alert alert-danger';
+            buildStatus.classList.remove('hidden');
             return;
         }
 
         const customParams = {};
-        document.querySelectorAll('.param-input').forEach(input => {
+        document.querySelectorAll('.single-param-input').forEach(input => {
             const paramName = input.name.replace('params.', '');
             customParams[paramName] = input.value;
         });
 
         showSpinner();
-        buildStatus.className = 'alert hidden';
+        buildStatus.classList.add('hidden');
 
         try {
-            const response = await fetch('/api/build-model', {
+            const response = await fetch('/api/build-single-model', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -133,39 +449,209 @@
             const result = await response.json();
 
             if (response.ok) {
-                buildStatus.textContent = 'Model built successfully!';
+                buildStatus.textContent = 'Single model built successfully!';
                 buildStatus.className = 'alert alert-success';
+                buildStatus.classList.remove('hidden');
+
+                displayEvaluationResults(result.evaluation_result);
                 evaluationResults.classList.remove('hidden');
-
-                // Update evaluation metrics
-                const metricsContainer = document.getElementById('metricsContainer');
-                metricsContainer.innerHTML = '';
-
-                if (result.evaluation_result) {
-                    const metrics = result.evaluation_result;
-                    const metricMap = {
-                        'accuracy': 'Accuracy',
-                        'precision': 'Precision',
-                        'recall': 'Recall',
-                        'f1': 'F1 Score',
-                        'roc_auc': 'ROC AUC'
-                    };
-
-                    Object.entries(metricMap).forEach(([key, label]) => {
-                        if (metrics[key]) {
-                            addMetricCard(metricsContainer, label, metrics[key].toFixed(4));
-                        }
-                    });
-                }
             } else {
-                buildStatus.textContent = result.detail || 'Model building failed';
+                buildStatus.textContent = result.detail || 'Single model building failed';
                 buildStatus.className = 'alert alert-danger';
+                buildStatus.classList.remove('hidden');
             }
         } catch (error) {
             buildStatus.textContent = 'Error: ' + error.message;
             buildStatus.className = 'alert alert-danger';
+            buildStatus.classList.remove('hidden');
         } finally {
             hideSpinner();
+        }
+    }
+
+    // Parallel Model Functions
+    function addParallelModel() {
+        const container = document.getElementById('parallelModelsList');
+        const modelDiv = document.createElement('div');
+        modelDiv.className = 'model-config-item';
+        modelDiv.id = `parallel-model-${parallelModelCounter}`;
+
+        modelDiv.innerHTML = `
+            <div class="model-header">
+                <h5>Model ${parallelModelCounter + 1}</h5>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeParallelModel(${parallelModelCounter})">Remove</button>
+            </div>
+            <div class="form-group">
+                <label for="parallel-model-select-${parallelModelCounter}">Algorithm</label>
+                <select id="parallel-model-select-${parallelModelCounter}" onchange="updateParallelModelParams(${parallelModelCounter})">
+                    <option value="" disabled selected>Select a model</option>
+                    ${Object.keys(modelDefinitions).map(name => `<option value="${name}">${name}</option>`).join('')}
+                </select>
+            </div>
+            <div id="parallel-params-${parallelModelCounter}" class="hidden">
+                <label>Parameters</label>
+                <div id="parallel-param-fields-${parallelModelCounter}"></div>
+            </div>
+        `;
+
+        container.appendChild(modelDiv);
+        parallelModelCounter++;
+        updateBuildParallelButton();
+    }
+
+    function removeParallelModel(index) {
+        const modelDiv = document.getElementById(`parallel-model-${index}`);
+        if (modelDiv) {
+            modelDiv.remove();
+        }
+        updateBuildParallelButton();
+    }
+
+    function updateParallelModelParams(index) {
+        const modelSelect = document.getElementById(`parallel-model-select-${index}`);
+        const selectedModel = modelSelect.value;
+        const paramsContainer = document.getElementById(`parallel-params-${index}`);
+        const paramFields = document.getElementById(`parallel-param-fields-${index}`);
+
+        if (!selectedModel || !modelDefinitions[selectedModel]?.params) {
+            paramsContainer.classList.add('hidden');
+            return;
+        }
+
+        const params = modelDefinitions[selectedModel].params;
+        paramFields.innerHTML = '';
+
+        for (const [paramName, paramValue] of Object.entries(params)) {
+            const paramContainer = document.createElement('div');
+            paramContainer.className = 'form-group';
+
+            const paramLabel = document.createElement('label');
+            paramLabel.textContent = paramName;
+
+            const paramInput = document.createElement('input');
+            paramInput.type = 'text';
+            paramInput.id = `parallel-param-${index}-${paramName}`;
+            paramInput.value = paramValue;
+            paramInput.className = 'parallel-param-input';
+
+            paramContainer.appendChild(paramLabel);
+            paramContainer.appendChild(paramInput);
+            paramFields.appendChild(paramContainer);
+        }
+
+        paramsContainer.classList.remove('hidden');
+    }
+
+    function updateBuildParallelButton() {
+        const models = document.querySelectorAll('#parallelModelsList .model-config-item');
+        const buildBtn = document.getElementById('buildParallelBtn');
+        buildBtn.disabled = models.length === 0;
+    }
+
+    async function buildParallelModels() {
+        const models = [];
+        const modelItems = document.querySelectorAll('#parallelModelsList .model-config-item');
+
+        for (let item of modelItems) {
+            const index = item.id.split('-')[2];
+            const modelSelect = document.getElementById(`parallel-model-select-${index}`);
+            const modelName = modelSelect.value;
+
+            if (!modelName) {
+                alert(`Please select a model for Model ${parseInt(index) + 1}`);
+                return;
+            }
+
+            const customParams = {};
+            const paramInputs = document.querySelectorAll(`#parallel-param-fields-${index} .parallel-param-input`);
+            paramInputs.forEach(input => {
+                const paramName = input.id.split('-').pop();
+                customParams[paramName] = input.value;
+            });
+
+            models.push({
+                model_name: modelName,
+                custom_params: Object.keys(customParams).length > 0 ? customParams : {}
+            });
+        }
+
+        const maxWorkers = parseInt(document.getElementById('maxWorkers').value);
+        const buildStatus = document.getElementById('buildStatus');
+
+        showSpinner();
+        buildStatus.classList.add('hidden');
+
+        try {
+            const response = await fetch('/api/build-parallel-models', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    models: models,
+                    max_workers: maxWorkers
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                parallelTrainingResults = result;
+                buildStatus.textContent = `Parallel training completed! Built ${result.total_models} models.`;
+                buildStatus.className = 'alert alert-success';
+                buildStatus.classList.remove('hidden');
+
+                displayParallelResults(result.results);
+                document.getElementById('modelSelectionSection').classList.remove('hidden');
+            } else {
+                buildStatus.textContent = result.detail || 'Parallel model building failed';
+                buildStatus.className = 'alert alert-danger';
+                buildStatus.classList.remove('hidden');
+            }
+        } catch (error) {
+            buildStatus.textContent = 'Error: ' + error.message;
+            buildStatus.className = 'alert alert-danger';
+            buildStatus.classList.remove('hidden');
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    function displayParallelResults(results) {
+        const container = document.getElementById('parallelResults');
+        container.innerHTML = '<h5>Training Results</h5>';
+
+        for (const [modelId, result] of Object.entries(results)) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `parallel-result-item ${result.status}`;
+
+            if (result.status === 'success') {
+                const metrics = result.metrics;
+                const metricMap = {
+                    'accuracy': 'Accuracy',
+                    'precision': 'Precision',
+                    'recall': 'Recall',
+                    'f1_score': 'F1 Score',
+                    'roc_auc': 'ROC AUC',
+                    'log_loss': 'Log Loss'
+                };
+
+                const metricsGrid = document.createElement('div');
+                metricsGrid.className = 'metrics-grid';
+
+                Object.entries(metricMap).forEach(([key, label]) => {
+                    if (metrics[key] !== undefined) {
+                        addMetricCard(metricsGrid, label, metrics[key].toFixed(4));
+                    }
+                });
+
+                resultDiv.appendChild(metricsGrid);
+            } else {
+                resultDiv.innerHTML = `
+                    <h6>${modelId}</h6>
+                    <p class="text-danger">Training failed: ${result.error}</p>
+                `;
+            }
+
+            container.appendChild(resultDiv);
         }
     }
 
@@ -178,5 +664,583 @@
         `;
         container.appendChild(card);
     }
+
+    async function selectBestModel() {
+        if (!parallelTrainingResults) {
+            alert('No parallel training results available');
+            return;
+        }
+
+        const selectionMetric = document.getElementById('selectionMetric').value;
+        const buildStatus = document.getElementById('buildStatus');
+
+        showSpinner();
+
+        try {
+            const response = await fetch('/api/select-best-model', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    parallel_results: parallelTrainingResults,
+                    selection_metric: selectionMetric
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                buildStatus.textContent = `Best model selected: ${result.selection_result.best_model_id} with ${selectionMetric}: ${result.selection_result.best_score.toFixed(4)}`;
+                buildStatus.className = 'alert alert-success';
+                buildStatus.classList.remove('hidden');
+
+                displayEvaluationResults(result.evaluation_result);
+                document.getElementById('evaluationResults').classList.remove('hidden');
+            } else {
+                buildStatus.textContent = result.detail || 'Model selection failed';
+                buildStatus.className = 'alert alert-danger';
+                buildStatus.classList.remove('hidden');
+            }
+        } catch (error) {
+            buildStatus.textContent = 'Error: ' + error.message;
+            buildStatus.className = 'alert alert-danger';
+            buildStatus.classList.remove('hidden');
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    // Ensemble Model Functions
+    function updateEnsembleConfig() {
+        const ensembleType = document.getElementById('ensembleType').value;
+
+        // Hide all configs
+        document.querySelectorAll('.ensemble-config').forEach(config => {
+            config.classList.add('hidden');
+        });
+
+        // Show selected config
+        document.getElementById(`${ensembleType}Config`).classList.remove('hidden');
+    }
+
+    function addVotingModel() {
+        const container = document.getElementById('votingModelsList');
+        const modelDiv = document.createElement('div');
+        modelDiv.className = 'model-config-item';
+        modelDiv.id = `voting-model-${votingModelCounter}`;
+
+        modelDiv.innerHTML = `
+            <div class="model-header">
+                <h6>Voting Model ${votingModelCounter + 1}</h6>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeVotingModel(${votingModelCounter})">Remove</button>
+            </div>
+            <div class="form-group">
+                <label for="voting-model-select-${votingModelCounter}">Algorithm</label>
+                <select id="voting-model-select-${votingModelCounter}" onchange="updateVotingModelParams(${votingModelCounter})">
+                    <option value="" disabled selected>Select a model</option>
+                    ${Object.keys(modelDefinitions).map(name => `<option value="${name}">${name}</option>`).join('')}
+                </select>
+            </div>
+            <div id="voting-params-${votingModelCounter}" class="hidden">
+                <label>Parameters</label>
+                <div id="voting-param-fields-${votingModelCounter}"></div>
+            </div>
+        `;
+
+        container.appendChild(modelDiv);
+        votingModelCounter++;
+    }
+
+    function removeVotingModel(index) {
+        document.getElementById(`voting-model-${index}`)?.remove();
+    }
+
+    function updateVotingModelParams(index) {
+        const modelSelect = document.getElementById(`voting-model-select-${index}`);
+        const selectedModel = modelSelect.value;
+        const paramsContainer = document.getElementById(`voting-params-${index}`);
+        const paramFields = document.getElementById(`voting-param-fields-${index}`);
+
+        if (!selectedModel || !modelDefinitions[selectedModel]?.params) {
+            paramsContainer.classList.add('hidden');
+            return;
+        }
+
+        const params = modelDefinitions[selectedModel].params;
+        paramFields.innerHTML = '';
+
+        for (const [paramName, paramValue] of Object.entries(params)) {
+            const paramContainer = document.createElement('div');
+            paramContainer.className = 'form-group';
+
+            const paramLabel = document.createElement('label');
+            paramLabel.textContent = paramName;
+
+            const paramInput = document.createElement('input');
+            paramInput.type = 'text';
+            paramInput.id = `voting-param-${index}-${paramName}`;
+            paramInput.value = paramValue;
+            paramInput.className = 'voting-param-input';
+
+            paramContainer.appendChild(paramLabel);
+            paramContainer.appendChild(paramInput);
+            paramFields.appendChild(paramContainer);
+        }
+
+        paramsContainer.classList.remove('hidden');
+    }
+
+    function addStackingBaseModel() {
+        const container = document.getElementById('stackingBaseModelsList');
+        const modelDiv = document.createElement('div');
+        modelDiv.className = 'model-config-item';
+        modelDiv.id = `stacking-base-model-${stackingBaseModelCounter}`;
+
+        modelDiv.innerHTML = `
+            <div class="model-header">
+                <h6>Base Model ${stackingBaseModelCounter + 1}</h6>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeStackingBaseModel(${stackingBaseModelCounter})">Remove</button>
+            </div>
+            <div class="form-group">
+                <label for="stacking-base-select-${stackingBaseModelCounter}">Algorithm</label>
+                <select id="stacking-base-select-${stackingBaseModelCounter}" onchange="updateStackingBaseModelParams(${stackingBaseModelCounter})">
+                    <option value="" disabled selected>Select a model</option>
+                    ${Object.keys(modelDefinitions).map(name => `<option value="${name}">${name}</option>`).join('')}
+                </select>
+            </div>
+            <div id="stacking-base-params-${stackingBaseModelCounter}" class="hidden">
+                <label>Parameters</label>
+                <div id="stacking-base-param-fields-${stackingBaseModelCounter}"></div>
+            </div>
+        `;
+
+        container.appendChild(modelDiv);
+        stackingBaseModelCounter++;
+    }
+
+    function removeStackingBaseModel(index) {
+        document.getElementById(`stacking-base-model-${index}`)?.remove();
+    }
+
+    function updateStackingBaseModelParams(index) {
+        const modelSelect = document.getElementById(`stacking-base-select-${index}`);
+        const selectedModel = modelSelect.value;
+        const paramsContainer = document.getElementById(`stacking-base-params-${index}`);
+        const paramFields = document.getElementById(`stacking-base-param-fields-${index}`);
+
+        if (!selectedModel || !modelDefinitions[selectedModel]?.params) {
+            paramsContainer.classList.add('hidden');
+            return;
+        }
+
+        const params = modelDefinitions[selectedModel].params;
+        paramFields.innerHTML = '';
+
+        for (const [paramName, paramValue] of Object.entries(params)) {
+            const paramContainer = document.createElement('div');
+            paramContainer.className = 'form-group';
+
+            const paramLabel = document.createElement('label');
+            paramLabel.textContent = paramName;
+
+            const paramInput = document.createElement('input');
+            paramInput.type = 'text';
+            paramInput.id = `stacking-base-param-${index}-${paramName}`;
+            paramInput.value = paramValue;
+            paramInput.className = 'stacking-base-param-input';
+
+            paramContainer.appendChild(paramLabel);
+            paramContainer.appendChild(paramInput);
+            paramFields.appendChild(paramContainer);
+        }
+
+        paramsContainer.classList.remove('hidden');
+    }
+
+    function updateMetaModelParams() {
+        const metaModelSelect = document.getElementById('metaModelSelect');
+        const selectedModel = metaModelSelect.value;
+        const paramsContainer = document.getElementById('metaModelParams');
+
+        if (!selectedModel || !modelDefinitions[selectedModel]?.params) {
+            paramsContainer.innerHTML = '';
+            return;
+        }
+
+        const params = modelDefinitions[selectedModel].params;
+        paramsContainer.innerHTML = '<label>Meta Model Parameters</label>';
+
+        for (const [paramName, paramValue] of Object.entries(params)) {
+            const paramContainer = document.createElement('div');
+            paramContainer.className = 'form-group';
+
+            const paramLabel = document.createElement('label');
+            paramLabel.textContent = paramName;
+
+            const paramInput = document.createElement('input');
+            paramInput.type = 'text';
+            paramInput.id = `meta-param-${paramName}`;
+            paramInput.value = paramValue;
+            paramInput.className = 'meta-param-input';
+
+            paramContainer.appendChild(paramLabel);
+            paramContainer.appendChild(paramInput);
+            paramsContainer.appendChild(paramContainer);
+        }
+    }
+
+    function updateBaggingModelParams() {
+        const baggingModelSelect = document.getElementById('baggingModelSelect');
+        const selectedModel = baggingModelSelect.value;
+        const paramsContainer = document.getElementById('baggingModelParams');
+
+        if (!selectedModel || !modelDefinitions[selectedModel]?.params) {
+            paramsContainer.innerHTML = '';
+            return;
+        }
+
+        const params = modelDefinitions[selectedModel].params;
+        paramsContainer.innerHTML = '<label>Base Model Parameters</label>';
+
+        for (const [paramName, paramValue] of Object.entries(params)) {
+            const paramContainer = document.createElement('div');
+            paramContainer.className = 'form-group';
+
+            const paramLabel = document.createElement('label');
+            paramLabel.textContent = paramName;
+
+            const paramInput = document.createElement('input');
+            paramInput.type = 'text';
+            paramInput.id = `bagging-param-${paramName}`;
+            paramInput.value = paramValue;
+            paramInput.className = 'bagging-param-input';
+
+            paramContainer.appendChild(paramLabel);
+            paramContainer.appendChild(paramInput);
+            paramsContainer.appendChild(paramContainer);
+        }
+    }
+
+    async function buildEnsembleModel() {
+        const ensembleType = document.getElementById('ensembleType').value;
+        const buildStatus = document.getElementById('buildStatus');
+
+        let ensembleConfig = {};
+
+        try {
+            if (ensembleType === 'voting') {
+                const votingMethod = document.getElementById('votingMethod').value;
+                const models = [];
+
+                const votingModelItems = document.querySelectorAll('#votingModelsList .model-config-item');
+                if (votingModelItems.length < 2) {
+                    throw new Error('Voting ensemble requires at least 2 models');
+                }
+
+                for (let item of votingModelItems) {
+                    const index = item.id.split('-')[2];
+                    const modelSelect = document.getElementById(`voting-model-select-${index}`);
+                    const modelName = modelSelect.value;
+
+                    if (!modelName) {
+                        throw new Error(`Please select a model for Voting Model ${parseInt(index) + 1}`);
+                    }
+
+                    const params = {};
+                    const paramInputs = document.querySelectorAll(`#voting-param-fields-${index} .voting-param-input`);
+                    paramInputs.forEach(input => {
+                        const paramName = input.id.split('-').pop();
+                        // Convert parameter values to appropriate types
+                        let paramValue = input.value;
+                        if (!isNaN(paramValue) && paramValue !== '') {
+                            paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
+                        } else if (paramValue.toLowerCase() === 'true') {
+                            paramValue = true;
+                        } else if (paramValue.toLowerCase() === 'false') {
+                            paramValue = false;
+                        } else if (paramValue.toLowerCase() === 'none' || paramValue === '') {
+                            paramValue = null;
+                        }
+                        params[paramName] = paramValue;
+                    });
+
+                    models.push({ model: modelName, params: params });
+                }
+
+                // Use the simplified endpoint
+                const response = await fetch('/api/build-simple-ensemble', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        ensemble_type: 'voting',
+                        models: models,
+                        voting_method: votingMethod
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    buildStatus.textContent = `Voting ensemble model built successfully!`;
+                    buildStatus.className = 'alert alert-success';
+                    buildStatus.classList.remove('hidden');
+
+                    displayEvaluationResults(result.evaluation_result);
+                    document.getElementById('evaluationResults').classList.remove('hidden');
+                } else {
+                    throw new Error(result.detail || 'Voting ensemble building failed');
+                }
+
+            } else if (ensembleType === 'stacking') {
+                const cv = parseInt(document.getElementById('stackingCV').value);
+                const baseModels = [];
+
+                const stackingModelItems = document.querySelectorAll('#stackingBaseModelsList .model-config-item');
+                if (stackingModelItems.length < 2) {
+                    throw new Error('Stacking ensemble requires at least 2 base models');
+                }
+
+                for (let item of stackingModelItems) {
+                    const index = item.id.split('-')[3];
+                    const modelSelect = document.getElementById(`stacking-base-select-${index}`);
+                    const modelName = modelSelect.value;
+
+                    if (!modelName) {
+                        throw new Error(`Please select a model for Base Model ${parseInt(index) + 1}`);
+                    }
+
+                    const params = {};
+                    const paramInputs = document.querySelectorAll(`#stacking-base-param-fields-${index} .stacking-base-param-input`);
+                    paramInputs.forEach(input => {
+                        const paramName = input.id.split('-').pop();
+                        let paramValue = input.value;
+                        // Convert parameter values
+                        if (!isNaN(paramValue) && paramValue !== '') {
+                            paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
+                        } else if (paramValue.toLowerCase() === 'true') {
+                            paramValue = true;
+                        } else if (paramValue.toLowerCase() === 'false') {
+                            paramValue = false;
+                        } else if (paramValue.toLowerCase() === 'none' || paramValue === '') {
+                            paramValue = null;
+                        }
+                        params[paramName] = paramValue;
+                    });
+
+                    baseModels.push({ model: modelName, params: params });
+                }
+
+                const metaModelName = document.getElementById('metaModelSelect').value;
+                if (!metaModelName) {
+                    throw new Error('Please select a meta model');
+                }
+
+                const metaParams = {};
+                const metaParamInputs = document.querySelectorAll('.meta-param-input');
+                metaParamInputs.forEach(input => {
+                    const paramName = input.id.split('-').pop();
+                    let paramValue = input.value;
+                    // Convert parameter values
+                    if (!isNaN(paramValue) && paramValue !== '') {
+                        paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
+                    } else if (paramValue.toLowerCase() === 'true') {
+                        paramValue = true;
+                    } else if (paramValue.toLowerCase() === 'false') {
+                        paramValue = false;
+                    } else if (paramValue.toLowerCase() === 'none' || paramValue === '') {
+                        paramValue = null;
+                    }
+                    metaParams[paramName] = paramValue;
+                });
+
+                const metaModel = { model: metaModelName, params: metaParams };
+
+                // Use the simplified endpoint
+                const response = await fetch('/api/build-simple-ensemble', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        ensemble_type: 'stacking',
+                        models: baseModels,
+                        meta_model: metaModel,
+                        cv: cv
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    buildStatus.textContent = `Stacking ensemble model built successfully!`;
+                    buildStatus.className = 'alert alert-success';
+                    buildStatus.classList.remove('hidden');
+
+                    displayEvaluationResults(result.evaluation_result);
+                    document.getElementById('evaluationResults').classList.remove('hidden');
+                } else {
+                    throw new Error(result.detail || 'Stacking ensemble building failed');
+                }
+
+            } else if (ensembleType === 'bagging') {
+                const nEstimators = parseInt(document.getElementById('baggingEstimators').value);
+                const baseModelName = document.getElementById('baggingModelSelect').value;
+
+                if (!baseModelName) {
+                    throw new Error('Please select a base model for bagging');
+                }
+
+                const params = {};
+                const paramInputs = document.querySelectorAll('.bagging-param-input');
+                paramInputs.forEach(input => {
+                    const paramName = input.id.split('-').pop();
+                    let paramValue = input.value;
+                    // Convert parameter values
+                    if (!isNaN(paramValue) && paramValue !== '') {
+                        paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
+                    } else if (paramValue.toLowerCase() === 'true') {
+                        paramValue = true;
+                    } else if (paramValue.toLowerCase() === 'false') {
+                        paramValue = false;
+                    } else if (paramValue.toLowerCase() === 'none' || paramValue === '') {
+                        paramValue = null;
+                    }
+                    params[paramName] = paramValue;
+                });
+
+                const baseModel = { model: baseModelName, params: params };
+
+                // Use the simplified endpoint
+                const response = await fetch('/api/build-simple-ensemble', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        ensemble_type: 'bagging',
+                        models: [baseModel],
+                        n_estimators: nEstimators
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    buildStatus.textContent = `Bagging ensemble model built successfully!`;
+                    buildStatus.className = 'alert alert-success';
+                    buildStatus.classList.remove('hidden');
+
+                    displayEvaluationResults(result.evaluation_result);
+                    document.getElementById('evaluationResults').classList.remove('hidden');
+                } else {
+                    throw new Error(result.detail || 'Bagging ensemble building failed');
+                }
+            }
+
+        } catch (error) {
+            buildStatus.textContent = 'Error: ' + error.message;
+            buildStatus.className = 'alert alert-danger';
+            buildStatus.classList.remove('hidden');
+            console.error('Ensemble building error:', error);
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    async function debugEnsembleConfig() {
+        const ensembleType = document.getElementById('ensembleType').value;
+        let testConfig = { type: ensembleType };
+
+        if (ensembleType === 'voting') {
+            testConfig.models = [
+                { model: 'Random Forest', params: {} },
+                { model: 'Logistic Regression', params: {} }
+            ];
+            testConfig.voting = 'soft';
+        } else if (ensembleType === 'stacking') {
+            testConfig.base_models = [
+                { model: 'Random Forest', params: {} },
+                { model: 'Logistic Regression', params: {} }
+            ];
+            testConfig.meta_model = { model: 'Logistic Regression', params: {} };
+            testConfig.cv = 5;
+        } else if (ensembleType === 'bagging') {
+            testConfig.base_model = { model: 'Decision Tree', params: {} };
+            testConfig.n_estimators = 10;
+        }
+
+        try {
+            const response = await fetch('/api/debug-ensemble-config', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(testConfig)
+            });
+
+            const result = await response.json();
+            console.log('Debug result:', result);
+
+            if (result.status === 'valid') {
+                console.log('✅ Configuration is valid');
+            } else {
+                console.error('❌ Configuration error:', result.error);
+            }
+        } catch (error) {
+            console.error('Debug request failed:', error);
+        }
+    }
+
+    // Add this button to your HTML for debugging (temporary)
+    function addDebugButton() {
+        const debugBtn = document.createElement('button');
+        debugBtn.textContent = 'Debug Config';
+        debugBtn.onclick = debugEnsembleConfig;
+        debugBtn.className = 'btn btn-secondary';
+        debugBtn.style.margin = '10px';
+        document.querySelector('.main-content').appendChild(debugBtn);
+    }
+
+        // Utility Functions
+        function displayEvaluationResults(evaluationResult) {
+            const metricsContainer = document.getElementById('metricsContainer');
+            metricsContainer.innerHTML = '';
+
+            if (evaluationResult) {
+                const metrics = evaluationResult;
+                const metricMap = {
+                    'accuracy': 'Accuracy',
+                    'precision': 'Precision',
+                    'recall': 'Recall',
+                    'f1_score': 'F1 Score',
+                    'roc_auc': 'ROC AUC',
+                    'log_loss': 'Log Loss'
+                };
+
+                const metricsGrid = document.createElement('div');
+                metricsGrid.className = 'metrics-grid';
+
+                Object.entries(metricMap).forEach(([key, label]) => {
+                    if (metrics[key] !== undefined) {
+                        addMetricCard(metricsGrid, label, metrics[key].toFixed(4));
+                    }
+                });
+
+                metricsContainer.appendChild(metricsGrid);
+            }
+        }
+
+    function addMetricCard(container, title, value) {
+        const card = document.createElement('div');
+        card.className = 'metric-card';
+        card.innerHTML = `
+            <div class="metric-title">${title}</div>
+            <div class="metric-value">${value}</div>
+        `;
+        container.appendChild(card);
+    }
+
+    function showSpinner() {
+        document.getElementById('spinner').classList.remove('hidden');
+    }
+
+    function hideSpinner() {
+        document.getElementById('spinner').classList.add('hidden');
+    }
+
+    // Initialize ensemble config on page load
+    window.addEventListener('load', function() {
+        updateEnsembleConfig();
+    });
 </script>
 {% endblock %}
