@@ -1,0 +1,68 @@
+original_cols:
+- id
+- age
+- job
+- marital
+- education
+- default
+- balance
+- housing
+- loan
+- contact
+- day
+- month
+- duration
+- campaign
+- pdays
+- previous
+- poutcome
+- y
+numerical_cols:
+- age
+- balance
+- day
+- duration
+- campaign
+- pdays
+- previous
+- y
+categorical_cols:
+- job
+- marital
+- education
+- default
+- housing
+- loan
+- contact
+- month
+- poutcome
+id_cols:
+- id
+skewed_cols:
+- age
+- balance
+- duration
+- campaign
+- pdays
+- previous
+- y
+normal_cols:
+- day
+contains_null: []
+contains_outliers:
+- age
+- balance
+- duration
+- campaign
+- pdays
+- previous
+- y
+correlated_cols: {}
+target_col: y
+timestamp: '2025-08-08 18:05:12'
+train_size: 0.8
+test_size: 0.2
+dataset_name: train (1)
+original_file_name: train (1).csv
+train_rows: 600000
+test_rows: 150000

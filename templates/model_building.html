@@ -5,7 +5,7 @@
 {% block content %}
 <div class="main-content">
     <h1 class="section-title">Enhanced Model Building</h1>
-    <p>Build single models, parallel models, or custom ensemble architectures for your classification task.</p>
+    <p>Build single models, parallel models, custom ensemble architectures, or hierarchical staged ensembles for your classification task.</p>
 
     <!-- Model Building Mode Selection -->
     <div class="card">
@@ -16,6 +16,7 @@
                 <option value="single">Single Model</option>
                 <option value="parallel">Parallel Models</option>
                 <option value="ensemble">Custom Ensemble</option>
+                <option value="staged">Staged Ensemble</option>
             </select>
         </div>
     </div>
@@ -126,7 +127,8 @@
                 <h4>Meta Model (Final Estimator)</h4>
                 <div class="form-group">
                     <label for="metaModelSelect">Meta Model</label>
-                    <select id="metaModelSelect">
+                    <select id="metaModelSelect" onchange="updateMetaModelParams()">
+                        <option value="" disabled selected>Select meta model</option>
                         {% for model_name in available_models %}
                         <option value="{{ model_name }}">{{ model_name }}</option>
                         {% endfor %}
@@ -146,7 +148,8 @@
                 <h4>Base Model</h4>
                 <div class="form-group">
                     <label for="baggingModelSelect">Base Model</label>
-                    <select id="baggingModelSelect">
+                    <select id="baggingModelSelect" onchange="updateBaggingModelParams()">
+                        <option value="" disabled selected>Select base model</option>
                         {% for model_name in available_models %}
                         <option value="{{ model_name }}">{{ model_name }}</option>
                         {% endfor %}
@@ -158,6 +161,117 @@
 
         <div class="form-group">
             <button type="button" class="btn btn-primary" onclick="buildEnsembleModel()">Build Ensemble Model</button>
+        </div>
+    </div>
+
+    <!-- NEW: Staged Ensemble Model Building -->
+    <div id="stagedModelSection" class="card hidden">
+        <div class="card-header">Staged Ensemble Model Building</div>
+        <p class="section-description">Create hierarchical ensemble architectures like 256→128→64→32→16→8→4→2→1 with custom reduction strategies.</p>
+
+        <!-- Architecture Configuration -->
+        <div class="form-group">
+            <label>Ensemble Architecture</label>
+            <div class="architecture-controls">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addStage()">Add Stage</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="clearAllStages()">Clear All</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="loadPresetArchitecture()">Load Preset</button>
+            </div>
+        </div>
+
+        <!-- Architecture Preset Selection -->
+        <div class="form-group">
+            <label for="architecturePreset">Architecture Presets</label>
+            <select id="architecturePreset">
+                <option value="">Custom Architecture</option>
+                <option value="256-128-64-32-16-8-4-2">256→128→64→32→16→8→4→2→1</option>
+                <option value="128-64-32-16-8-4">128→64→32→16→8→4→1</option>
+                <option value="64-32-16-8">64→32→16→8→1</option>
+                <option value="32-16-8">32→16→8→1</option>
+                <option value="16-8-4">16→8→4→1</option>
+                <option value="pyramid-large">Pyramid Large (100→50→25→12→6→3)</option>
+                <option value="pyramid-medium">Pyramid Medium (50→25→12→6→3)</option>
+                <option value="pyramid-small">Pyramid Small (25→12→6→3)</option>
+            </select>
+        </div>
+
+        <!-- Stage Configuration -->
+        <div id="stagesContainer">
+            <h4>Stages Architecture</h4>
+            <div id="stagesList"></div>
+        </div>
+
+        <!-- Global Staged Ensemble Settings -->
+        <div class="staged-global-settings">
+            <h4>Global Settings</h4>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="stagedCV">Cross-Validation Folds</label>
+                    <input type="number" id="stagedCV" value="5" min="2" max="10">
+                </div>
+
+                <div class="form-group">
+                    <label for="combineMethod">Combine Method</label>
+                    <select id="combineMethod">
+                        <option value="concatenate">Concatenate Features</option>
+                        <option value="average">Average Predictions</option>
+                        <option value="weighted_average">Weighted Average</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reductionStrategy">Model Reduction Strategy</label>
+                    <select id="reductionStrategy">
+                        <option value="auto">Auto Selection</option>
+                        <option value="best_performers">Best Performers</option>
+                        <option value="diverse_selection">Diverse Selection</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="passthroughOriginal">
+                        <label for="passthroughOriginal">Passthrough Original Features</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Meta Model -->
+        <div id="stagedFinalMetaModel">
+            <h4>Final Meta Model (Optional)</h4>
+            <div class="form-group">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="enableFinalMeta" onchange="toggleFinalMetaModel()">
+                    <label for="enableFinalMeta">Enable Final Meta Model</label>
+                </div>
+            </div>
+
+            <div id="finalMetaModelConfig" class="hidden">
+                <div class="form-group">
+                    <label for="finalMetaModelSelect">Final Meta Model</label>
+                    <select id="finalMetaModelSelect" onchange="updateFinalMetaModelParams()">
+                        <option value="" disabled selected>Select final meta model</option>
+                        {% for model_name in available_models %}
+                        <option value="{{ model_name }}">{{ model_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="finalMetaModelParams"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <button type="button" class="btn btn-primary" onclick="buildStagedEnsemble()">Build Staged Ensemble</button>
+        </div>
+
+        <!-- Architecture Visualization -->
+        <div id="architectureVisualization" class="architecture-viz hidden">
+            <h4>Architecture Overview</h4>
+            <div id="archVizContainer"></div>
         </div>
     </div>
 
@@ -197,6 +311,114 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+}
+
+/* Staged Ensemble Specific Styles */
+.stage-config-item {
+    border: 1px solid #007bff;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    background-color: #f8f9ff;
+    position: relative;
+}
+
+.stage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.stage-title {
+    font-weight: bold;
+    color: #007bff;
+    font-size: 1.1em;
+}
+
+.stage-model-count {
+    background-color: #007bff;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+}
+
+.stage-models-container {
+    margin-top: 10px;
+}
+
+.stage-model-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 3px;
+    background-color: #ffffff;
+    border-left: 3px solid #007bff;
+}
+
+.architecture-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.staged-global-settings {
+    border: 1px solid #28a745;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+    background-color: #f8fff8;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    align-items: end;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-description {
+    color: #666;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+/* Architecture Visualization */
+.architecture-viz {
+    border: 1px solid #6c757d;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.arch-stage {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 5px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.arch-arrow {
+    display: inline-block;
+    margin: 0 10px;
+    font-size: 1.2em;
+    color: #6c757d;
 }
 
 .parallel-result-item {
@@ -333,6 +555,67 @@
     opacity: 0.65;
     cursor: not-allowed;
 }
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group select,
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 12px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+    font-weight: bold;
+    color: #495057;
+}
+
+.card .form-group,
+.card .ensemble-config,
+.card .staged-global-settings {
+    padding: 0 15px;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.section-title {
+    color: #343a40;
+    margin-bottom: 10px;
+}
 </style>
 
 <script>
@@ -342,6 +625,10 @@
     let stackingBaseModelCounter = 0;
     let parallelTrainingResults = null;
 
+    // Staged ensemble variables
+    let stageCounter = 0;
+    let stagedModelCounter = 0;
+
     document.addEventListener('DOMContentLoaded', async function() {
         try {
             const response = await fetch('/api/available-models');
@@ -349,8 +636,6 @@
 
             // Add event listeners
             document.getElementById('singleModelName').addEventListener('change', updateSingleParameterForm);
-            document.getElementById('metaModelSelect').addEventListener('change', updateMetaModelParams);
-            document.getElementById('baggingModelSelect').addEventListener('change', updateBaggingModelParams);
         } catch (error) {
             console.error('Error loading models:', error);
         }
@@ -363,6 +648,7 @@
         document.getElementById('singleModelSection').classList.add('hidden');
         document.getElementById('parallelModelSection').classList.add('hidden');
         document.getElementById('ensembleModelSection').classList.add('hidden');
+        document.getElementById('stagedModelSection').classList.add('hidden');
 
         // Show selected section
         if (mode === 'single') {
@@ -371,10 +657,16 @@
             document.getElementById('parallelModelSection').classList.remove('hidden');
         } else if (mode === 'ensemble') {
             document.getElementById('ensembleModelSection').classList.remove('hidden');
+        } else if (mode === 'staged') {
+            document.getElementById('stagedModelSection').classList.remove('hidden');
+            // Initialize with one stage if none exist
+            if (document.querySelectorAll('.stage-config-item').length === 0) {
+                addStage();
+            }
         }
     }
 
-    // Single Model Functions
+    // ===== SINGLE MODEL FUNCTIONS =====
     function updateSingleParameterForm() {
         const modelSelect = document.getElementById('singleModelName');
         const selectedModelId = modelSelect.value;
@@ -430,7 +722,18 @@
         const customParams = {};
         document.querySelectorAll('.single-param-input').forEach(input => {
             const paramName = input.name.replace('params.', '');
-            customParams[paramName] = input.value;
+            let paramValue = input.value;
+            // Convert parameter values
+            if (!isNaN(paramValue) && paramValue !== '') {
+                paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
+            } else if (paramValue.toLowerCase() === 'true') {
+                paramValue = true;
+            } else if (paramValue.toLowerCase() === 'false') {
+                paramValue = false;
+            } else if (paramValue.toLowerCase() === 'none' || paramValue === '') {
+                paramValue = null;
+            }
+            customParams[paramName] = paramValue;
         });
 
         showSpinner();
@@ -469,7 +772,7 @@
         }
     }
 
-    // Parallel Model Functions
+    // ===== PARALLEL MODEL FUNCTIONS =====
     function addParallelModel() {
         const container = document.getElementById('parallelModelsList');
         const modelDiv = document.createElement('div');
@@ -566,7 +869,18 @@
             const paramInputs = document.querySelectorAll(`#parallel-param-fields-${index} .parallel-param-input`);
             paramInputs.forEach(input => {
                 const paramName = input.id.split('-').pop();
-                customParams[paramName] = input.value;
+                let paramValue = input.value;
+                // Convert parameter values
+                if (!isNaN(paramValue) && paramValue !== '') {
+                    paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
+                } else if (paramValue.toLowerCase() === 'true') {
+                    paramValue = true;
+                } else if (paramValue.toLowerCase() === 'false') {
+                    paramValue = false;
+                } else if (paramValue.toLowerCase() === 'none' || paramValue === '') {
+                    paramValue = null;
+                }
+                customParams[paramName] = paramValue;
             });
 
             models.push({
@@ -625,25 +939,17 @@
 
             if (result.status === 'success') {
                 const metrics = result.metrics;
-                const metricMap = {
-                    'accuracy': 'Accuracy',
-                    'precision': 'Precision',
-                    'recall': 'Recall',
-                    'f1_score': 'F1 Score',
-                    'roc_auc': 'ROC AUC',
-                    'log_loss': 'Log Loss'
-                };
-
-                const metricsGrid = document.createElement('div');
-                metricsGrid.className = 'metrics-grid';
-
-                Object.entries(metricMap).forEach(([key, label]) => {
-                    if (metrics[key] !== undefined) {
-                        addMetricCard(metricsGrid, label, metrics[key].toFixed(4));
-                    }
-                });
-
-                resultDiv.appendChild(metricsGrid);
+                resultDiv.innerHTML = `
+                    <h6>${modelId}</h6>
+                    <div class="metrics-grid">
+                        ${Object.entries(metrics).map(([key, value]) =>
+                            `<div class="metric-card">
+                                <div class="metric-title">${key.replace('_', ' ').toUpperCase()}</div>
+                                <div class="metric-value">${value.toFixed(4)}</div>
+                            </div>`
+                        ).join('')}
+                    </div>
+                `;
             } else {
                 resultDiv.innerHTML = `
                     <h6>${modelId}</h6>
@@ -653,16 +959,6 @@
 
             container.appendChild(resultDiv);
         }
-    }
-
-    function addMetricCard(container, title, value) {
-        const card = document.createElement('div');
-        card.className = 'metric-card';
-        card.innerHTML = `
-            <div class="metric-title">${title}</div>
-            <div class="metric-value">${value}</div>
-        `;
-        container.appendChild(card);
     }
 
     async function selectBestModel() {
@@ -709,7 +1005,7 @@
         }
     }
 
-    // Ensemble Model Functions
+    // ===== ENSEMBLE MODEL FUNCTIONS =====
     function updateEnsembleConfig() {
         const ensembleType = document.getElementById('ensembleType').value;
 
@@ -924,8 +1220,6 @@
         const ensembleType = document.getElementById('ensembleType').value;
         const buildStatus = document.getElementById('buildStatus');
 
-        let ensembleConfig = {};
-
         try {
             if (ensembleType === 'voting') {
                 const votingMethod = document.getElementById('votingMethod').value;
@@ -949,7 +1243,6 @@
                     const paramInputs = document.querySelectorAll(`#voting-param-fields-${index} .voting-param-input`);
                     paramInputs.forEach(input => {
                         const paramName = input.id.split('-').pop();
-                        // Convert parameter values to appropriate types
                         let paramValue = input.value;
                         if (!isNaN(paramValue) && paramValue !== '') {
                             paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
@@ -966,14 +1259,17 @@
                     models.push({ model: modelName, params: params });
                 }
 
-                // Use the simplified endpoint
+                showSpinner();
+
                 const response = await fetch('/api/build-simple-ensemble', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         ensemble_type: 'voting',
-                        models: models,
-                        voting_method: votingMethod
+                        config: {
+                            models: models,
+                            voting: votingMethod
+                        }
                     })
                 });
 
@@ -1012,7 +1308,6 @@
                     paramInputs.forEach(input => {
                         const paramName = input.id.split('-').pop();
                         let paramValue = input.value;
-                        // Convert parameter values
                         if (!isNaN(paramValue) && paramValue !== '') {
                             paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
                         } else if (paramValue.toLowerCase() === 'true') {
@@ -1038,7 +1333,6 @@
                 metaParamInputs.forEach(input => {
                     const paramName = input.id.split('-').pop();
                     let paramValue = input.value;
-                    // Convert parameter values
                     if (!isNaN(paramValue) && paramValue !== '') {
                         paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
                     } else if (paramValue.toLowerCase() === 'true') {
@@ -1053,15 +1347,18 @@
 
                 const metaModel = { model: metaModelName, params: metaParams };
 
-                // Use the simplified endpoint
+                showSpinner();
+
                 const response = await fetch('/api/build-simple-ensemble', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         ensemble_type: 'stacking',
-                        models: baseModels,
-                        meta_model: metaModel,
-                        cv: cv
+                        config: {
+                            base_models: baseModels,
+                            meta_model: metaModel,
+                            cv: cv
+                        }
                     })
                 });
 
@@ -1090,7 +1387,6 @@
                 paramInputs.forEach(input => {
                     const paramName = input.id.split('-').pop();
                     let paramValue = input.value;
-                    // Convert parameter values
                     if (!isNaN(paramValue) && paramValue !== '') {
                         paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
                     } else if (paramValue.toLowerCase() === 'true') {
@@ -1105,14 +1401,17 @@
 
                 const baseModel = { model: baseModelName, params: params };
 
-                // Use the simplified endpoint
+                showSpinner();
+
                 const response = await fetch('/api/build-simple-ensemble', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         ensemble_type: 'bagging',
-                        models: [baseModel],
-                        n_estimators: nEstimators
+                        config: {
+                            base_model: baseModel,
+                            n_estimators: nEstimators
+                        }
                     })
                 });
 
@@ -1139,86 +1438,485 @@
         }
     }
 
-    async function debugEnsembleConfig() {
-        const ensembleType = document.getElementById('ensembleType').value;
-        let testConfig = { type: ensembleType };
+// ===== STAGED ENSEMBLE FUNCTIONS =====
+    function addStage() {
+        const container = document.getElementById('stagesList');
+        const stageDiv = document.createElement('div');
+        stageDiv.className = 'stage-config-item';
+        stageDiv.id = `stage-${stageCounter}`;
 
-        if (ensembleType === 'voting') {
-            testConfig.models = [
-                { model: 'Random Forest', params: {} },
-                { model: 'Logistic Regression', params: {} }
-            ];
-            testConfig.voting = 'soft';
-        } else if (ensembleType === 'stacking') {
-            testConfig.base_models = [
-                { model: 'Random Forest', params: {} },
-                { model: 'Logistic Regression', params: {} }
-            ];
-            testConfig.meta_model = { model: 'Logistic Regression', params: {} };
-            testConfig.cv = 5;
-        } else if (ensembleType === 'bagging') {
-            testConfig.base_model = { model: 'Decision Tree', params: {} };
-            testConfig.n_estimators = 10;
+        stageDiv.innerHTML = `
+            <div class="stage-header">
+                <span class="stage-title">Stage ${stageCounter + 1}</span>
+                <div>
+                    <span class="stage-model-count" id="stage-count-${stageCounter}">0 models</span>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeStage(${stageCounter})" style="margin-left: 10px;">Remove Stage</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="stage-model-count-${stageCounter}">Number of Models in Stage</label>
+                <input type="number" id="stage-model-count-${stageCounter}" value="4" min="1" max="256"
+                       onchange="updateStageModelCount(${stageCounter})">
+                <small>Target number of models for this stage</small>
+            </div>
+
+            <div class="stage-models-container">
+                <h5>Models in Stage ${stageCounter + 1}</h5>
+                <div id="stage-models-${stageCounter}"></div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addModelToStage(${stageCounter})">Add Model</button>
+            </div>
+        `;
+
+        container.appendChild(stageDiv);
+        stageCounter++;
+        updateStageModelCount(stageCounter - 1);
+        updateArchitectureVisualization();
+    }
+
+    function removeStage(stageIndex) {
+        const stageDiv = document.getElementById(`stage-${stageIndex}`);
+        if (stageDiv) {
+            stageDiv.remove();
+        }
+        updateArchitectureVisualization();
+    }
+
+    function updateStageModelCount(stageIndex) {
+        const countInput = document.getElementById(`stage-model-count-${stageIndex}`);
+        const countDisplay = document.getElementById(`stage-count-${stageIndex}`);
+        const modelsContainer = document.getElementById(`stage-models-${stageIndex}`);
+
+        // FIX: Check if elements exist before proceeding
+        if (!countInput || !countDisplay || !modelsContainer) return;
+
+        const targetCount = parseInt(countInput.value) || 4;
+        const currentModels = modelsContainer.querySelectorAll('.stage-model-item');
+
+        // Update display
+        countDisplay.textContent = `${targetCount} models`;
+
+        // Calculate the difference
+        const modelCountDifference = targetCount - currentModels.length;
+
+        if (modelCountDifference > 0) {
+            // Add models
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < modelCountDifference; i++) {
+                const modelDiv = createModelElementForStage();
+                fragment.appendChild(modelDiv);
+            }
+            modelsContainer.appendChild(fragment);
+        } else if (modelCountDifference < 0) {
+            // Remove models
+            const modelsToRemove = -modelCountDifference;
+            for (let i = 0; i < modelsToRemove; i++) {
+                const lastModel = modelsContainer.lastElementChild;
+                if (lastModel) {
+                    lastModel.remove();
+                }
+            }
         }
 
+        updateArchitectureVisualization();
+    }
+
+    function createModelElementForStage() {
+        const modelDiv = document.createElement('div');
+        modelDiv.className = 'stage-model-item';
+        modelDiv.id = `staged-model-${stagedModelCounter}`;
+
+        modelDiv.innerHTML = `
+            <div class="model-header">
+                <h6>Model ${stagedModelCounter + 1}</h6>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeModelFromStage(${stagedModelCounter})">Remove</button>
+            </div>
+            <div class="form-group">
+                <label for="staged-model-select-${stagedModelCounter}">Algorithm</label>
+                <select id="staged-model-select-${stagedModelCounter}" onchange="updateStagedModelParams(${stagedModelCounter})">
+                    <option value="" disabled selected>Select a model</option>
+                    ${Object.keys(modelDefinitions).map(name => `<option value="${name}">${name}</option>`).join('')}
+                </select>
+            </div>
+            <div id="staged-params-${stagedModelCounter}" class="hidden">
+                <label>Parameters</label>
+                <div id="staged-param-fields-${stagedModelCounter}"></div>
+            </div>
+        `;
+
+        stagedModelCounter++;
+        return modelDiv;
+    }
+
+    function removeModelFromStage(modelIndex) {
+        const modelDiv = document.getElementById(`staged-model-${modelIndex}`);
+        if (modelDiv) {
+            modelDiv.remove();
+            updateArchitectureVisualization();
+        }
+    }
+
+    function updateStagedModelParams(modelIndex) {
+        const modelSelect = document.getElementById(`staged-model-select-${modelIndex}`);
+        const selectedModel = modelSelect.value;
+        const paramsContainer = document.getElementById(`staged-params-${modelIndex}`);
+        const paramFields = document.getElementById(`staged-param-fields-${modelIndex}`);
+
+        if (!selectedModel || !modelDefinitions[selectedModel]?.params) {
+            paramsContainer.classList.add('hidden');
+            return;
+        }
+
+        const params = modelDefinitions[selectedModel].params;
+        paramFields.innerHTML = '';
+
+        for (const [paramName, paramValue] of Object.entries(params)) {
+            const paramContainer = document.createElement('div');
+            paramContainer.className = 'form-group';
+
+            const paramLabel = document.createElement('label');
+            paramLabel.textContent = paramName;
+
+            const paramInput = document.createElement('input');
+            paramInput.type = 'text';
+            paramInput.id = `staged-param-${modelIndex}-${paramName}`;
+            paramInput.value = paramValue;
+            paramInput.className = 'staged-param-input';
+
+            paramContainer.appendChild(paramLabel);
+            paramContainer.appendChild(paramInput);
+            paramFields.appendChild(paramContainer);
+        }
+
+        paramsContainer.classList.remove('hidden');
+    }
+
+    function addModelToStage(stageIndex) {
+        const container = document.getElementById(`stage-models-${stageIndex}`);
+        if (!container) return;
+        const modelDiv = createModelElementForStage();
+        container.appendChild(modelDiv);
+        updateArchitectureVisualization();
+    }
+
+    function clearAllStages() {
+        document.getElementById('stagesList').innerHTML = '';
+        stageCounter = 0;
+        stagedModelCounter = 0;
+        updateArchitectureVisualization();
+    }
+
+    function loadPresetArchitecture() {
+        const preset = document.getElementById('architecturePreset').value;
+        if (!preset) return;
+
+        clearAllStages();
+
+        let stageSizes = [];
+
+        switch (preset) {
+            case '256-128-64-32-16-8-4-2':
+                stageSizes = [256, 128, 64, 32, 16, 8, 4, 2];
+                break;
+            case '128-64-32-16-8-4':
+                stageSizes = [128, 64, 32, 16, 8, 4];
+                break;
+            case '64-32-16-8':
+                stageSizes = [64, 32, 16, 8];
+                break;
+            case '32-16-8':
+                stageSizes = [32, 16, 8];
+                break;
+            case '16-8-4':
+                stageSizes = [16, 8, 4];
+                break;
+            case 'pyramid-large':
+                stageSizes = [100, 50, 25, 12, 6, 3];
+                break;
+            case 'pyramid-medium':
+                stageSizes = [50, 25, 12, 6, 3];
+                break;
+            case 'pyramid-small':
+                stageSizes = [25, 12, 6, 3];
+                break;
+        }
+
+        // Create stages with preset sizes
+        stageSizes.forEach((size, index) => {
+            addStage();
+            const countInput = document.getElementById(`stage-model-count-${index}`);
+            if (countInput) {
+                countInput.value = size;
+                updateStageModelCount(index);
+            }
+        });
+
+        updateArchitectureVisualization();
+    }
+
+    function updateArchitectureVisualization() {
+        const vizContainer = document.getElementById('archVizContainer');
+        const vizSection = document.getElementById('architectureVisualization');
+
+        // Check if elements exist
+        if (!vizContainer || !vizSection) return;
+
+        const stages = document.querySelectorAll('.stage-config-item');
+
+        if (stages.length === 0) {
+            vizSection.classList.add('hidden');
+            return;
+        }
+
+        let vizHTML = '<div class="architecture-flow">';
+
+        stages.forEach((stage, index) => {
+            const stageIndex = stage.id.split('-')[1];
+            const countInput = document.getElementById(`stage-model-count-${stageIndex}`);
+            const modelCount = countInput ? parseInt(countInput.value) || 0 : 0;
+
+            vizHTML += `<span class="arch-stage">Stage ${index + 1}: ${modelCount}</span>`;
+
+            if (index < stages.length - 1) {
+                vizHTML += '<span class="arch-arrow">→</span>';
+            }
+        });
+
+        // Add final meta model if enabled
+        const enableFinalMeta = document.getElementById('enableFinalMeta').checked;
+        if (enableFinalMeta) {
+            vizHTML += '<span class="arch-arrow">→</span><span class="arch-stage">Meta: 1</span>';
+        }
+
+        vizHTML += '</div>';
+
+        vizContainer.innerHTML = vizHTML;
+        vizSection.classList.remove('hidden');
+    }
+
+    function toggleFinalMetaModel() {
+        const enableCheckbox = document.getElementById('enableFinalMeta');
+        const configDiv = document.getElementById('finalMetaModelConfig');
+
+        if (enableCheckbox.checked) {
+            configDiv.classList.remove('hidden');
+        } else {
+            configDiv.classList.add('hidden');
+        }
+
+        updateArchitectureVisualization();
+    }
+
+    function updateFinalMetaModelParams() {
+        const metaModelSelect = document.getElementById('finalMetaModelSelect');
+        const selectedModel = metaModelSelect.value;
+        const paramsContainer = document.getElementById('finalMetaModelParams');
+
+        if (!selectedModel || !modelDefinitions[selectedModel]?.params) {
+            paramsContainer.innerHTML = '';
+            return;
+        }
+
+        const params = modelDefinitions[selectedModel].params;
+        paramsContainer.innerHTML = '<label>Final Meta Model Parameters</label>';
+
+        for (const [paramName, paramValue] of Object.entries(params)) {
+            const paramContainer = document.createElement('div');
+            paramContainer.className = 'form-group';
+
+            const paramLabel = document.createElement('label');
+            paramLabel.textContent = paramName;
+
+            const paramInput = document.createElement('input');
+            paramInput.type = 'text';
+            paramInput.id = `final-meta-param-${paramName}`;
+            paramInput.value = paramValue;
+            paramInput.className = 'final-meta-param-input';
+
+            paramContainer.appendChild(paramLabel);
+            paramContainer.appendChild(paramInput);
+            paramsContainer.appendChild(paramContainer);
+        }
+    }
+
+    async function buildStagedEnsemble() {
+        const buildStatus = document.getElementById('buildStatus');
+
         try {
-            const response = await fetch('/api/debug-ensemble-config', {
+            buildStatus.classList.add('hidden');
+
+            const stages = document.querySelectorAll('.stage-config-item');
+
+            if (stages.length === 0) {
+                buildStatus.textContent = 'Please add at least one stage';
+                buildStatus.className = 'alert alert-danger';
+                buildStatus.classList.remove('hidden');
+                return;
+            }
+
+            // Build architecture configuration
+            const architecture = [];
+
+            for (let i = 0; i < stages.length; i++) {
+                const stage = stages[i];
+                const stageIndex = stage.id.split('-')[1];
+                const stageModels = [];
+
+                const modelItems = stage.querySelectorAll('.stage-model-item');
+                for (let modelItem of modelItems) {
+                    const modelIndex = modelItem.id.split('-')[2];
+                    const modelSelect = document.getElementById(`staged-model-select-${modelIndex}`);
+                    const modelName = modelSelect ? modelSelect.value : '';
+
+                    if (!modelName) {
+                        buildStatus.textContent = `Please select a model for all models in Stage ${i + 1}`;
+                        buildStatus.className = 'alert alert-danger';
+                        buildStatus.classList.remove('hidden');
+                        return;
+                    }
+
+                    const customParams = {};
+                    const paramInputs = document.querySelectorAll(`#staged-param-fields-${modelIndex} .staged-param-input`);
+                    paramInputs.forEach(input => {
+                        const paramName = input.id.split('-').pop();
+                        let paramValue = input.value;
+                        // Convert parameter values
+                        if (!isNaN(paramValue) && paramValue !== '') {
+                            paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
+                        } else if (paramValue.toLowerCase() === 'true') {
+                            paramValue = true;
+                        } else if (paramValue.toLowerCase() === 'false') {
+                            paramValue = false;
+                        } else if (paramValue.toLowerCase() === 'none' || paramValue === '') {
+                            paramValue = null;
+                        }
+                        customParams[paramName] = paramValue;
+                    });
+
+                    stageModels.push({
+                        model: modelName,
+                        params: customParams
+                    });
+                }
+
+                architecture.push({
+                    stage: i + 1,
+                    models: stageModels,
+                    model_count: stageModels.length
+                });
+            }
+
+            // Get global settings
+            const cv = parseInt(document.getElementById('stagedCV').value) || 5;
+            const combineMethod = document.getElementById('combineMethod').value;
+            const passthroughOriginal = document.getElementById('passthroughOriginal').checked;
+
+            // Get final meta model if enabled
+            let finalMetaModel = null;
+            const enableFinalMeta = document.getElementById('enableFinalMeta').checked;
+            if (enableFinalMeta) {
+                const metaModelName = document.getElementById('finalMetaModelSelect').value;
+                if (!metaModelName) {
+                    buildStatus.textContent = 'Please select a final meta model';
+                    buildStatus.className = 'alert alert-danger';
+                    buildStatus.classList.remove('hidden');
+                    return;
+                }
+
+                const metaParams = {};
+                const metaParamInputs = document.querySelectorAll('.final-meta-param-input');
+                metaParamInputs.forEach(input => {
+                    const paramName = input.id.split('-').pop();
+                    let paramValue = input.value;
+                    // Convert parameter values
+                    if (!isNaN(paramValue) && paramValue !== '') {
+                        paramValue = paramValue.includes('.') ? parseFloat(paramValue) : parseInt(paramValue);
+                    } else if (paramValue.toLowerCase() === 'true') {
+                        paramValue = true;
+                    } else if (paramValue.toLowerCase() === 'false') {
+                        paramValue = false;
+                    } else if (paramValue.toLowerCase() === 'none' || paramValue === '') {
+                        paramValue = null;
+                    }
+                    metaParams[paramName] = paramValue;
+                });
+
+                finalMetaModel = {
+                    model: metaModelName,
+                    params: metaParams
+                };
+            }
+
+            const stagedConfig = {
+                type: 'staged_ensemble',
+                architecture: architecture,
+                final_meta_model: finalMetaModel,
+                cv: cv,
+                stage_method: 'stacking',
+                combine_method: combineMethod,
+                passthrough_original: passthroughOriginal
+            };
+
+            showSpinner();
+
+            const response = await fetch('/api/build-staged-ensemble', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(testConfig)
+                body: JSON.stringify(stagedConfig)
             });
 
             const result = await response.json();
-            console.log('Debug result:', result);
 
-            if (result.status === 'valid') {
-                console.log('✅ Configuration is valid');
+            if (response.ok) {
+                const summary = result.build_result.architecture_summary;
+                buildStatus.textContent = `Staged ensemble built successfully! ${summary.total_stages} stages with architecture: ${summary.stage_sizes.join('→')}${finalMetaModel ? '→1' : ''}`;
+                buildStatus.className = 'alert alert-success';
+                buildStatus.classList.remove('hidden');
+
+                displayEvaluationResults(result.evaluation_result);
+                document.getElementById('evaluationResults').classList.remove('hidden');
             } else {
-                console.error('❌ Configuration error:', result.error);
+                buildStatus.textContent = result.detail || 'Staged ensemble building failed';
+                buildStatus.className = 'alert alert-danger';
+                buildStatus.classList.remove('hidden');
             }
         } catch (error) {
-            console.error('Debug request failed:', error);
+            buildStatus.textContent = 'Error: ' + error.message;
+            buildStatus.className = 'alert alert-danger';
+            buildStatus.classList.remove('hidden');
+        } finally {
+            hideSpinner();
         }
     }
 
-    // Add this button to your HTML for debugging (temporary)
-    function addDebugButton() {
-        const debugBtn = document.createElement('button');
-        debugBtn.textContent = 'Debug Config';
-        debugBtn.onclick = debugEnsembleConfig;
-        debugBtn.className = 'btn btn-secondary';
-        debugBtn.style.margin = '10px';
-        document.querySelector('.main-content').appendChild(debugBtn);
-    }
+    // ===== UTILITY FUNCTIONS =====
+    function displayEvaluationResults(evaluationResult) {
+        const metricsContainer = document.getElementById('metricsContainer');
+        metricsContainer.innerHTML = '';
 
-        // Utility Functions
-        function displayEvaluationResults(evaluationResult) {
-            const metricsContainer = document.getElementById('metricsContainer');
-            metricsContainer.innerHTML = '';
+        if (evaluationResult) {
+            const metrics = evaluationResult;
+            const metricMap = {
+                'accuracy': 'Accuracy',
+                'precision': 'Precision',
+                'recall': 'Recall',
+                'f1_score': 'F1 Score',
+                'roc_auc': 'ROC AUC',
+                'log_loss': 'Log Loss'
+            };
 
-            if (evaluationResult) {
-                const metrics = evaluationResult;
-                const metricMap = {
-                    'accuracy': 'Accuracy',
-                    'precision': 'Precision',
-                    'recall': 'Recall',
-                    'f1_score': 'F1 Score',
-                    'roc_auc': 'ROC AUC',
-                    'log_loss': 'Log Loss'
-                };
+            const metricsGrid = document.createElement('div');
+            metricsGrid.className = 'metrics-grid';
 
-                const metricsGrid = document.createElement('div');
-                metricsGrid.className = 'metrics-grid';
+            Object.entries(metricMap).forEach(([key, label]) => {
+                if (metrics[key] !== undefined) {
+                    addMetricCard(metricsGrid, label, metrics[key].toFixed(4));
+                }
+            });
 
-                Object.entries(metricMap).forEach(([key, label]) => {
-                    if (metrics[key] !== undefined) {
-                        addMetricCard(metricsGrid, label, metrics[key].toFixed(4));
-                    }
-                });
-
-                metricsContainer.appendChild(metricsGrid);
-            }
+            metricsContainer.appendChild(metricsGrid);
         }
+    }
 
     function addMetricCard(container, title, value) {
         const card = document.createElement('div');
@@ -1241,6 +1939,12 @@
     // Initialize ensemble config on page load
     window.addEventListener('load', function() {
         updateEnsembleConfig();
+
+        // Add event listeners for architecture visualization updates
+        document.getElementById('stagedCV').addEventListener('change', updateArchitectureVisualization);
+        document.getElementById('combineMethod').addEventListener('change', updateArchitectureVisualization);
+        document.getElementById('passthroughOriginal').addEventListener('change', updateArchitectureVisualization);
+        document.getElementById('architecturePreset').addEventListener('change', loadPresetArchitecture);
     });
 </script>
 {% endblock %}

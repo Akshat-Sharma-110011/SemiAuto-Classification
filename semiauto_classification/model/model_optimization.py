@@ -7,6 +7,7 @@ from datetime import datetime
 import logging
 from typing import Dict, Any, Tuple, List, Optional, Union
 import json
+import warnings
 
 # Import optimization libraries
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
@@ -54,6 +55,11 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 configure_logger()
 logger = logging.getLogger("Enhanced Model Optimization")
 
+# Suppress common sklearn warnings
+warnings.filterwarnings('ignore', category=FutureWarning, module='sklearn')
+warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
+warnings.filterwarnings('ignore', category=RuntimeWarning, module='sklearn')
+
 
 class EnsembleOptimizer:
     """Specialized optimizer for ensemble models"""
@@ -79,15 +85,15 @@ class EnsembleOptimizer:
         """Parameter space for voting classifier"""
         return {
             'voting': ['soft', 'hard'],
-            'flatten_transform': [True, False]
+            'flatten_transform': [True, False]  # Fixed: Use actual boolean values
         }
 
     def _get_stacking_param_space(self) -> Dict[str, Any]:
         """Parameter space for stacking classifier"""
         param_space = {
-            'cv': [3, 5, 7, 10],
-            'stack_method': ['auto', 'predict_proba', 'decision_function', 'predict'],
-            'passthrough': [True, False]
+            'cv': [3, 5, 7],
+            'stack_method': ['auto', 'predict_proba'],
+            'passthrough': [True, False]  # Fixed: Use actual boolean values
         }
 
         # Add final estimator parameters if it's a simple model
@@ -105,13 +111,13 @@ class EnsembleOptimizer:
             'n_estimators': [10, 20, 50, 100],
             'max_samples': [0.5, 0.7, 0.9, 1.0],
             'max_features': [0.5, 0.7, 0.9, 1.0],
-            'bootstrap': [True, False],
-            'bootstrap_features': [True, False]
+            'bootstrap': [True, False],  # Fixed: Use actual boolean values
+            'bootstrap_features': [True, False]  # Fixed: Use actual boolean values
         }
 
         # Add base estimator parameters
         base_estimator = self.model.base_estimator
-        if hasattr(base_estimator, 'get_params'):
+        if hasattr(base_estimator, 'get_params') and base_estimator is not None:
             base_params = self._get_base_model_params(base_estimator)
             for param, values in base_params.items():
                 param_space[f'base_estimator__{param}'] = values
@@ -125,8 +131,9 @@ class EnsembleOptimizer:
         base_params = {
             'LogisticRegression': {
                 'C': [0.1, 1.0, 10.0],
-                'penalty': ['l1', 'l2'],
-                'solver': ['liblinear', 'lbfgs']
+                'penalty': ['l2'],  # Removed l1 to avoid solver conflicts
+                'solver': ['lbfgs'],  # Use compatible solver
+                'max_iter': [100, 200, 500]
             },
             'DecisionTreeClassifier': {
                 'max_depth': [3, 5, 10, None],
@@ -134,9 +141,9 @@ class EnsembleOptimizer:
                 'min_samples_leaf': [1, 2, 4]
             },
             'RandomForestClassifier': {
-                'n_estimators': [50, 100, 200],
+                'n_estimators': [50, 100],
                 'max_depth': [5, 10, None],
-                'min_samples_split': [2, 5, 10]
+                'min_samples_split': [2, 5]
             },
             'SVC': {
                 'C': [0.1, 1.0, 10.0],
@@ -269,20 +276,20 @@ class EnhancedModelOptimizer:
         return models
 
     def _get_hyperparameter_spaces(self) -> Dict[str, Dict[str, Any]]:
-        """Get hyperparameter spaces for all models"""
+        """Get updated hyperparameter spaces for all models (fixed deprecated parameters)"""
         param_spaces = {
             "Logistic Regression": {
                 "C": [0.01, 0.1, 1.0, 10.0, 100.0],
-                "penalty": ["l1", "l2", "elasticnet", "none"],
-                "solver": ["newton-cg", "lbfgs", "liblinear", "sag", "saga"],
+                "penalty": ["l2"],  # Removed problematic penalties
+                "solver": ["lbfgs", "newton-cg"],  # Compatible solvers
                 "max_iter": [100, 200, 500]
             },
             "Ridge Classifier": {
                 "alpha": [0.01, 0.1, 1.0, 10.0, 100.0],
-                "solver": ["auto", "svd", "cholesky", "lsqr", "sparse_cg", "sag", "saga"]
+                "solver": ["auto", "svd", "cholesky", "lsqr"]
             },
             "SGD Classifier": {
-                "loss": ["hinge", "log_loss", "perceptron", "squared_hinge"],
+                "loss": ["hinge", "log_loss", "perceptron"],
                 "penalty": ["l2", "l1", "elasticnet"],
                 "alpha": [0.0001, 0.001, 0.01],
                 "l1_ratio": [0.15, 0.5, 0.85]
@@ -295,7 +302,7 @@ class EnhancedModelOptimizer:
                 "max_depth": [None, 10, 20, 30],
                 "min_samples_split": [2, 5, 10],
                 "min_samples_leaf": [1, 2, 4],
-                "max_features": ["auto", "sqrt", "log2", None],
+                "max_features": [None, "sqrt", "log2"],  # Removed "auto"
                 "criterion": ["gini", "entropy"]
             },
             "Random Forest": {
@@ -303,7 +310,7 @@ class EnhancedModelOptimizer:
                 "max_depth": [None, 10, 20, 30],
                 "min_samples_split": [2, 5, 10],
                 "min_samples_leaf": [1, 2, 4],
-                "max_features": ["auto", "sqrt", "log2"],
+                "max_features": ["sqrt", "log2"],  # Removed "auto"
                 "criterion": ["gini", "entropy"]
             },
             "Gradient Boosting": {
@@ -316,15 +323,15 @@ class EnhancedModelOptimizer:
             },
             "AdaBoost": {
                 "n_estimators": [50, 100, 200],
-                "learning_rate": [0.01, 0.1, 1.0],
-                "algorithm": ["SAMME", "SAMME.R"]
+                "learning_rate": [0.01, 0.1, 1.0]
+                # Removed deprecated 'algorithm' parameter
             },
             "Extra Trees": {
                 "n_estimators": [50, 100, 200],
                 "max_depth": [None, 10, 20, 30],
                 "min_samples_split": [2, 5, 10],
                 "min_samples_leaf": [1, 2, 4],
-                "max_features": ["auto", "sqrt", "log2"],
+                "max_features": ["sqrt", "log2"],  # Removed "auto"
                 "criterion": ["gini", "entropy"]
             },
             "K-Nearest Neighbors": {
@@ -334,10 +341,10 @@ class EnhancedModelOptimizer:
                 "p": [1, 2]
             },
             "Support Vector Classifier": {
-                "kernel": ["linear", "poly", "rbf", "sigmoid"],
+                "kernel": ["linear", "poly", "rbf"],
                 "C": [0.1, 1, 10],
                 "gamma": ["scale", "auto"],
-                "probability": [True]
+                "probability": [True]  # Already boolean
             },
             "MLP Classifier": {
                 "hidden_layer_sizes": [(50,), (100,), (50, 50), (100, 50)],
@@ -360,7 +367,7 @@ class EnhancedModelOptimizer:
                 "solver": ["svd", "lsqr", "eigen"]
             },
             "Quadratic Discriminant Analysis": {
-                "reg_param": [0.0, 0.01, 0.1]
+                "reg_param": [0.01, 0.1, 0.5]  # Increased minimum to avoid rank issues
             },
             "XGBoost": {
                 "n_estimators": [50, 100, 200],
@@ -369,7 +376,7 @@ class EnhancedModelOptimizer:
                 "min_child_weight": [1, 3, 5],
                 "subsample": [0.8, 0.9, 1.0],
                 "colsample_bytree": [0.8, 0.9, 1.0],
-                "gamma": [1e-5, 0.1, 0.2],
+                "gamma": [0, 0.1, 0.2],
                 "objective": ["binary:logistic"]
             },
             "LightGBM": {
@@ -388,7 +395,7 @@ class EnhancedModelOptimizer:
                 "depth": [4, 6, 8],
                 "l2_leaf_reg": [1, 3, 5, 7],
                 "border_count": [32, 64, 128],
-                "verbose": [False]
+                "verbose": [False]  # Already boolean
             }
         }
         return param_spaces
@@ -480,17 +487,20 @@ class EnhancedModelOptimizer:
         logger.info(f"Starting grid search optimization")
         logger.info(f"Hyperparameter grid: {param_grid}")
 
-        grid_search = GridSearchCV(
-            estimator=self.current_model,
-            param_grid=param_grid,
-            cv=cv,
-            scoring=scoring,
-            n_jobs=n_jobs,
-            verbose=1
-        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
 
-        logger.info("Fitting grid search...")
-        grid_search.fit(self.X_train, self.y_train)
+            grid_search = GridSearchCV(
+                estimator=self.current_model,
+                param_grid=param_grid,
+                cv=cv,
+                scoring=scoring,
+                n_jobs=n_jobs,
+                verbose=1
+            )
+
+            logger.info("Fitting grid search...")
+            grid_search.fit(self.X_train, self.y_train)
 
         best_model = grid_search.best_estimator_
         best_params = grid_search.best_params_
@@ -501,6 +511,39 @@ class EnhancedModelOptimizer:
 
         return best_model, best_params
 
+    def _suggest_parameter(self, trial: optuna.Trial, param_name: str, param_values: Any) -> Any:
+        """Suggest parameter value with proper type handling - FIXED VERSION"""
+        if isinstance(param_values, list):
+            # Special handling for boolean parameters
+            if all(isinstance(val, bool) for val in param_values):
+                return trial.suggest_categorical(param_name, param_values)
+
+            # Check if all values are numeric
+            elif all(isinstance(val, (int, float)) for val in param_values) and len(param_values) > 1:
+                min_val, max_val = min(param_values), max(param_values)
+
+                # Check if all values are integers
+                if all(isinstance(val, int) for val in param_values):
+                    return trial.suggest_int(
+                        param_name,
+                        min_val,
+                        max_val,
+                        log=max_val / max(1, min_val) > 100
+                    )
+                else:
+                    return trial.suggest_float(
+                        param_name,
+                        min_val,
+                        max_val,
+                        log=max_val / max(1e-10, min_val) > 100
+                    )
+            else:
+                # Categorical parameter
+                return trial.suggest_categorical(param_name, param_values)
+        else:
+            # Single value or non-list parameter
+            return param_values
+
     def _objective(
             self,
             trial: optuna.Trial,
@@ -508,34 +551,12 @@ class EnhancedModelOptimizer:
             metric_name: str,
             maximize: bool
     ) -> float:
-        """Optuna objective function"""
+        """Optuna objective function with improved parameter handling"""
         params = {}
 
         # Generate parameters for this trial
         for param_name, param_values in param_space.items():
-            if isinstance(param_values, list):
-                if all(isinstance(val, (int, float)) for val in param_values) and len(param_values) > 1:
-                    if all(isinstance(val, int) for val in param_values):
-                        params[param_name] = trial.suggest_int(
-                            param_name,
-                            min(param_values),
-                            max(param_values),
-                            log=max(param_values) / max(1, min(param_values)) > 100
-                        )
-                    else:
-                        params[param_name] = trial.suggest_float(
-                            param_name,
-                            min(param_values),
-                            max(param_values),
-                            log=max(param_values) / max(1e-10, min(param_values)) > 100
-                        )
-                else:
-                    params[param_name] = trial.suggest_categorical(param_name, param_values)
-
-        # Handle special parameters
-        if "hidden_layer_sizes" in param_space:
-            params["hidden_layer_sizes"] = trial.suggest_categorical("hidden_layer_sizes",
-                                                                     param_space["hidden_layer_sizes"])
+            params[param_name] = self._suggest_parameter(trial, param_name, param_values)
 
         # Create model with suggested parameters
         try:
@@ -556,19 +577,22 @@ class EnhancedModelOptimizer:
 
                 model = model_class(**current_params)
 
-            # Train and evaluate
-            model.fit(self.X_train, self.y_train)
-            y_pred = model.predict(self.X_test)
+            # Train and evaluate with suppressed warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore')
 
-            # Get probability predictions if needed
-            y_pred_proba = None
-            if metric_name in ["roc_auc", "log_loss"] and hasattr(model, "predict_proba"):
-                try:
-                    y_pred_proba = model.predict_proba(self.X_test)
-                except:
-                    pass
+                model.fit(self.X_train, self.y_train)
+                y_pred = model.predict(self.X_test)
 
-            metric_value = self._calculate_metric(self.y_test, y_pred, metric_name, y_pred_proba)
+                # Get probability predictions if needed
+                y_pred_proba = None
+                if metric_name in ["roc_auc", "log_loss"] and hasattr(model, "predict_proba"):
+                    try:
+                        y_pred_proba = model.predict_proba(self.X_test)
+                    except:
+                        pass
+
+                metric_value = self._calculate_metric(self.y_test, y_pred, metric_name, y_pred_proba)
 
             logger.info(
                 f"Trial {trial.number} - Params: {params}, "
@@ -582,34 +606,47 @@ class EnhancedModelOptimizer:
             return -float('inf') if maximize else float('inf')
 
     def _clone_ensemble_with_params(self, params: Dict[str, Any]):
-        """Clone ensemble model with new parameters"""
+        """Clone ensemble model with new parameters - FIXED VERSION"""
         if isinstance(self.current_model, VotingClassifier):
             # For voting classifier, update top-level parameters
             current_params = self.current_model.get_params()
-            current_params.update(params)
+
+            # Filter parameters to only include valid ones and ensure proper types
+            valid_params = {}
+            for k, v in params.items():
+                if k in ['voting', 'flatten_transform']:
+                    # Ensure boolean parameters are actually boolean
+                    if k == 'flatten_transform' and isinstance(v, (int, float)):
+                        valid_params[k] = bool(v)
+                    else:
+                        valid_params[k] = v
+
             return VotingClassifier(
                 estimators=self.current_model.estimators,
-                **{k: v for k, v in current_params.items() if k in ['voting', 'n_jobs', 'flatten_transform']}
+                **valid_params
             )
         elif isinstance(self.current_model, StackingClassifier):
             # For stacking classifier, handle nested parameters
-            current_params = self.current_model.get_params()
-            current_params.update(params)
-
-            # Separate final estimator parameters
             final_estimator_params = {}
             stacking_params = {}
-            for k, v in current_params.items():
+
+            for k, v in params.items():
                 if k.startswith('final_estimator__'):
                     final_estimator_params[k.replace('final_estimator__', '')] = v
-                elif k in ['cv', 'stack_method', 'passthrough', 'n_jobs']:
-                    stacking_params[k] = v
+                elif k in ['cv', 'stack_method', 'passthrough']:
+                    # Ensure boolean parameters are actually boolean
+                    if k == 'passthrough' and isinstance(v, (int, float)):
+                        stacking_params[k] = bool(v)
+                    else:
+                        stacking_params[k] = v
 
             # Update final estimator if needed
             final_estimator = self.current_model.final_estimator
-            if final_estimator_params:
+            if final_estimator_params and final_estimator is not None:
                 final_estimator_class = final_estimator.__class__
-                final_estimator = final_estimator_class(**final_estimator_params)
+                current_final_params = final_estimator.get_params()
+                current_final_params.update(final_estimator_params)
+                final_estimator = final_estimator_class(**current_final_params)
 
             return StackingClassifier(
                 estimators=self.current_model.estimators,
@@ -618,24 +655,26 @@ class EnhancedModelOptimizer:
             )
         elif isinstance(self.current_model, BaggingClassifier):
             # For bagging classifier, handle base estimator parameters
-            current_params = self.current_model.get_params()
-            current_params.update(params)
-
-            # Separate base estimator parameters
             base_estimator_params = {}
             bagging_params = {}
-            for k, v in current_params.items():
+
+            for k, v in params.items():
                 if k.startswith('base_estimator__'):
                     base_estimator_params[k.replace('base_estimator__', '')] = v
-                elif k in ['n_estimators', 'max_samples', 'max_features', 'bootstrap', 'bootstrap_features', 'n_jobs',
-                           'random_state']:
-                    bagging_params[k] = v
+                elif k in ['n_estimators', 'max_samples', 'max_features', 'bootstrap', 'bootstrap_features']:
+                    # Ensure boolean parameters are actually boolean
+                    if k in ['bootstrap', 'bootstrap_features'] and isinstance(v, (int, float)):
+                        bagging_params[k] = bool(v)
+                    else:
+                        bagging_params[k] = v
 
             # Update base estimator if needed
             base_estimator = self.current_model.base_estimator
-            if base_estimator_params:
+            if base_estimator_params and base_estimator is not None:
                 base_estimator_class = base_estimator.__class__
-                base_estimator = base_estimator_class(**base_estimator_params)
+                current_base_params = base_estimator.get_params()
+                current_base_params.update(base_estimator_params)
+                base_estimator = base_estimator_class(**current_base_params)
 
             return BaggingClassifier(
                 base_estimator=base_estimator,
@@ -665,11 +704,16 @@ class EnhancedModelOptimizer:
         logger.info(f"Metric to {'maximize' if maximize else 'minimize'}: {metric_name}")
 
         direction = "maximize" if maximize else "minimize"
+
+        # Suppress Optuna logging
+        optuna.logging.set_verbosity(optuna.logging.WARNING)
+
         study = optuna.create_study(direction=direction)
 
         study.optimize(
             lambda trial: self._objective(trial, param_space, metric_name, maximize),
-            n_trials=n_trials
+            n_trials=n_trials,
+            show_progress_bar=False
         )
 
         best_trial = study.best_trial
@@ -691,7 +735,9 @@ class EnhancedModelOptimizer:
             current_params.update(best_params)
             best_model = model_class(**current_params)
 
-        best_model.fit(self.X_train, self.y_train)
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
+            best_model.fit(self.X_train, self.y_train)
 
         return best_model, best_params
 
@@ -789,81 +835,86 @@ def optimize_model(
             return result
 
         logger.info("Starting enhanced model optimization process")
-        optimizer = EnhancedModelOptimizer(config_overrides=config_overrides)
 
-        result["model_type"] = optimizer.model_type
-        logger.info(f"Detected model type: {optimizer.model_type}")
+        # Suppress warnings during optimization
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
 
-        if method == "1":
-            optimized_model, best_params = optimizer.optimize_with_grid_search()
-        else:
-            metric_mapping = get_available_metrics()
+            optimizer = EnhancedModelOptimizer(config_overrides=config_overrides)
 
-            if metric not in metric_mapping:
-                logger.warning("Invalid metric choice, defaulting to Accuracy")
-                metric = "1"
+            result["model_type"] = optimizer.model_type
+            logger.info(f"Detected model type: {optimizer.model_type}")
 
-            metric_name, maximize, _ = metric_mapping[metric]
-            optimized_model, best_params = optimizer.optimize_with_optuna(
-                n_trials=n_trials,
-                metric_name=metric_name,
-                maximize=maximize
-            )
+            if method == "1":
+                optimized_model, best_params = optimizer.optimize_with_grid_search()
+            else:
+                metric_mapping = get_available_metrics()
 
-        optimizer.save_optimized_model(optimized_model, best_params)
-        optimizer.update_intel_yaml()
+                if metric not in metric_mapping:
+                    logger.warning("Invalid metric choice, defaulting to Accuracy")
+                    metric = "1"
 
-        # Generate predictions for evaluation
-        y_pred = optimized_model.predict(optimizer.X_test)
-        y_pred_proba = None
+                metric_name, maximize, _ = metric_mapping[metric]
+                optimized_model, best_params = optimizer.optimize_with_optuna(
+                    n_trials=n_trials,
+                    metric_name=metric_name,
+                    maximize=maximize
+                )
 
-        # Get probability predictions if the model supports it
-        if hasattr(optimized_model, "predict_proba"):
-            try:
-                y_pred_proba = optimized_model.predict_proba(optimizer.X_test)
-            except Exception as e:
-                logger.warning(f"Could not get probability predictions: {str(e)}")
+            optimizer.save_optimized_model(optimized_model, best_params)
+            optimizer.update_intel_yaml()
 
-        # Calculate comprehensive metrics
-        metrics = {
-            "accuracy": accuracy_score(optimizer.y_test, y_pred),
-            "f1_score": f1_score(optimizer.y_test, y_pred, average='weighted', zero_division=0),
-            "precision": precision_score(optimizer.y_test, y_pred, average='weighted', zero_division=0),
-            "recall": recall_score(optimizer.y_test, y_pred, average='weighted', zero_division=0)
-        }
+            # Generate predictions for evaluation
+            y_pred = optimized_model.predict(optimizer.X_test)
+            y_pred_proba = None
 
-        # Add probability-based metrics if available
-        if y_pred_proba is not None:
-            try:
-                unique_classes = len(np.unique(optimizer.y_test))
-                if unique_classes == 2:  # Binary classification
-                    metrics["roc_auc"] = roc_auc_score(optimizer.y_test, y_pred_proba[:, 1])
-                elif unique_classes > 2:  # Multiclass classification
-                    metrics["roc_auc"] = roc_auc_score(
-                        optimizer.y_test,
-                        y_pred_proba,
-                        multi_class='ovr',
-                        average='weighted'
-                    )
+            # Get probability predictions if the model supports it
+            if hasattr(optimized_model, "predict_proba"):
+                try:
+                    y_pred_proba = optimized_model.predict_proba(optimizer.X_test)
+                except Exception as e:
+                    logger.warning(f"Could not get probability predictions: {str(e)}")
 
-                # Add log loss
-                metrics["log_loss"] = log_loss(optimizer.y_test, y_pred_proba)
-            except ValueError as e:
-                logger.warning(f"Could not calculate ROC-AUC or Log Loss: {str(e)}")
-            except Exception as e:
-                logger.warning(f"Error calculating probability-based metrics: {str(e)}")
+            # Calculate comprehensive metrics
+            metrics = {
+                "accuracy": accuracy_score(optimizer.y_test, y_pred),
+                "f1_score": f1_score(optimizer.y_test, y_pred, average='weighted', zero_division=0),
+                "precision": precision_score(optimizer.y_test, y_pred, average='weighted', zero_division=0),
+                "recall": recall_score(optimizer.y_test, y_pred, average='weighted', zero_division=0)
+            }
 
-        # Log the final metrics
-        logger.info(f"Final {optimizer.model_type.title()} Model Performance:")
-        for metric_name, metric_value in metrics.items():
-            logger.info(f"{metric_name.upper()}: {metric_value:.4f}")
+            # Add probability-based metrics if available
+            if y_pred_proba is not None:
+                try:
+                    unique_classes = len(np.unique(optimizer.y_test))
+                    if unique_classes == 2:  # Binary classification
+                        metrics["roc_auc"] = roc_auc_score(optimizer.y_test, y_pred_proba[:, 1])
+                    elif unique_classes > 2:  # Multiclass classification
+                        metrics["roc_auc"] = roc_auc_score(
+                            optimizer.y_test,
+                            y_pred_proba,
+                            multi_class='ovr',
+                            average='weighted'
+                        )
 
-        result.update({
-            "best_params": best_params,
-            "model_path": optimizer.optimized_model_path,
-            "metrics": metrics,
-            "message": f"{optimizer.model_type.title()} model optimization completed successfully"
-        })
+                    # Add log loss
+                    metrics["log_loss"] = log_loss(optimizer.y_test, y_pred_proba)
+                except ValueError as e:
+                    logger.warning(f"Could not calculate ROC-AUC or Log Loss: {str(e)}")
+                except Exception as e:
+                    logger.warning(f"Error calculating probability-based metrics: {str(e)}")
+
+            # Log the final metrics
+            logger.info(f"Final {optimizer.model_type.title()} Model Performance:")
+            for metric_name, metric_value in metrics.items():
+                logger.info(f"{metric_name.upper()}: {metric_value:.4f}")
+
+            result.update({
+                "best_params": best_params,
+                "model_path": optimizer.optimized_model_path,
+                "metrics": metrics,
+                "message": f"{optimizer.model_type.title()} model optimization completed successfully"
+            })
 
     except Exception as e:
         logger.error(f"Optimization error: {str(e)}")

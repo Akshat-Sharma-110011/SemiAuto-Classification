@@ -1662,108 +1662,444 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
 
 
 class FeatureToolsTransformer(BaseEstimator, TransformerMixin):
-    """A transformer that uses featuretools to create new features."""
+    """Enhanced transformer that uses featuretools aggressively for numeric data."""
 
-    def __init__(self, target_col: str):
+    def __init__(self, target_col: str, max_features: int = 50000, chunk_size: int = 5000):
         self.logger = logging.getLogger("Feature Engineering")
-        self.logger.info("Initializing FeatureToolsTransformer")
+        self.logger.info(f"Initializing Enhanced FeatureToolsTransformer with max_features={max_features}")
         self.target_col = target_col
+        self.max_features = max_features
+        self.chunk_size = chunk_size
         self.feature_defs = None
         self.feature_names = None
+        self.selected_feature_defs = None
 
         try:
             import featuretools as ft
             self.ft = ft
+            # List available primitives
+            self.logger.info("Loading all available featuretools primitives...")
+            self.available_primitives = self._get_all_primitives()
         except ImportError:
             self.logger.error("Featuretools package not found. Please install with: pip install featuretools")
             raise
 
+    def _get_all_primitives(self):
+        """Get comprehensive list of all available primitives for numeric data."""
+        try:
+            # Get all available primitives
+            all_primitives_df = self.ft.primitives.list_primitives()
+
+            # Get transform primitives (these work on individual rows/entities)
+            transform_primitives = []
+
+            # Extract primitive names from the dataframe
+            for idx, row in all_primitives_df.iterrows():
+                if row['type'] == 'transform':
+                    prim_name = row['name']
+                    try:
+                        # Try to get the actual primitive class
+                        prim_class = getattr(self.ft.primitives, prim_name, None)
+                        if prim_class is not None:
+                            transform_primitives.append(prim_name)
+                    except:
+                        # If we can't get the class, still add the name
+                        transform_primitives.append(prim_name)
+
+            # Also include some known good primitives manually
+            known_good_primitives = [
+                # Basic arithmetic
+                'add_numeric', 'subtract_numeric', 'multiply_numeric', 'divide_numeric',
+                'modulo_numeric', 'absolute', 'negate',
+
+                # Mathematical functions
+                'square_root', 'natural_logarithm', 'exponential', 'square',
+                'cube_root', 'sine', 'cosine', 'tangent',
+
+                # Statistical transforms
+                'diff', 'rolling_mean', 'rolling_max', 'rolling_min', 'rolling_std',
+                'cum_sum', 'cum_mean', 'cum_max', 'cum_min', 'cum_count',
+
+                # Percentile and ranking
+                'percentile', 'rank',
+
+                # Time-based (if applicable)
+                'lag', 'lead',
+
+                # Comparison
+                'greater_than', 'less_than', 'equal',
+
+                # Binning/discretization
+                'binary_threshold', 'percentile_bucket',
+
+                # Advanced mathematical
+                'log_1p', 'sigmoid', 'tanh'
+            ]
+
+            # Combine and deduplicate
+            all_transform_primitives = list(set(transform_primitives + known_good_primitives))
+
+            self.logger.info(f"Found {len(all_transform_primitives)} transform primitives")
+            self.logger.info(f"Sample primitives: {all_transform_primitives[:20]}")
+
+            return all_transform_primitives
+
+        except Exception as e:
+            self.logger.error(f"Error getting primitives: {e}")
+            # Fallback to basic set
+            return ['add_numeric', 'subtract_numeric', 'multiply_numeric', 'divide_numeric',
+                    'absolute', 'square_root', 'natural_logarithm', 'exponential']
+
+    def _filter_working_primitives(self, primitives, sample_data):
+        """Test primitives on sample data to see which ones actually work."""
+        working_primitives = []
+
+        self.logger.info(f"Testing {len(primitives)} primitives on sample data...")
+
+        for prim_name in primitives:
+            try:
+                # Create a small entityset for testing
+                es_test = self.ft.EntitySet(id="test")
+                sample_df = sample_data.head(100).copy()
+
+                if sample_df.index.name is None:
+                    sample_df = sample_df.reset_index(drop=True)
+                    sample_df.index.name = "index"
+
+                es_test = es_test.add_dataframe(
+                    dataframe_name="test_data",
+                    dataframe=sample_df,
+                    index="index"
+                )
+
+                # Try to generate features with this primitive
+                _, _ = self.ft.dfs(
+                    entityset=es_test,
+                    target_dataframe_name="test_data",
+                    trans_primitives=[prim_name],
+                    max_depth=1,
+                    verbose=False,
+                    max_features=10  # Just test with a few features
+                )
+
+                working_primitives.append(prim_name)
+
+            except Exception as e:
+                # Primitive doesn't work, skip it
+                continue
+
+        self.logger.info(f"Found {len(working_primitives)} working primitives: {working_primitives}")
+        return working_primitives
+
+    def _select_best_features(self, feature_matrix: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
+        """Select the best features using multiple criteria."""
+        self.logger.info(
+            f"Selecting best {self.max_features} features from {feature_matrix.shape[1]} generated features")
+
+        # Remove features with zero or very low variance
+        numeric_features = feature_matrix.select_dtypes(include=[np.number])
+
+        # Calculate variance and remove constant features
+        variances = numeric_features.var()
+        variance_threshold = variances.quantile(0.1)  # Keep top 90% by variance
+        high_variance_mask = variances > variance_threshold
+        high_variance_features = numeric_features.loc[:, high_variance_mask]
+
+        self.logger.info(f"Retained {high_variance_features.shape[1]} features after variance filtering")
+
+        if high_variance_features.shape[1] <= self.max_features:
+            return high_variance_features
+
+        # Use multiple selection criteria
+        feature_scores = {}
+
+        # 1. Variance score (normalized)
+        variances_norm = (variances - variances.min()) / (variances.max() - variances.min())
+
+        # 2. Correlation with target (if available)
+        if y is not None:
+            try:
+                correlations = high_variance_features.corrwith(y).abs()
+                correlations = correlations.fillna(0)
+                correlations_norm = correlations / correlations.max() if correlations.max() > 0 else correlations
+            except Exception as e:
+                self.logger.warning(f"Could not compute correlations with target: {str(e)}")
+                correlations_norm = pd.Series(0, index=high_variance_features.columns)
+        else:
+            correlations_norm = pd.Series(0, index=high_variance_features.columns)
+
+        # 3. Feature uniqueness (prefer features with more unique values)
+        uniqueness_scores = high_variance_features.nunique() / len(high_variance_features)
+        uniqueness_norm = uniqueness_scores / uniqueness_scores.max() if uniqueness_scores.max() > 0 else uniqueness_scores
+
+        # Combine scores with weights
+        for col in high_variance_features.columns:
+            variance_score = variances_norm.get(col, 0)
+            correlation_score = correlations_norm.get(col, 0)
+            uniqueness_score = uniqueness_norm.get(col, 0)
+
+            # Weighted combination - emphasize correlation with target
+            combined_score = (0.2 * variance_score +
+                              0.6 * correlation_score +
+                              0.2 * uniqueness_score)
+            feature_scores[col] = combined_score
+
+        # Select top features
+        sorted_features = sorted(feature_scores.items(), key=lambda x: x[1], reverse=True)
+        selected_features = [col for col, score in sorted_features[:self.max_features]]
+
+        self.logger.info(f"Selected top {len(selected_features)} features based on combined scoring")
+
+        return high_variance_features[selected_features]
+
     def fit(self, X, y=None):
         try:
-            es = self.ft.EntitySet(id="features")
-            X_copy = X.copy()
+            self.logger.info("Starting aggressive feature generation for numeric data...")
 
-            if X_copy.index.name is None:
-                X_copy = X_copy.reset_index(drop=True)
-                index_name = "index"
+            # Ensure X is a DataFrame
+            if isinstance(X, pd.DataFrame):
+                X_copy = X.copy()
             else:
-                index_name = X_copy.index.name
+                X_array = np.asarray(X)
+                if X_array.ndim > 2:
+                    X_array = X_array.reshape(X_array.shape[0], -1)
+                X_copy = pd.DataFrame(X_array)
 
-            es.add_dataframe(
+            # Ensure y is properly formatted
+            if y is not None:
+                if hasattr(y, 'values'):
+                    y = y.values
+                y = np.asarray(y).flatten()
+
+            # Since data is all numeric, we can be aggressive
+            self.logger.info(f"Input data shape: {X_copy.shape}")
+            self.logger.info(
+                f"All columns are numeric: {X_copy.select_dtypes(include=[np.number]).shape[1] == X_copy.shape[1]}")
+
+            # Test primitives on sample data to find working ones
+            working_primitives = self._filter_working_primitives(self.available_primitives, X_copy)
+
+            if not working_primitives:
+                self.logger.warning("No working primitives found, using original features")
+                self.feature_names = X_copy.columns.tolist()
+                return self
+
+            # Create entityset
+            es = self.ft.EntitySet(id="aggressive_features")
+            X_indexed = X_copy.copy()
+
+            # Ensure we have a proper index
+            if X_indexed.index.name is None:
+                X_indexed = X_indexed.reset_index(drop=True)
+                X_indexed.index.name = "index"
+
+            # Add dataframe to entityset
+            es = es.add_dataframe(
                 dataframe_name="data",
-                dataframe=X_copy,
-                index=index_name,
-                make_index=True,
-                time_index=None
+                dataframe=X_indexed,
+                index="index"
             )
 
-            feature_matrix, feature_defs = self.ft.dfs(
-                entityset=es,
-                target_dataframe_name="data",
-                trans_primitives=["add_numeric", "multiply_numeric", "divide_numeric", "subtract_numeric"],
-                max_depth=1,
-                features_only=False,
-                verbose=True
-            )
+            # Use aggressive parameters for maximum feature generation
+            max_depth = 2  # Increase depth for more complex features
 
-            self.feature_defs = feature_defs
-            self.feature_names = [col for col in feature_matrix.columns if self.target_col not in col]
-            self.logger.info(f"Generated {len(self.feature_names)} features using featuretools")
+            self.logger.info(f"Generating features with max_depth={max_depth}")
+            self.logger.info(f"Using {len(working_primitives)} primitives: {working_primitives[:10]}...")
+
+            try:
+                # Generate features aggressively
+                feature_matrix, feature_defs = self.ft.dfs(
+                    entityset=es,
+                    target_dataframe_name="data",
+                    trans_primitives=working_primitives,
+                    max_depth=max_depth,
+                    verbose=True,
+                    max_features=None,  # No initial limit - generate as many as possible
+                    n_jobs=1  # Single job to avoid memory issues
+                )
+
+                self.logger.info(f"Successfully generated {feature_matrix.shape[1]} raw features!")
+
+                # Clean the feature matrix
+                feature_matrix = feature_matrix.replace([np.inf, -np.inf], np.nan)
+
+                # Remove columns with all NaN values
+                feature_matrix = feature_matrix.dropna(axis=1, how='all')
+
+                # Remove target column if present
+                feature_columns = [col for col in feature_matrix.columns
+                                   if self.target_col not in str(col)]
+
+                if feature_columns:
+                    feature_matrix_clean = feature_matrix[feature_columns]
+                    self.logger.info(f"After cleaning: {feature_matrix_clean.shape[1]} features")
+                else:
+                    self.logger.warning("No valid features after cleaning, using original features")
+                    self.feature_names = X_copy.columns.tolist()
+                    return self
+
+                # Select best features using comprehensive scoring
+                selected_features = self._select_best_features(feature_matrix_clean,
+                                                               pd.Series(y) if y is not None else None)
+                self.feature_names = selected_features.columns.tolist()
+
+                # Store feature definitions for selected features
+                if feature_defs:
+                    selected_feature_names = set(self.feature_names)
+                    self.selected_feature_defs = []
+
+                    for fd in feature_defs:
+                        feature_name = fd.get_name() if hasattr(fd, 'get_name') else str(fd)
+                        if feature_name in selected_feature_names:
+                            self.selected_feature_defs.append(fd)
+
+                    self.logger.info(f"Stored {len(self.selected_feature_defs)} feature definitions")
+                else:
+                    self.selected_feature_defs = []
+
+                self.logger.info(f"Final feature count: {len(self.feature_names)}")
+                self.logger.info(f"Sample generated features: {self.feature_names[:10]}")
+
+            except Exception as dfs_error:
+                self.logger.error(f"Aggressive DFS failed: {str(dfs_error)}")
+
+                # Try with reduced primitives
+                self.logger.info("Retrying with reduced primitive set...")
+
+                # Use most reliable primitives
+                safe_primitives = [p for p in ['add_numeric', 'subtract_numeric', 'multiply_numeric',
+                                               'divide_numeric', 'absolute', 'square_root']
+                                   if p in working_primitives]
+
+                if safe_primitives:
+                    try:
+                        feature_matrix, feature_defs = self.ft.dfs(
+                            entityset=es,
+                            target_dataframe_name="data",
+                            trans_primitives=safe_primitives,
+                            max_depth=2,  # Still use depth 2
+                            verbose=False,
+                            max_features=self.max_features * 2  # Generate 2x target for selection
+                        )
+
+                        feature_matrix = feature_matrix.replace([np.inf, -np.inf], np.nan)
+                        feature_matrix = feature_matrix.dropna(axis=1, how='all')
+
+                        feature_columns = [col for col in feature_matrix.columns
+                                           if self.target_col not in str(col)]
+
+                        if feature_columns:
+                            feature_matrix_clean = feature_matrix[feature_columns]
+                            selected_features = self._select_best_features(feature_matrix_clean,
+                                                                           pd.Series(y) if y is not None else None)
+                            self.feature_names = selected_features.columns.tolist()
+                            self.selected_feature_defs = feature_defs[:len(self.feature_names)]
+                        else:
+                            self.feature_names = X_copy.columns.tolist()
+                            self.selected_feature_defs = []
+
+                    except Exception as safe_error:
+                        self.logger.error(f"Even safe primitive generation failed: {str(safe_error)}")
+                        self.feature_names = X_copy.columns.tolist()
+                        self.selected_feature_defs = []
+                else:
+                    self.feature_names = X_copy.columns.tolist()
+                    self.selected_feature_defs = []
+
             return self
 
         except Exception as e:
-            self.logger.error(f"Error in FeatureToolsTransformer fit: {str(e)}")
-            raise
+            self.logger.error(f"Complete failure in FeatureToolsTransformer fit: {str(e)}")
+            # Final fallback to original features
+            self.feature_names = X.columns.tolist() if hasattr(X, 'columns') else [f"feature_{i}" for i in
+                                                                                   range(X.shape[1])]
+            self.selected_feature_defs = []
+            return self
 
     def transform(self, X):
+        """Transform data using stored feature definitions."""
         try:
+            if not self.feature_names:
+                self.logger.warning("No feature names available, returning original data")
+                return X
+
+            # If no valid feature definitions, return original features
+            if not self.selected_feature_defs:
+                self.logger.info("No feature definitions available, returning original features")
+                if hasattr(X, 'columns'):
+                    available_features = [col for col in self.feature_names if col in X.columns]
+                    if available_features:
+                        return X[available_features]
+                return X
+
+            # Regenerate features using stored definitions
             X_copy = X.copy()
 
             if X_copy.index.name is None:
                 X_copy = X_copy.reset_index(drop=True)
-                index_name = "index"
-            else:
-                index_name = X_copy.index.name
+                X_copy.index.name = "index"
 
             es = self.ft.EntitySet(id="features_transform")
-            es.add_dataframe(
+            es = es.add_dataframe(
                 dataframe_name="data",
                 dataframe=X_copy,
-                index=index_name,
-                make_index=True,
-                time_index=None
+                index="index"
             )
 
-            feature_matrix = self.ft.calculate_feature_matrix(
-                features=self.feature_defs,
-                entityset=es,
-                verbose=True
-            )
+            try:
+                # Calculate features using stored definitions
+                feature_matrix = self.ft.calculate_feature_matrix(
+                    features=self.selected_feature_defs,
+                    entityset=es,
+                    verbose=False
+                )
 
-            feature_matrix = feature_matrix.replace([np.inf, -np.inf], np.nan).fillna(0)
-            feature_matrix = feature_matrix[self.feature_names]
+                # Clean the results
+                feature_matrix = feature_matrix.replace([np.inf, -np.inf], np.nan)
 
-            for col in feature_matrix.columns:
-                if not pd.api.types.is_numeric_dtype(feature_matrix[col]):
-                    feature_matrix = feature_matrix.drop(columns=[col])
+                # Handle NaN values - fill with 0 for now
+                feature_matrix = feature_matrix.fillna(0)
 
-            return feature_matrix
+                # Ensure we have numeric data
+                feature_matrix = feature_matrix.select_dtypes(include=[np.number])
+
+                # Filter to selected features
+                available_features = [col for col in feature_matrix.columns if col in self.feature_names]
+
+                if available_features:
+                    result = feature_matrix[available_features]
+                    self.logger.info(f"Generated {result.shape[1]} features for transform")
+                    return result
+                else:
+                    self.logger.warning("No matching features found in generated matrix")
+                    return X
+
+            except Exception as calc_error:
+                self.logger.error(f"Feature calculation failed during transform: {str(calc_error)}")
+                # Return original features
+                if hasattr(X, 'columns'):
+                    available_features = [col for col in self.feature_names if col in X.columns]
+                    if available_features:
+                        return X[available_features]
+                return X
 
         except Exception as e:
             self.logger.error(f"Error in FeatureToolsTransformer transform: {str(e)}")
-            raise
+            return X
 
 
 class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
-    """A transformer that uses SHAP values to select important features."""
+    """A memory-efficient transformer that uses SHAP values to select important features."""
 
-    def __init__(self, n_features: int = 20, model=None):
+    def __init__(self, n_features: int = 20, model=None, max_samples_for_shap: int = 1000):
         self.logger = logging.getLogger("Feature Engineering")
         self.logger.info(f"Initializing SHAPFeatureSelector with n_features={n_features}")
         self.n_features = n_features
+        self.max_samples_for_shap = max_samples_for_shap
         self.selected_features = None
         self.importance_df = None
         self.model = model or RandomForestClassifier(n_estimators=100, random_state=42)
+        self.feature_scores = {}
 
         try:
             import shap
@@ -1772,16 +2108,68 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
             self.logger.error("SHAP package not found. Please install with: pip install shap")
             raise
 
+    def _prefilter_features(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
+        """Pre-filter features using statistical methods to reduce dimensionality before SHAP."""
+        self.logger.info(f"Pre-filtering features from {X.shape[1]} to manageable number")
+
+        # Only work with numeric columns
+        numeric_cols = X.select_dtypes(include=[np.number]).columns
+        X_numeric = X[numeric_cols]
+
+        if X_numeric.shape[1] == 0:
+            self.logger.warning("No numeric columns found for pre-filtering")
+            return X
+
+        # Clean the data
+        X_numeric = X_numeric.replace([np.inf, -np.inf], np.nan)
+        X_numeric = X_numeric.fillna(X_numeric.median())
+
+        feature_scores = {}
+
+        # 1. Variance filtering
+        variances = X_numeric.var()
+        variance_scores = (variances - variances.min()) / (variances.max() - variances.min())
+
+        # 2. Correlation with target (if available)
+        if y is not None:
+            try:
+                correlations = X_numeric.corrwith(y).abs()
+                correlation_scores = correlations.fillna(0)
+            except:
+                correlation_scores = pd.Series(0, index=X_numeric.columns)
+        else:
+            correlation_scores = pd.Series(0, index=X_numeric.columns)
+
+        # 3. Mutual information (simplified version using correlation)
+        # For large datasets, we'll use correlation as a proxy
+
+        # Combine scores
+        for col in X_numeric.columns:
+            variance_score = variance_scores.get(col, 0)
+            correlation_score = correlation_scores.get(col, 0)
+
+            # Weighted combination
+            combined_score = 0.3 * variance_score + 0.7 * correlation_score
+            feature_scores[col] = combined_score
+
+        # Select top features for SHAP analysis
+        # Use 5x the target number to give SHAP good options
+        n_prefilter = min(self.n_features * 5, 1000, X_numeric.shape[1])
+
+        top_features = sorted(feature_scores.items(), key=lambda x: x[1], reverse=True)[:n_prefilter]
+        selected_cols = [col for col, score in top_features]
+
+        self.logger.info(f"Pre-filtered to {len(selected_cols)} features for SHAP analysis")
+        return X_numeric[selected_cols]
+
     def fit(self, X, y=None):
         try:
-            # Ensure X is a DataFrame and handle the conversion properly
+            # Ensure X is a DataFrame
             if isinstance(X, pd.DataFrame):
                 X_copy = X.copy()
             else:
-                # Convert numpy array to DataFrame
                 X_array = np.asarray(X)
                 if X_array.ndim > 2:
-                    # Flatten higher dimensional arrays to 2D
                     X_array = X_array.reshape(X_array.shape[0], -1)
                 X_copy = pd.DataFrame(X_array)
 
@@ -1789,7 +2177,7 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
             if y is not None:
                 if hasattr(y, 'values'):
                     y = y.values
-                y = np.asarray(y).flatten()  # Use flatten instead of ravel to avoid deprecation warning
+                y = np.asarray(y).flatten()
 
             # Adjust n_features to available features
             self.n_features = min(self.n_features, X_copy.shape[1])
@@ -1800,66 +2188,69 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
                 self.selected_features = X_copy.columns.tolist()
                 return self
 
-            # Clean the data: handle NaN/inf values
-            X_copy = X_copy.replace([np.inf, -np.inf], np.nan)
+            # Pre-filter features if we have too many
+            if X_copy.shape[1] > 1000:
+                self.logger.info(f"Large number of features ({X_copy.shape[1]}), applying pre-filtering")
+                X_filtered = self._prefilter_features(X_copy, pd.Series(y) if y is not None else None)
+            else:
+                # Only work with numeric columns
+                numeric_cols = X_copy.select_dtypes(include=[np.number]).columns
+                X_filtered = X_copy[numeric_cols]
 
-            # Fill NaN values with median for numeric columns, mode for categorical
-            for col in X_copy.columns:
-                if X_copy[col].dtype in ['object', 'category']:
-                    # For categorical columns, fill with mode or 'unknown'
-                    mode_val = X_copy[col].mode()
-                    fill_val = mode_val.iloc[0] if len(mode_val) > 0 else 'unknown'
-                    X_copy[col] = X_copy[col].fillna(fill_val)
-                else:
-                    # For numeric columns, fill with median
-                    X_copy[col] = X_copy[col].fillna(X_copy[col].median())
-
-            # Select only numeric columns for SHAP analysis
-            numeric_cols = X_copy.select_dtypes(include=[np.number]).columns
-            if len(numeric_cols) == 0:
+            if X_filtered.shape[1] == 0:
                 self.logger.warning("No numeric columns found, selecting all original features")
                 self.selected_features = X_copy.columns.tolist()
                 return self
 
-            X_numeric = X_copy[numeric_cols]
+            # Clean the data
+            X_filtered = X_filtered.replace([np.inf, -np.inf], np.nan)
+            X_filtered = X_filtered.fillna(X_filtered.median())
 
-            # Ensure all values are finite
-            X_numeric = X_numeric.replace([np.inf, -np.inf], 0).fillna(0)
+            # Sample data if too large for SHAP
+            if X_filtered.shape[0] > self.max_samples_for_shap:
+                self.logger.info(f"Sampling {self.max_samples_for_shap} rows for SHAP analysis")
+                sample_idx = np.random.choice(X_filtered.shape[0], self.max_samples_for_shap, replace=False)
+                X_shap = X_filtered.iloc[sample_idx]
+                y_shap = y[sample_idx] if y is not None else None
+            else:
+                X_shap = X_filtered
+                y_shap = y
 
             # Try to fit the model with error handling
             try:
-                self.model.fit(X_numeric, y)
+                self.model.fit(X_shap, y_shap)
             except Exception as model_error:
                 self.logger.warning(f"Primary model failed: {str(model_error)}, using LogisticRegression")
-                self.model = LogisticRegression(max_iter=1000, random_state=42)
                 try:
-                    self.model.fit(X_numeric, y)
+                    self.model = LogisticRegression(max_iter=1000, random_state=42)
+                    self.model.fit(X_shap, y_shap)
                 except Exception as lr_error:
                     self.logger.error(f"LogisticRegression also failed: {str(lr_error)}")
                     # Fallback: select features based on variance
-                    feature_vars = X_numeric.var().sort_values(ascending=False)
+                    feature_vars = X_filtered.var().sort_values(ascending=False)
                     self.selected_features = feature_vars.head(self.n_features).index.tolist()
                     return self
 
             # Compute SHAP values with proper error handling
             try:
+                # Use smaller sample for SHAP computation if needed
+                shap_sample_size = min(500, X_shap.shape[0])
+                X_shap_sample = X_shap.sample(n=shap_sample_size, random_state=42) if X_shap.shape[
+                                                                                          0] > shap_sample_size else X_shap
+
                 # Use TreeExplainer for tree-based models
                 if hasattr(self.model, 'estimators_') or hasattr(self.model, 'n_estimators'):
                     explainer = self.shap.TreeExplainer(self.model)
-                    # Use a sample for large datasets
-                    sample_size = min(500, X_numeric.shape[0])
-                    X_sample = X_numeric.sample(n=sample_size, random_state=42) if X_numeric.shape[
-                                                                                       0] > 500 else X_numeric
-                    shap_values = explainer.shap_values(X_sample)
+                    shap_values = explainer.shap_values(X_shap_sample)
                 else:
-                    # Use KernelExplainer for other models
-                    sample_size = min(100, X_numeric.shape[0])
-                    background = X_numeric.sample(n=sample_size, random_state=42)
+                    # Use KernelExplainer for other models with smaller background
+                    background_size = min(100, X_shap_sample.shape[0] // 2)
+                    background = X_shap_sample.sample(n=background_size, random_state=42)
                     explainer = self.shap.KernelExplainer(self.model.predict_proba, background)
 
-                    # Use smaller sample for explanation
-                    explain_size = min(200, X_numeric.shape[0])
-                    X_explain = X_numeric.sample(n=explain_size, random_state=42)
+                    # Use even smaller sample for explanation
+                    explain_size = min(200, X_shap_sample.shape[0])
+                    X_explain = X_shap_sample.sample(n=explain_size, random_state=42)
                     shap_values = explainer.shap_values(X_explain)
 
                 # Process SHAP values
@@ -1872,7 +2263,7 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
 
                 # Create importance DataFrame
                 self.importance_df = pd.DataFrame({
-                    'feature': X_numeric.columns,
+                    'feature': X_shap_sample.columns,
                     'importance': shap_importances
                 }).sort_values('importance', ascending=False)
 
@@ -1881,10 +2272,16 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
 
                 self.logger.info(f"SHAP feature selection completed. Selected {len(self.selected_features)} features")
 
+                # Log top features
+                if len(self.selected_features) <= 20:
+                    self.logger.info(f"Selected features: {self.selected_features}")
+                else:
+                    self.logger.info(f"Top 10 selected features: {self.selected_features[:10]}")
+
             except Exception as shap_error:
                 self.logger.warning(f"SHAP computation failed: {str(shap_error)}, using variance-based selection")
                 # Fallback to variance-based feature selection
-                feature_vars = X_numeric.var().sort_values(ascending=False)
+                feature_vars = X_filtered.var().sort_values(ascending=False)
                 self.selected_features = feature_vars.head(self.n_features).index.tolist()
 
             return self
@@ -1913,7 +2310,10 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
                 if not available_features:
                     self.logger.warning("No selected features found in input data, returning first n columns")
                     return X.iloc[:, :min(len(self.selected_features), X.shape[1])]
-                return X[available_features]
+
+                result = X[available_features]
+                self.logger.info(f"Selected {len(available_features)} features from {X.shape[1]} available features")
+                return result
             else:
                 # For numpy array input, assume feature order is preserved
                 X_array = np.asarray(X)

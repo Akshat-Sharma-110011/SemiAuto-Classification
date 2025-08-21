@@ -34,7 +34,8 @@ from semiauto_classification.model.model_building import (
     build_parallel_models_api_patched,
     build_ensemble_model_api,
     select_best_model_api_patched,
-    EnhancedModelBuilder
+    EnhancedModelBuilder,
+    build_staged_ensemble_api  # New import for staged ensemble
 )
 from semiauto_classification.model.model_evaluation import run_evaluation, get_evaluation_summary
 from semiauto_classification.model.model_optimization import optimize_model
@@ -101,6 +102,16 @@ class EnsembleModelRequest(BaseModel):
     ensemble_category: str = "simple"  # simple, multi_stage, hybrid
     ensemble_type: str  # voting, stacking, bagging, etc.
     config: Dict[str, Any] = {}
+
+
+# New class for staged ensemble architecture
+class StagedEnsembleRequest(BaseModel):
+    architecture: List[Dict[str, Any]]  # Each stage configuration
+    final_meta_model: Optional[Dict[str, Any]] = None
+    cv: int = 5
+    stage_method: str = "stacking"  # stacking, voting, or mixed
+    combine_method: str = "concatenate"  # concatenate, average, weighted_average
+    passthrough_original: bool = False
 
 
 class ModelSelectionRequest(BaseModel):
@@ -557,6 +568,36 @@ def build_ensemble_model(request: EnsembleModelRequest):
         raise HTTPException(status_code=500, detail=f"Ensemble model building failed: {str(e)}")
 
 
+# NEW: Staged Ensemble API Endpoint
+@app.post("/api/build-staged-ensemble")
+def build_staged_ensemble(request: StagedEnsembleRequest):
+    logger.info(f"Starting staged ensemble model building with {len(request.architecture)} stages")
+
+    try:
+        staged_config = {
+            'type': 'staged_ensemble',
+            'architecture': request.architecture,
+            'final_meta_model': request.final_meta_model,
+            'cv': request.cv,
+            'stage_method': request.stage_method,
+            'combine_method': request.combine_method,
+            'passthrough_original': request.passthrough_original
+        }
+
+        logger.info(f"Staged ensemble config: {staged_config}")
+
+        result = build_staged_ensemble_api(staged_config=staged_config)
+        logger.info("Staged ensemble model building completed successfully")
+
+        evaluation = run_evaluation("intel.yaml")
+        logger.info("Model evaluation completed successfully")
+
+        return {"build_result": result, "evaluation_result": evaluation}
+    except Exception as e:
+        logger.error(f"Error during staged ensemble model building: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Staged ensemble model building failed: {str(e)}")
+
+
 @app.post("/api/debug-ensemble-config")
 def debug_ensemble_config(config: Dict[str, Any] = Body(...)):
     """Debug endpoint to validate ensemble configuration"""
@@ -584,6 +625,11 @@ def debug_ensemble_config(config: Dict[str, Any] = Body(...)):
         elif ensemble_type == 'bagging':
             if 'base_model' not in config:
                 return {"error": "Bagging ensemble requires 'base_model' field"}
+        elif ensemble_type == 'staged_ensemble':
+            if 'architecture' not in config:
+                return {"error": "Staged ensemble requires 'architecture' field"}
+            if not isinstance(config['architecture'], list) or len(config['architecture']) < 2:
+                return {"error": "Staged ensemble requires at least 2 stages in architecture"}
 
         return {
             "status": "valid",

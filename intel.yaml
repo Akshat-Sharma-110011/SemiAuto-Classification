@@ -1,82 +1,88 @@
+best_params_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\metrics\best_params_JEE_Dropout_After_Class_12\params.json
 cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_JEE_Dropout_After_Class_12\test.csv
 cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_JEE_Dropout_After_Class_12\train.csv
 cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_JEE_Dropout_After_Class_12\cleaning.pkl
 cleaning_report_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\readme\cleaning_report.md
-cleaning_timestamp: '2025-08-05 02:14:29'
+cleaning_timestamp: '2025-08-10 00:59:17'
 dataset_name: JEE_Dropout_After_Class_12
-evaluation_timestamp: '2025-08-06 21:54:09'
+evaluation_timestamp: '2025-08-13 14:35:56'
 feature_engineering_config:
-  n_features_selected: 500
+  n_features_selected: null
   resampling_method: null
-  timestamp: '2025-08-05 02:15:14'
+  timestamp: '2025-08-10 01:19:29'
   use_feature_tools: true
-  use_shap_selection: true
+  use_shap_selection: false
 feature_selection_config:
-  algorithm: grey_wolf
+  algorithm: differential_evolution
   max_iter: 50
   n_features_selected: 50
   population_size: 20
   selected_features:
-  - jee_main_score / class_12_percent
-  - peer_pressure_level_medium / class_12_percent
-  - coaching_institute_fiitjee / jee_advanced_score
-  - admission_taken_True / jee_advanced_score
-  - mental_health_issues_True / jee_advanced_score
-  - jee_advanced_score / daily_study_hours
-  - attempt_count - jee_advanced_score
-  - class_12_percent - jee_advanced_score
-  - attempt_count - mental_health_issues_True
-  - coaching_institute_fiitjee + jee_advanced_score
-  - family_income_mid - jee_advanced_score
-  - class_12_percent + peer_pressure_level_low
-  - class_12_percent - mental_health_issues_True
-  - attempt_count - coaching_institute_fiitjee
-  - class_12_percent + location_type_urban
-  - attempt_count - peer_pressure_level_medium
-  - family_income_mid + mock_test_score_avg
-  - jee_main_score - peer_pressure_level_medium
-  - daily_study_hours + peer_pressure_level_low
-  - daily_study_hours - peer_pressure_level_medium
-  - class_12_percent + location_type_semi-urban
-  - daily_study_hours - parent_education_upto 10th
-  - family_income_low + jee_main_score
-  - jee_advanced_score - school_board_icse
-  - coaching_institute_local - mock_test_score_avg
-  - mock_test_score_avg - parent_education_pg
-  - attempt_count - parent_education_upto 10th
-  - jee_advanced_score - parent_education_pg
-  - class_12_percent
-  - coaching_institute_nan - daily_study_hours
-  - daily_study_hours
+  - admission_taken_True + parent_education_upto 10th
+  - coaching_institute_fiitjee + parent_education_upto 10th
   - coaching_institute_nan + daily_study_hours
-  - daily_study_hours * jee_main_score
-  - peer_pressure_level_low - peer_pressure_level_medium
-  - coaching_institute_fiitjee + mental_health_issues_True
-  - jee_main_score / admission_taken_True
-  - parent_education_pg - parent_education_upto 10th
-  - attempt_count * coaching_institute_fiitjee
-  - mock_test_score_avg / admission_taken_True
-  - coaching_institute_fiitjee + peer_pressure_level_low
-  - admission_taken_True - peer_pressure_level_low
-  - admission_taken_True + peer_pressure_level_medium
-  - admission_taken_True - peer_pressure_level_medium
-  - location_type_semi-urban + mental_health_issues_True
-  - admission_taken_True - family_income_mid
-  - mental_health_issues_True + school_board_state
-  - location_type_semi-urban - peer_pressure_level_medium
-  - family_income_low - peer_pressure_level_low
-  - family_income_mid - location_type_semi-urban
-  - family_income_low - peer_pressure_level_medium
-  timestamp: '2025-08-05 02:21:56'
+  - coaching_institute_nan + school_board_state
+  - daily_study_hours + family_income_low
+  - family_income_low + peer_pressure_level_low
+  - family_income_mid + location_type_urban
+  - parent_education_upto 10th + school_board_state
+  - peer_pressure_level_low + peer_pressure_level_medium
+  - admission_taken_True / family_income_mid
+  - attempt_count / parent_education_upto 10th
+  - coaching_institute_fiitjee / class_12_percent
+  - coaching_institute_fiitjee / parent_education_pg
+  - coaching_institute_local / school_board_state
+  - daily_study_hours / admission_taken_True
+  - daily_study_hours / family_income_low
+  - daily_study_hours / jee_advanced_score
+  - daily_study_hours / peer_pressure_level_low
+  - daily_study_hours / peer_pressure_level_medium
+  - family_income_low / admission_taken_True
+  - family_income_low / mock_test_score_avg
+  - family_income_mid / coaching_institute_fiitjee
+  - jee_advanced_score / daily_study_hours
+  - jee_main_score / parent_education_graduate
+  - location_type_semi-urban / mock_test_score_avg
+  - parent_education_graduate / location_type_urban
+  - parent_education_pg / coaching_institute_local
+  - parent_education_pg / peer_pressure_level_low
+  - peer_pressure_level_low / class_12_percent
+  - school_board_icse / coaching_institute_fiitjee
+  - school_board_icse / coaching_institute_local
+  - school_board_icse / parent_education_upto 10th
+  - admission_taken_True * daily_study_hours
+  - attempt_count * coaching_institute_local
+  - attempt_count * peer_pressure_level_medium
+  - class_12_percent * family_income_mid
+  - class_12_percent * location_type_urban
+  - coaching_institute_fiitjee * peer_pressure_level_low
+  - coaching_institute_fiitjee * peer_pressure_level_medium
+  - daily_study_hours * parent_education_graduate
+  - family_income_mid * location_type_semi-urban
+  - jee_advanced_score * jee_main_score
+  - jee_advanced_score * school_board_icse
+  - mock_test_score_avg * school_board_state
+  - admission_taken_True - location_type_urban
+  - admission_taken_True - parent_education_upto 10th
+  - attempt_count - family_income_low
+  - coaching_institute_fiitjee - family_income_mid
+  - coaching_institute_fiitjee - location_type_semi-urban
+  - coaching_institute_local - daily_study_hours
+  timestamp: '2025-08-10 01:22:33'
 feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_JEE_Dropout_After_Class_12\feature_store.yaml
-model_name: ensemble_stacking
+model_name: LightGBM_1
 model_path: model\model_JEE_Dropout_After_Class_12\model.pkl
-model_timestamp: '2025-08-06 21:54:08'
+model_timestamp: '2025-08-13 14:35:55'
+model_type: baseline
+optimization_timestamp: '2025-08-10 01:29:36'
+optimized_evaluation_timestamp: '2025-08-10 01:29:36'
+optimized_model_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\model_JEE_Dropout_After_Class_12\optimized_model.pkl
+optimized_performance_metrics_path: reports\metrics\performance_JEE_Dropout_After_Class_12\optimized_performance.yaml
 original_file_name: JEE_Dropout_After_Class_12.csv
 performance_metrics_path: reports\metrics\performance_JEE_Dropout_After_Class_12\performance.yaml
 plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_JEE_Dropout_After_Class_12
 preprocessing_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\preprocessing.pkl
-processed_timestamp: '2025-08-05 02:14:38'
+processed_timestamp: '2025-08-10 00:59:42'
 processor_pipeline_path: model/pipelines/preprocessing_JEE_Dropout_After_Class_12\processor.pkl
 selection_pipeline_path: model/pipelines/preprocessing_JEE_Dropout_After_Class_12\selection.pkl
 target_column: dropout

@@ -1,0 +1,47 @@
+accuracy: 0.997
+balanced_accuracy: 0.9945385651016442
+class_names:
+- '0'
+- '1'
+classification_report:
+  '0':
+    f1-score: 0.998109640831758
+    precision: 0.9974811083123426
+    recall: 0.9987389659520807
+    support: 793.0
+  '1':
+    f1-score: 0.9927360774818402
+    precision: 0.9951456310679612
+    recall: 0.9903381642512077
+    support: 207.0
+  accuracy: 0.997
+  macro avg:
+    f1-score: 0.9954228591567991
+    precision: 0.9963133696901518
+    recall: 0.9945385651016442
+    support: 1000.0
+  weighted avg:
+    f1-score: 0.996997313218325
+    precision: 0.9969976645227557
+    recall: 0.997
+    support: 1000.0
+cohen_kappa: 0.9908457322803891
+confusion_matrix:
+- - 792
+  - 1
+- - 2
+  - 205
+evaluation_timestamp: '2025-08-10 01:29:36'
+f1_score: 0.9927360774818402
+feature_shape_used:
+- 1000
+- 50
+log_loss: 0.014872412020446436
+matthews_corrcoef: 0.9908503452839478
+model_type: <class 'catboost.core.CatBoostClassifier'>
+num_classes: 2
+precision: 0.9951456310679612
+problem_type: binary
+recall: 0.9903381642512077
+roc_auc: 0.9987816096155369
+specificity: 0.9987389659520807

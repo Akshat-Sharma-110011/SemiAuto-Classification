@@ -31,13 +31,17 @@ confusion_matrix:
   - 0
 - - 3
   - 204
-evaluation_timestamp: '2025-08-06 21:54:09'
+evaluation_timestamp: '2025-08-13 14:35:56'
 f1_score: 0.9927007299270073
-log_loss: 0.013322519199927047
+feature_shape_used:
+- 1000
+- 50
+log_loss: 0.016545453157194814
 matthews_corrcoef: 0.9908546932252209
+model_type: <class 'lightgbm.sklearn.LGBMClassifier'>
 num_classes: 2
 precision: 1.0
 problem_type: binary
 recall: 0.9855072463768116
-roc_auc: 0.9999939080480776
+roc_auc: 0.9986841383847799
 specificity: 1.0
