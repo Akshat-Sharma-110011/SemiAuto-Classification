@@ -11,6 +11,7 @@
         <div class="card-header">Dataset Overview</div>
         <p><strong>Dataset:</strong> {{ dataset_name }}</p>
         <p><strong>Target Column:</strong> {{ target_column }}</p>
+        <p><strong>Processing Mode:</strong> {{ processing_mode|title }}</p>
 
         <div class="form-group">
             <h3>Data Issues Detected:</h3>
@@ -33,6 +34,13 @@
                 <div class="metric-card">
                     <div class="metric-title">Skewed Columns</div>
                     <div class="metric-value">{{ skewed|length }}</div>
+                </div>
+                {% endif %}
+
+                {% if textual_cols %}
+                <div class="metric-card">
+                    <div class="metric-title">Text Columns</div>
+                    <div class="metric-value">{{ textual_cols|length }}</div>
                 </div>
                 {% endif %}
             </div>
@@ -68,7 +76,6 @@
 
             <!-- Outliers -->
             {% if outliers %}
-            <!-- preprocessing.html -->
             <div class="form-group">
                 <label for="outliers">Handle Outliers</label>
                 <select id="outliers" name="outliers">
@@ -77,11 +84,11 @@
                     <option value="Z-Score">Clip using Z-Score</option>
                 </select>
                 <small>Columns with outliers: {{ outliers|join(', ') }}</small>
-            </div>            {% endif %}
+            </div>
+            {% endif %}
 
             <!-- Skewedness -->
             {% if skewed %}
-            <!-- Update the skewedness select element -->
             <div class="form-group">
                 <label for="skewedness">Handle Skewed Data</label>
                 <select id="skewedness" name="skewedness">
@@ -129,6 +136,154 @@
             </div>
             {% endif %}
 
+            <!-- Text Preprocessing Section -->
+            {% if textual_cols and processing_mode in ['textual', 'mixed'] %}
+            <div class="card" style="margin-top: 20px; background-color: #f8f9fa;">
+                <div class="card-header" style="background-color: #e3f2fd; color: #1976d2;">
+                    <h3>Text Preprocessing Options</h3>
+                    <small>Text columns: {{ textual_cols|join(', ') }}</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="enableTextPreprocessing">Enable Text Preprocessing</label>
+                    <select id="enableTextPreprocessing" name="enable_text_preprocessing">
+                        <option value="false">No</option>
+                        <option value="true" selected>Yes</option>
+                    </select>
+                </div>
+
+                <div id="textPreprocessingOptions" style="display: block;">
+                    <!-- Basic Text Cleaning -->
+                    <div class="form-group">
+                        <label for="lowercase">Convert to Lowercase</label>
+                        <select id="lowercase" name="text_lowercase">
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="removeHtml">Remove HTML Tags</label>
+                        <select id="removeHtml" name="text_remove_html">
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="removeUrls">Remove URLs</label>
+                        <select id="removeUrls" name="text_remove_urls">
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="handleEmojis">Handle Emojis</label>
+                        <select id="handleEmojis" name="text_handle_emojis">
+                            <option value="keep">Keep Emojis</option>
+                            <option value="remove" selected>Remove Emojis</option>
+                            <option value="replace">Replace with Text</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="removePunctuation">Remove Punctuation</label>
+                        <select id="removePunctuation" name="text_remove_punctuation">
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        </select>
+                    </div>
+
+                    <!-- Advanced Text Processing -->
+                    <div class="form-group">
+                        <label for="handleChatWords">Handle Chat Words/Slang</label>
+                        <select id="handleChatWords" name="text_handle_chat_words">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                        <small>Expand contractions and common internet slang</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="spellingCorrection">Spelling Correction</label>
+                        <select id="spellingCorrection" name="text_spelling_correction">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                        <small>Warning: Can be slow for large datasets</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="removeStopwords">Remove Stopwords</label>
+                        <select id="removeStopwords" name="text_remove_stopwords">
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        </select>
+                    </div>
+
+                    <!-- Stemming/Lemmatization -->
+                    <div class="form-group">
+                        <label for="stemmingLemmatization">Stemming/Lemmatization</label>
+                        <select id="stemmingLemmatization" name="text_stemming_lemmatization">
+                            <option value="none" selected>None</option>
+                            <option value="stemming">Stemming (Porter)</option>
+                            <option value="lemmatization">Lemmatization</option>
+                        </select>
+                        <small>Stemming: faster, Lemmatization: more accurate</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="posTagging">POS (Part-of-Speech) Tagging</label>
+                        <select id="posTagging" name="text_pos_tagging">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                        <small>Extract grammatical information</small>
+                    </div>
+
+                    <!-- Tokenization/Vectorization -->
+                    <div class="form-group">
+                        <label for="tokenizationMethod">Tokenization/Vectorization Method</label>
+                        <select id="tokenizationMethod" name="text_tokenization_method">
+                            <option value="none">None (Keep as text)</option>
+                            <option value="bow">Bag of Words (CountVectorizer)</option>
+                            <option value="tfidf" selected>TF-IDF</option>
+                            <option value="word2vec">Word2Vec</option>
+                            <option value="glove">GloVe</option>
+                            <option value="ngrams">N-grams</option>
+                        </select>
+                    </div>
+
+                    <!-- N-gram options -->
+                    <div class="form-group" id="ngramOptions" style="display: none;">
+                        <label for="ngramRange">N-gram Range</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label>Min:</label>
+                            <input type="number" id="ngramMin" name="text_ngram_min" value="1" min="1" max="5" style="width: 60px;">
+                            <label>Max:</label>
+                            <input type="number" id="ngramMax" name="text_ngram_max" value="2" min="1" max="5" style="width: 60px;">
+                        </div>
+                        <small>1=unigrams, 2=bigrams, 3=trigrams, etc.</small>
+                    </div>
+
+                    <!-- Vectorization parameters -->
+                    <div class="form-group" id="vectorizationOptions" style="display: block;">
+                        <label for="maxFeatures">Maximum Features</label>
+                        <input type="number" id="maxFeatures" name="text_max_features" value="1000" min="100" max="10000" step="100">
+                        <small>Maximum number of features to extract from text</small>
+                    </div>
+
+                    <!-- Word2Vec/GloVe options -->
+                    <div class="form-group" id="embeddingOptions" style="display: none;">
+                        <label for="vectorSize">Vector Size</label>
+                        <input type="number" id="vectorSize" name="text_vector_size" value="100" min="50" max="300" step="50">
+                        <small>Dimension of word embeddings</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="form-group">
                 <button type="submit" class="btn btn-primary" onclick="preprocess(event)">Run Preprocessing</button>
             </div>
@@ -152,10 +307,53 @@
         // Convert form data to JSON
         const jsonData = {};
         formData.forEach((value, key) => {
-            if (key === 'handle_duplicates' || key === 'drop_first') {
-                jsonData[key] = value === 'true';
+            if (key === 'handle_duplicates' || key === 'drop_first' || key.startsWith('text_')) {
+                if (key.startsWith('text_') && (key.includes('lowercase') || key.includes('remove') || key.includes('spelling') || key.includes('stopwords') || key.includes('pos'))) {
+                    jsonData[key] = value === 'true';
+                } else if (key === 'handle_duplicates' || key === 'drop_first') {
+                    jsonData[key] = value === 'true';
+                } else {
+                    jsonData[key] = value;
+                }
             } else {
                 jsonData[key] = value;
+            }
+        });
+
+        // Build text preprocessing config
+        const enableTextPreprocessing = document.getElementById('enableTextPreprocessing');
+        if (enableTextPreprocessing && enableTextPreprocessing.value === 'true') {
+            const textConfig = {
+                lowercase: jsonData['text_lowercase'] || false,
+                remove_html: jsonData['text_remove_html'] || false,
+                remove_urls: jsonData['text_remove_urls'] || false,
+                handle_emojis: jsonData['text_handle_emojis'] || 'keep',
+                remove_punctuation: jsonData['text_remove_punctuation'] || false,
+                handle_chat_words: jsonData['text_handle_chat_words'] || false,
+                spelling_correction: jsonData['text_spelling_correction'] || false,
+                remove_stopwords: jsonData['text_remove_stopwords'] || false,
+                stemming_lemmatization: jsonData['text_stemming_lemmatization'] || 'none',
+                pos_tagging: jsonData['text_pos_tagging'] || false,
+                tokenization_method: jsonData['text_tokenization_method'] || 'none',
+                max_features: parseInt(jsonData['text_max_features']) || 1000,
+                vector_size: parseInt(jsonData['text_vector_size']) || 100
+            };
+
+            // Handle n-gram range
+            if (jsonData['text_tokenization_method'] === 'ngrams') {
+                textConfig.ngram_range = [
+                    parseInt(jsonData['text_ngram_min']) || 1,
+                    parseInt(jsonData['text_ngram_max']) || 2
+                ];
+            }
+
+            jsonData['text_preprocessing'] = textConfig;
+        }
+
+        // Remove text_ prefixed keys from main object
+        Object.keys(jsonData).forEach(key => {
+            if (key.startsWith('text_')) {
+                delete jsonData[key];
             }
         });
 
@@ -195,22 +393,68 @@
         }
     }
 
-    // Show/hide drop_first option based on encoding selection
+    // Show/hide options based on selections
     document.addEventListener('DOMContentLoaded', function() {
         const encodingSelect = document.getElementById('encoding');
-        const dropFirstGroup = document.getElementById('dropFirst').closest('.form-group');
+        const dropFirstGroup = document.getElementById('dropFirst');
+        const enableTextPreprocessing = document.getElementById('enableTextPreprocessing');
+        const textPreprocessingOptions = document.getElementById('textPreprocessingOptions');
+        const tokenizationMethod = document.getElementById('tokenizationMethod');
+        const ngramOptions = document.getElementById('ngramOptions');
+        const vectorizationOptions = document.getElementById('vectorizationOptions');
+        const embeddingOptions = document.getElementById('embeddingOptions');
 
+        // Handle encoding dropdown
         if (encodingSelect && dropFirstGroup) {
             function updateDropFirst() {
                 if (encodingSelect.value === 'onehot') {
-                    dropFirstGroup.style.display = 'block';
+                    dropFirstGroup.closest('.form-group').style.display = 'block';
                 } else {
-                    dropFirstGroup.style.display = 'none';
+                    dropFirstGroup.closest('.form-group').style.display = 'none';
                 }
             }
 
             encodingSelect.addEventListener('change', updateDropFirst);
             updateDropFirst(); // Run on page load
+        }
+
+        // Handle text preprocessing toggle
+        if (enableTextPreprocessing && textPreprocessingOptions) {
+            function updateTextPreprocessing() {
+                if (enableTextPreprocessing.value === 'true') {
+                    textPreprocessingOptions.style.display = 'block';
+                } else {
+                    textPreprocessingOptions.style.display = 'none';
+                }
+            }
+
+            enableTextPreprocessing.addEventListener('change', updateTextPreprocessing);
+            updateTextPreprocessing(); // Run on page load
+        }
+
+        // Handle tokenization method changes
+        if (tokenizationMethod) {
+            function updateTokenizationOptions() {
+                const method = tokenizationMethod.value;
+
+                // Hide all options first
+                if (ngramOptions) ngramOptions.style.display = 'none';
+                if (vectorizationOptions) vectorizationOptions.style.display = 'none';
+                if (embeddingOptions) embeddingOptions.style.display = 'none';
+
+                // Show relevant options
+                if (method === 'ngrams') {
+                    if (ngramOptions) ngramOptions.style.display = 'block';
+                    if (vectorizationOptions) vectorizationOptions.style.display = 'block';
+                } else if (method === 'bow' || method === 'tfidf') {
+                    if (vectorizationOptions) vectorizationOptions.style.display = 'block';
+                } else if (method === 'word2vec' || method === 'glove') {
+                    if (embeddingOptions) embeddingOptions.style.display = 'block';
+                }
+            }
+
+            tokenizationMethod.addEventListener('change', updateTokenizationOptions);
+            updateTokenizationOptions(); // Run on page load
         }
     });
 </script>

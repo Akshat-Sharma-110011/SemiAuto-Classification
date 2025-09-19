@@ -251,6 +251,7 @@ class DataCleaner:
         except Exception as e:
             logger.error(f"Error updating intel config: {str(e)}")
 
+    # In the DataCleaner class in custom_transformers.py, update the _setup_from_config method:
     def _setup_from_config(self, dataset_name: str = None):
         """Setup the cleaner based on intel.yaml and feature_store configuration."""
         if dataset_name is None:
@@ -262,7 +263,15 @@ class DataCleaner:
 
         # Extract ID columns that should be preserved untouched
         self.id_columns = feature_store.get('id_cols', [])
+
+        # Extract textual columns that should NOT be treated as ID columns
+        self.textual_columns = feature_store.get('textual_cols', [])
+
+        # Remove any textual columns from ID columns list
+        self.id_columns = [col for col in self.id_columns if col not in self.textual_columns]
+
         logger.info(f"Identified ID columns to preserve: {self.id_columns}")
+        logger.info(f"Identified textual columns to preserve: {self.textual_columns}")
 
         # Remember original columns for filtering
         self.original_cols = feature_store.get('original_cols', [])
@@ -1175,19 +1184,24 @@ class OutlierHandler(BaseEstimator, TransformerMixin):
         return X_transformed
 
 
+# Updated IDColumnDropper class in custom_transformers.py
 class IDColumnDropper(BaseEstimator, TransformerMixin):
-    def __init__(self, id_cols: List[str]):
+    def __init__(self, id_cols: List[str], textual_cols: List[str] = None):  # Add textual_cols parameter
         self.id_columns = id_cols
-        logger.info(f"Initialized ID column dropper with columns: {id_cols}")
+        self.textual_columns = textual_cols or []  # Store textual columns
+        logger.info(f"Initialized ID column dropper with ID columns: {id_cols}")
+        logger.info(f"Textual columns to preserve: {textual_cols}")
 
     def fit(self, X, y=None):
-        # Verify which ID columns exist in the dataframe
-        existing_cols = [col for col in self.id_columns if col in X.columns]
-        logger.info(f"Found {len(existing_cols)}/{len(self.id_columns)} ID columns in data")
+        # Verify which ID columns exist in the dataframe, excluding textual columns
+        existing_cols = [col for col in self.id_columns if col in X.columns and col not in self.textual_columns]
+        logger.info(f"Found {len(existing_cols)}/{len(self.id_columns)} ID columns in data (excluding textual columns)")
+        self.columns_to_drop_ = existing_cols  # Store the columns that will actually be dropped
         return self
 
     def transform(self, X):
-        columns_to_drop = [col for col in self.id_columns if col in X.columns]
+        # Only drop columns that are not textual
+        columns_to_drop = [col for col in self.columns_to_drop_ if col in X.columns]
         if columns_to_drop:
             logger.info(f"Dropping ID columns: {columns_to_drop}")
             return X.drop(columns=columns_to_drop)

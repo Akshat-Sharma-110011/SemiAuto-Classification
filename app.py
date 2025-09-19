@@ -55,6 +55,29 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, 
 logger.info("FastAPI application and middleware configured")
 
 
+class ProcessingModeConfig(BaseModel):
+    """Configuration for processing mode selection"""
+    mode: str = Field(..., description="Processing mode: 'auto', 'tabular', 'textual', or 'mixed'")
+
+
+class TextPreprocessingConfig(BaseModel):
+    """Configuration for text preprocessing options"""
+    lowercase: bool = False
+    remove_html: bool = False
+    remove_urls: bool = False
+    handle_emojis: str = "keep"  # keep, remove, replace
+    remove_punctuation: bool = False
+    handle_chat_words: bool = False
+    spelling_correction: bool = False
+    remove_stopwords: bool = False
+    stemming_lemmatization: str = "none"  # none, stemming, lemmatization
+    pos_tagging: bool = False
+    tokenization_method: str = "none"  # none, bow, tfidf, word2vec, glove, ngrams
+    ngram_range: Optional[List[int]] = [1, 2]  # for n-grams
+    max_features: Optional[int] = 1000  # for vectorization methods
+    vector_size: Optional[int] = 100  # for word2vec/glove
+
+
 class PreprocessingConfig(BaseModel):
     missing_values: Optional[str] = None
     handle_duplicates: bool = True
@@ -63,6 +86,19 @@ class PreprocessingConfig(BaseModel):
     scaling: Optional[str] = None
     encoding: Optional[str] = None
     drop_first: Optional[bool] = False
+    text_preprocessing: Optional[TextPreprocessingConfig] = Field(
+        default_factory=lambda: TextPreprocessingConfig(
+            lowercase=True,
+            remove_html=True,
+            remove_urls=True,
+            handle_emojis='remove',
+            remove_punctuation=True,
+            remove_stopwords=True,
+            tokenization_method='tfidf',
+            ngram_range=[1, 2],
+            max_features=1000
+        )
+    )
 
 
 class FeatureEngineeringRequest(BaseModel):
@@ -151,16 +187,29 @@ async def preprocessing_page(request: Request):
             feature_store = load_yaml(intel['feature_store_path'])
 
         logger.info(f"Loaded preprocessing page data for dataset: {intel.get('dataset_name', 'Unknown')}")
-        return templates.TemplateResponse("preprocessing.html", {
+
+        # Get processing mode information
+        processing_mode = feature_store.get('processing_mode', 'tabular')
+
+        # Determine which columns/features to show based on processing mode
+        template_data = {
             "request": request,
             "dataset_name": intel.get('dataset_name', ''),
             "target_column": intel.get('target_column', ''),
+            "processing_mode": processing_mode,
             "numerical_cols": feature_store.get('numerical_cols', []),
             "categorical_cols": feature_store.get('categorical_cols', []),
+            "textual_cols": feature_store.get('textual_cols', []),  # New: textual columns
             "nulls": feature_store.get('contains_null', []),
             "outliers": feature_store.get('contains_outliers', []),
             "skewed": feature_store.get('skewed_cols', [])
-        })
+        }
+
+        # Add text analysis data if available
+        if 'text_analysis' in feature_store:
+            template_data['text_analysis'] = feature_store['text_analysis']
+
+        return templates.TemplateResponse("preprocessing.html", template_data)
     except Exception as e:
         logger.warning(f"Failed to load preprocessing page data: {str(e)}")
         return templates.TemplateResponse("error.html", {
@@ -183,9 +232,21 @@ async def feature_engineering_page(request: Request):
                 "error_message": "Please complete preprocessing first",
                 "redirect_url": "/preprocessing"
             })
-        return templates.TemplateResponse("feature_engineering.html", {"request": request})
+
+        # Load feature store to get processing mode
+        feature_store = {}
+        if 'feature_store_path' in intel and os.path.exists(intel['feature_store_path']):
+            feature_store = load_yaml(intel['feature_store_path'])
+
+        processing_mode = feature_store.get('processing_mode', 'tabular')
+
+        return templates.TemplateResponse("feature_engineering.html", {
+            "request": request,
+            "processing_mode": processing_mode,
+            "textual_cols": feature_store.get('textual_cols', [])
+        })
     except Exception as e:
-        logger.error(f"Error loading feature selection page: {str(e)}")
+        logger.error(f"Error loading feature engineering page: {str(e)}")
         return templates.TemplateResponse("error.html", {
             "request": request,
             "error_message": "Please complete previous steps first",
@@ -276,9 +337,17 @@ async def model_building_page(request: Request):
         available_models = builder.get_available_models()
         logger.info(f"Loaded {len(available_models)} available models")
 
+        # Load processing mode information
+        feature_store = {}
+        if 'feature_store_path' in intel and os.path.exists(intel['feature_store_path']):
+            feature_store = load_yaml(intel['feature_store_path'])
+
+        processing_mode = feature_store.get('processing_mode', 'tabular')
+
         return templates.TemplateResponse("model_building.html", {
             "request": request,
-            "available_models": list(available_models.keys())
+            "available_models": list(available_models.keys()),
+            "processing_mode": processing_mode
         })
     except Exception as e:
         logger.error(f"Error loading model building page: {str(e)}")
@@ -330,10 +399,18 @@ async def results_page(request: Request):
         metrics = load_yaml(intel['performance_metrics_path'])
         logger.info(f"Loaded evaluation metrics for dataset: {intel.get('dataset_name', 'unnamed')}")
 
+        # Load processing mode information
+        feature_store = {}
+        if 'feature_store_path' in intel and os.path.exists(intel['feature_store_path']):
+            feature_store = load_yaml(intel['feature_store_path'])
+
+        processing_mode = feature_store.get('processing_mode', 'tabular')
+
         return templates.TemplateResponse("results.html", {
             "request": request,
             "metrics": metrics,
-            "dataset_name": intel.get('dataset_name', 'unnamed')
+            "dataset_name": intel.get('dataset_name', 'unnamed'),
+            "processing_mode": processing_mode
         })
     except Exception as e:
         logger.error(f"Error loading results page: {str(e)}")
@@ -346,8 +423,13 @@ async def results_page(request: Request):
 
 # API endpoints
 @app.post("/api/upload")
-async def upload_dataset(file: UploadFile = File(...), target_column: str = Form(...)):
-    logger.info(f"Received file upload: {file.filename}, target column: {target_column}")
+async def upload_dataset(
+        file: UploadFile = File(...),
+        target_column: str = Form(...),
+        processing_mode: str = Form("auto")  # New: processing mode parameter
+):
+    logger.info(
+        f"Received file upload: {file.filename}, target column: {target_column}, processing mode: {processing_mode}")
 
     if not file.filename.endswith(".csv"):
         logger.error(f"Invalid file type: {file.filename}")
@@ -366,12 +448,16 @@ async def upload_dataset(file: UploadFile = File(...), target_column: str = Form
 
         ingestion = create_data_ingestion()
         with open(path, "rb") as f:
-            ingestion.run_ingestion_pipeline(f, file.filename, target_column)
+            # Pass processing mode to ingestion pipeline
+            mode = None if processing_mode == "auto" else processing_mode
+            result = ingestion.run_ingestion_pipeline(f, file.filename, target_column, mode)
 
         os.unlink(path)
         ingestion.save_intel_yaml()
-        logger.info("Data ingestion completed successfully")
+        logger.info(
+            f"Data ingestion completed successfully with processing mode: {result.get('processing_mode', 'unknown')}")
 
+        # Run data cleaning
         try:
             data_cleaning_main()
             logger.info("Data cleaning completed successfully")
@@ -381,13 +467,95 @@ async def upload_dataset(file: UploadFile = File(...), target_column: str = Form
 
         return {
             "message": "Data ingestion and cleaning completed",
-            "columns": columns
+            "columns": columns,
+            "processing_mode": result.get('processing_mode', 'tabular'),
+            "dataset_info": {
+                "shape": result.get('data_shape'),
+                "numerical_columns": result.get('numerical_columns', []),
+                "categorical_columns": result.get('categorical_columns', []),
+                "textual_columns": result.get('textual_columns', [])
+            }
         }
     except Exception as e:
         logger.error(f"Error during data upload: {str(e)}")
         if os.path.exists(path):
             os.unlink(path)
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+
+
+@app.get("/api/processing-modes")
+async def get_processing_modes():
+    """Get available processing modes and their descriptions"""
+    return {
+        "auto": "Automatically detect the best processing mode based on data characteristics",
+        "tabular": "Traditional tabular data with numerical and categorical features",
+        "textual": "Text-heavy data suitable for NLP tasks",
+        "mixed": "Data containing both tabular and textual features"
+    }
+
+
+@app.post("/api/set-processing-mode")
+async def set_processing_mode(config: ProcessingModeConfig):
+    """Manually set the processing mode for the current dataset"""
+    logger.info(f"Setting processing mode to: {config.mode}")
+
+    try:
+        # Load current intel
+        intel = load_yaml("intel.yaml")
+
+        # Load and update feature store
+        if 'feature_store_path' in intel and os.path.exists(intel['feature_store_path']):
+            feature_store = load_yaml(intel['feature_store_path'])
+            feature_store['processing_mode'] = config.mode
+
+            # Save updated feature store
+            with open(intel['feature_store_path'], 'w') as f:
+                yaml.dump(feature_store, f, default_flow_style=False, sort_keys=False)
+
+            logger.info(f"Processing mode updated to: {config.mode}")
+            return {
+                "status": "success",
+                "message": f"Processing mode set to {config.mode}",
+                "processing_mode": config.mode
+            }
+        else:
+            raise HTTPException(status_code=404, detail="Feature store not found. Please upload data first.")
+
+    except Exception as e:
+        logger.error(f"Error setting processing mode: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to set processing mode: {str(e)}")
+
+
+@app.get("/api/dataset-info")
+async def get_dataset_info():
+    """Get information about the currently loaded dataset"""
+    try:
+        intel = load_yaml("intel.yaml")
+        feature_store = {}
+
+        if 'feature_store_path' in intel and os.path.exists(intel['feature_store_path']):
+            feature_store = load_yaml(intel['feature_store_path'])
+
+        return {
+            "dataset_name": intel.get('dataset_name', 'Unknown'),
+            "processing_mode": feature_store.get('processing_mode', 'tabular'),
+            "target_column": intel.get('target_column', ''),
+            "columns": {
+                "numerical": feature_store.get('numerical_cols', []),
+                "categorical": feature_store.get('categorical_cols', []),
+                "textual": feature_store.get('textual_cols', []),
+                "id": feature_store.get('id_cols', [])
+            },
+            "data_quality": {
+                "contains_null": feature_store.get('contains_null', []),
+                "contains_outliers": feature_store.get('contains_outliers', []),
+                "skewed_cols": feature_store.get('skewed_cols', [])
+            },
+            "text_analysis": feature_store.get('text_analysis', {})
+        }
+    except Exception as e:
+        logger.error(f"Error getting dataset info: {str(e)}")
+        raise HTTPException(status_code=404, detail="Dataset information not found")
 
 
 @app.post("/api/preprocess")
@@ -408,34 +576,41 @@ def preprocess_data(config: PreprocessingConfig):
 
         feature_store = load_yaml(intel['feature_store_path'])
         logger.info(f"Loaded data for preprocessing: {len(train_df)} train rows, {len(test_df)} test rows")
+        logger.info(f"Processing mode: {feature_store.get('processing_mode', 'tabular')}")
 
         numerical = feature_store.get('numerical_cols', [])
         categorical = feature_store.get('categorical_cols', [])
+        textual = feature_store.get('textual_cols', [])
         nulls = [col for col in feature_store.get('contains_null', []) if col != intel['target_column']]
         outliers = [col for col in feature_store.get('contains_outliers', []) if col != intel['target_column']]
         skewed = [col for col in feature_store.get('skewed_cols', []) if col != intel['target_column']]
+
+        # Create preprocessing parameters with text config
+        params = PreprocessingParameters(
+            text_preprocessing_enabled=config.text_preprocessing is not None,
+            text_columns=textual,
+            text_preprocessing_config=config.text_preprocessing.dict() if config.text_preprocessing else None,
+            missing_values_method=config.missing_values or 'mean',
+            missing_values_columns=nulls,
+            handle_duplicates=config.handle_duplicates,
+            outliers_method=config.outliers,
+            outliers_columns=outliers,
+            skewness_method=config.skewedness,
+            skewness_columns=skewed,
+            scaling_method=config.scaling,
+            scaling_columns=numerical,
+            categorical_encoding_method=config.encoding,
+            categorical_columns=categorical,
+            drop_first=config.drop_first or False
+        )
 
         pipeline = PreprocessingPipeline({
             'dataset_name': intel['dataset_name'],
             'target_col': intel['target_column'],
             'feature_store': feature_store
-        }, PreprocessingParameters())
+        }, params)
 
-        if config.missing_values and nulls:
-            logger.info(f"Handling missing values with method: {config.missing_values}")
-            pipeline.handle_missing_values(config.missing_values, nulls)
-        if config.outliers and outliers:
-            logger.info(f"Handling outliers with method: {config.outliers}")
-            pipeline.handle_outliers(config.outliers, outliers)
-        if config.skewedness and skewed:
-            logger.info(f"Handling skewed data with method: {config.skewedness}")
-            pipeline.handle_skewed_data(config.skewedness, skewed)
-        if config.scaling and numerical:
-            logger.info(f"Scaling numerical features with method: {config.scaling}")
-            pipeline.scale_numerical_features(config.scaling, numerical)
-        if config.encoding and categorical:
-            logger.info(f"Encoding categorical features with method: {config.encoding}")
-            pipeline.encode_categorical_features(config.encoding, categorical, config.drop_first)
+        pipeline.configure_pipeline()
 
         pipeline.fit(train_df)
         train_p = pipeline.transform(train_df, handle_duplicates=config.handle_duplicates)
@@ -461,7 +636,15 @@ def preprocess_data(config: PreprocessingConfig):
         })
 
         logger.info("Data preprocessing completed successfully")
-        return {"message": "Preprocessing completed"}
+        return {
+            "message": "Preprocessing completed",
+            "processing_mode": feature_store.get('processing_mode', 'tabular'),
+            "processed_columns": {
+                "numerical": len(numerical),
+                "categorical": len(categorical),
+                "textual": len(textual)
+            }
+        }
 
     except Exception as e:
         logger.error(f"Error during preprocessing: {str(e)}")
@@ -903,5 +1086,5 @@ if __name__ == "__main__":
     os.makedirs("classification-static/images", exist_ok=True)
     os.makedirs("templates", exist_ok=True)
 
-    logger.info("Starting FastAPI server on 127.0.0.1:8020")
+    logger.info("Starting FastAPI server on 127.0.0.1:8080")
     uvicorn.run("app:app", host="127.0.0.1", port=8080, reload=True)

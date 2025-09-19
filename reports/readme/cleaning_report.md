@@ -1,14 +1,14 @@
 # Data Cleaning Report
 
-Generated at: 2025-08-10 00:59:17
+Generated at: 2025-09-19 23:45:44
 
 ## Summary
 
-* Starting shape: 1000 rows × 15 columns
-* Ending shape: 1000 rows × 15 columns
+* Starting shape: 550 rows × 2 columns
+* Ending shape: 550 rows × 2 columns
 * Columns dropped: 0
 * Rows dropped: 0
-* Columns fixed/modified: 8
+* Columns fixed/modified: 1
 
 ## Columns Dropped
 
@@ -18,18 +18,10 @@ No columns were dropped.
 
 | Column | Modification |
 |--------|-------------|
-| school_board | string_cleaning |
-| coaching_institute | string_cleaning |
-| family_income | string_cleaning |
-| parent_education | string_cleaning |
-| location_type | string_cleaning |
-| peer_pressure_level | string_cleaning |
-| mental_health_issues | boolean_conversion |
-| admission_taken | boolean_conversion |
+| text | string_cleaning |
 
 ## Data Type Changes
 
 | Column | Original Type | New Type |
 |--------|--------------|----------|
-| mental_health_issues | object | bool |
-| admission_taken | object | bool |
+| No data type changes were made | | |

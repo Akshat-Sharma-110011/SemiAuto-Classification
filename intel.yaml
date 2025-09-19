@@ -1,97 +1,448 @@
-best_params_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\metrics\best_params_JEE_Dropout_After_Class_12\params.json
-cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_JEE_Dropout_After_Class_12\test.csv
-cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_JEE_Dropout_After_Class_12\train.csv
-cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_JEE_Dropout_After_Class_12\cleaning.pkl
+best_params_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\metrics\best_params_balanced_ai_human_prompts\params.json
+cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_balanced_ai_human_prompts\test.csv
+cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_balanced_ai_human_prompts\train.csv
+cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_balanced_ai_human_prompts\cleaning.pkl
 cleaning_report_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\readme\cleaning_report.md
-cleaning_timestamp: '2025-08-10 00:59:17'
-dataset_name: JEE_Dropout_After_Class_12
-evaluation_timestamp: '2025-08-13 14:35:56'
+cleaning_timestamp: '2025-09-19 23:45:44'
+dataset_name: balanced_ai_human_prompts
+evaluation_timestamp: '2025-09-20 00:05:57'
 feature_engineering_config:
-  n_features_selected: null
+  n_features_selected: 500
   resampling_method: null
-  timestamp: '2025-08-10 01:19:29'
-  use_feature_tools: true
-  use_shap_selection: false
+  timestamp: '2025-09-19 23:56:06'
+  use_feature_tools: false
+  use_shap_selection: true
 feature_selection_config:
-  algorithm: differential_evolution
+  algorithm: whale_optimization
   max_iter: 50
-  n_features_selected: 50
+  n_features_selected: 400
   population_size: 20
   selected_features:
-  - admission_taken_True + parent_education_upto 10th
-  - coaching_institute_fiitjee + parent_education_upto 10th
-  - coaching_institute_nan + daily_study_hours
-  - coaching_institute_nan + school_board_state
-  - daily_study_hours + family_income_low
-  - family_income_low + peer_pressure_level_low
-  - family_income_mid + location_type_urban
-  - parent_education_upto 10th + school_board_state
-  - peer_pressure_level_low + peer_pressure_level_medium
-  - admission_taken_True / family_income_mid
-  - attempt_count / parent_education_upto 10th
-  - coaching_institute_fiitjee / class_12_percent
-  - coaching_institute_fiitjee / parent_education_pg
-  - coaching_institute_local / school_board_state
-  - daily_study_hours / admission_taken_True
-  - daily_study_hours / family_income_low
-  - daily_study_hours / jee_advanced_score
-  - daily_study_hours / peer_pressure_level_low
-  - daily_study_hours / peer_pressure_level_medium
-  - family_income_low / admission_taken_True
-  - family_income_low / mock_test_score_avg
-  - family_income_mid / coaching_institute_fiitjee
-  - jee_advanced_score / daily_study_hours
-  - jee_main_score / parent_education_graduate
-  - location_type_semi-urban / mock_test_score_avg
-  - parent_education_graduate / location_type_urban
-  - parent_education_pg / coaching_institute_local
-  - parent_education_pg / peer_pressure_level_low
-  - peer_pressure_level_low / class_12_percent
-  - school_board_icse / coaching_institute_fiitjee
-  - school_board_icse / coaching_institute_local
-  - school_board_icse / parent_education_upto 10th
-  - admission_taken_True * daily_study_hours
-  - attempt_count * coaching_institute_local
-  - attempt_count * peer_pressure_level_medium
-  - class_12_percent * family_income_mid
-  - class_12_percent * location_type_urban
-  - coaching_institute_fiitjee * peer_pressure_level_low
-  - coaching_institute_fiitjee * peer_pressure_level_medium
-  - daily_study_hours * parent_education_graduate
-  - family_income_mid * location_type_semi-urban
-  - jee_advanced_score * jee_main_score
-  - jee_advanced_score * school_board_icse
-  - mock_test_score_avg * school_board_state
-  - admission_taken_True - location_type_urban
-  - admission_taken_True - parent_education_upto 10th
-  - attempt_count - family_income_low
-  - coaching_institute_fiitjee - family_income_mid
-  - coaching_institute_fiitjee - location_type_semi-urban
-  - coaching_institute_local - daily_study_hours
-  timestamp: '2025-08-10 01:22:33'
-feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_JEE_Dropout_After_Class_12\feature_store.yaml
-model_name: LightGBM_1
-model_path: model\model_JEE_Dropout_After_Class_12\model.pkl
-model_timestamp: '2025-08-13 14:35:55'
+  - text_electoral
+  - text_vote
+  - text_cars
+  - text_college
+  - text_car
+  - text_exploration
+  - text_context
+  - text_education
+  - text_review
+  - text_president
+  - text_stepbystep
+  - text_outline
+  - text_structured
+  - text_developing
+  - text_balanced
+  - text_develop
+  - text_formulate
+  - text_critical
+  - text_indepth
+  - text_compose
+  - text_analysis
+  - text_sustainability
+  - text_advancement
+  - text_produce
+  - text_technological
+  - text_policy
+  - text_21st
+  - text_draft
+  - text_analyzing
+  - text_detailed
+  - text_compile
+  - text_insights
+  - text_comprehensive
+  - text_summary
+  - text_generate
+  - text_report
+  - text_strategy
+  - text_electors
+  - text_argument
+  - text_global
+  - text_list
+  - text_votes
+  - text_essay
+  - text_key
+  - text_environmental
+  - text_everyday
+  - text_century
+  - text_modern
+  - text_thee
+  - text_create
+  - text_business
+  - text_applications
+  - text_autonomous
+  - text_states
+  - text_healthcare
+  - text_blockchain
+  - text_climate
+  - text_network
+  - text_society
+  - text_would
+  - text_public
+  - text_system
+  - text_history
+  - text_chain
+  - text_management
+  - text_editing
+  - text_internet
+  - text_life
+  - text_supply
+  - text_infrastructure
+  - text_space
+  - text_voters
+  - text_innovations
+  - text_voting
+  - text_popular
+  - text_election
+  - text_source
+  - text_driving
+  - text_financial
+  - text_limiting
+  - text_reality
+  - text_vehicles
+  - text_smart
+  - text_city
+  - text_air
+  - text_day
+  - text_smog
+  - text_use
+  - text_environment
+  - text_less
+  - text_change
+  - text_transportation
+  - text_ai
+  - text_paragraph
+  - text_money
+  - text_things
+  - text_many
+  - text_citizens
+  - text_process
+  - text_stress
+  - text_cities
+  - text_candidates
+  - text_one
+  - text_us
+  - text_unfair
+  - text_tohe
+  - text_get
+  - text_gas
+  - text_country
+  - text_paris
+  - text_percent
+  - text_greenhouse
+  - text_want
+  - text_without
+  - text_new
+  - text_think
+  - text_may
+  - text_amount
+  - text_ii
+  - text_power
+  - text_like
+  - text_human
+  - text_help
+  - text_way
+  - text_experience
+  - text_method
+  - text_ahe
+  - text_community
+  - text_make
+  - text_reduce
+  - text_fair
+  - text_around
+  - text_much
+  - text_french
+  - text_tie
+  - text_earth
+  - text_advantages
+  - text_walking
+  - text_presidential
+  - text_ban
+  - text_united
+  - text_really
+  - text_health
+  - text_work
+  - text_limited
+  - text_know
+  - text_say
+  - text_using
+  - text_majority
+  - text_gases
+  - text_choose
+  - text_elector
+  - text_america
+  - text_elections
+  - text_collage
+  - text_limit
+  - text_bogota
+  - text_rosenthal
+  - text_balance
+  - text_lot
+  - text_drive
+  - text_government
+  - text_good
+  - text_vauban
+  - text_countries
+  - text_places
+  - text_take
+  - text_potential
+  - text_bike
+  - text_believe
+  - text_place
+  - text_plumer
+  - text_win
+  - text_automobiles
+  - text_become
+  - text_gasses
+  - text_electorsal
+  - text_swing
+  - text_role
+  - text_polution
+  - text_says
+  - text_personal
+  - text_according
+  - text_feel
+  - text_campaign
+  - text_making
+  - text_france
+  - text_right
+  - text_days
+  - text_representatives
+  - text_means
+  - text_nation
+  - text_everyone
+  - text_well
+  - text_advantage
+  - text_american
+  - text_keep
+  - text_save
+  - text_individuals
+  - text_benefits
+  - text_point
+  - text_reducing
+  - text_streets
+  - text_getting
+  - text_pay
+  - text_ways
+  - text_future
+  - text_chance
+  - text_due
+  - text_impact
+  - text_big
+  - text_plates
+  - text_americans
+  - text_winner
+  - text_person
+  - text_idea
+  - text_happier
+  - text_though
+  - text_however
+  - text_decision
+  - text_road
+  - text_individual
+  - text_reasons
+  - text_since
+  - text_reason
+  - text_atmosphere
+  - text_appeal
+  - text_planet
+  - text_accidents
+  - text_slate
+  - text_direct
+  - text_diesel
+  - text_economy
+  - text_didnt
+  - text_helps
+  - text_away
+  - text_past
+  - text_jams
+  - text_congestion
+  - text_exercise
+  - text_instead
+  - text_best
+  - text_always
+  - text_improve
+  - text_distant
+  - text_thing
+  - text_fewer
+  - text_used
+  - text_travel
+  - text_outcome
+  - text_often
+  - text_positive
+  - text_healthier
+  - text_sidewalks
+  - text_smaller
+  - text_able
+  - text_although
+  - text_across
+  - text_reduction
+  - text_problems
+  - text_shows
+  - text_must
+  - text_house
+  - text_year
+  - text_lower
+  - text_bus
+  - text_larger
+  - text_physical
+  - text_congress
+  - text_presidents
+  - text_voted
+  - text_show
+  - text_bad
+  - text_made
+  - text_another
+  - text_sometimes
+  - text_disaster
+  - text_cause
+  - text_years
+  - text_fuel
+  - text_based
+  - text_gore
+  - text_thats
+  - text_behind
+  - text_end
+  - text_stated
+  - text_cut
+  - text_safer
+  - text_matter
+  - text_party
+  - text_elected
+  - text_bush
+  - text_taking
+  - text_effect
+  - text_children
+  - text_next
+  - text_office
+  - text_2000
+  - text_makes
+  - text_living
+  - text_something
+  - text_germany
+  - text_senator
+  - text_drivers
+  - text_result
+  - text_democracy
+  - text_count
+  - text_resources
+  - text_sense
+  - text_alternative
+  - text_regions
+  - text_chosen
+  - text_motor
+  - text_rather
+  - text_play
+  - text_license
+  - text_gives
+  - text_becomes
+  - text_imagine
+  - text_back
+  - text_rid
+  - text_favor
+  - text_major
+  - text_theres
+  - text_first
+  - text_outdated
+  - text_factor
+  - text_kennedy
+  - text_issues
+  - text_happen
+  - text_doesnt
+  - text_control
+  - text_emission
+  - text_bradford
+  - text_humans
+  - text_area
+  - text_goes
+  - text_winning
+  - text_founding
+  - text_part
+  - text_known
+  - text_effects
+  - text_voice
+  - text_changing
+  - text_decisions
+  - text_rain
+  - text_elisabeth
+  - text_companies
+  - text_peoples
+  - text_certain
+  - text_warming
+  - text_harmful
+  - text_small
+  - text_times
+  - text_stop
+  - text_completely
+  - text_ride
+  - text_passage
+  - text_responsible
+  - text_program
+  - text_important
+  - text_enough
+  - text_region
+  - text_comes
+  - text_helping
+  - text_miles
+  - text_lifestyle
+  - text_keeping
+  - text_event
+  - text_spend
+  - text_al
+  - text_whole
+  - text_levels
+  - text_im
+  - text_stores
+  - text_today
+  - text_cost
+  - text_fathers
+  - text_residents
+  - text_cant
+  - text_wont
+  - text_causes
+  - text_long
+  - text_banning
+  - text_wouldnt
+  - text_daily
+  - text_come
+  - text_beginning
+  - text_directly
+  - text_easier
+  - text_represent
+  - text_suburb
+  - text_presidency
+  - text_town
+  - text_give
+  - text_throughout
+  - text_richard
+  - text_fine
+  - text_irrational
+  - text_ones
+  timestamp: '2025-09-19 23:58:06'
+feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_balanced_ai_human_prompts\feature_store.yaml
+model_name: Random Forest_4
+model_path: model\model_balanced_ai_human_prompts\model.pkl
+model_timestamp: '2025-09-20 00:05:21'
 model_type: baseline
-optimization_timestamp: '2025-08-10 01:29:36'
-optimized_evaluation_timestamp: '2025-08-10 01:29:36'
-optimized_model_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\model_JEE_Dropout_After_Class_12\optimized_model.pkl
-optimized_performance_metrics_path: reports\metrics\performance_JEE_Dropout_After_Class_12\optimized_performance.yaml
-original_file_name: JEE_Dropout_After_Class_12.csv
-performance_metrics_path: reports\metrics\performance_JEE_Dropout_After_Class_12\performance.yaml
-plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_JEE_Dropout_After_Class_12
-preprocessing_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\preprocessing.pkl
-processed_timestamp: '2025-08-10 00:59:42'
-processor_pipeline_path: model/pipelines/preprocessing_JEE_Dropout_After_Class_12\processor.pkl
-selection_pipeline_path: model/pipelines/preprocessing_JEE_Dropout_After_Class_12\selection.pkl
-target_column: dropout
-test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_JEE_Dropout_After_Class_12\test.csv
-test_preprocessed_path: data\interim\data_JEE_Dropout_After_Class_12\test_preprocessed.csv
-test_selected_path: data/selected/data_JEE_Dropout_After_Class_12\test_selected.csv
-test_transformed_path: data\processed\data_JEE_Dropout_After_Class_12\test_transformed.csv
-train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_JEE_Dropout_After_Class_12\train.csv
-train_preprocessed_path: data\interim\data_JEE_Dropout_After_Class_12\train_preprocessed.csv
-train_selected_path: data/selected/data_JEE_Dropout_After_Class_12\train_selected.csv
-train_transformed_path: data\processed\data_JEE_Dropout_After_Class_12\train_transformed.csv
-transformation_pipeline_path: model\pipelines\preprocessing_JEE_Dropout_After_Class_12\transformation.pkl
+optimization_timestamp: '2025-09-20 00:05:57'
+optimized_evaluation_timestamp: '2025-09-20 00:05:57'
+optimized_model_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\model_balanced_ai_human_prompts\optimized_model.pkl
+optimized_performance_metrics_path: reports\metrics\performance_balanced_ai_human_prompts\optimized_performance.yaml
+original_file_name: balanced_ai_human_prompts.csv
+performance_metrics_path: reports\metrics\performance_balanced_ai_human_prompts\performance.yaml
+plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_balanced_ai_human_prompts
+preprocessing_pipeline_path: model\pipelines\preprocessing_balanced_ai_human_prompts\preprocessing.pkl
+processed_timestamp: '2025-09-19 23:46:32'
+processing_mode: textual
+processor_pipeline_path: model/pipelines/preprocessing_balanced_ai_human_prompts\processor.pkl
+selection_pipeline_path: model/pipelines/preprocessing_balanced_ai_human_prompts\selection.pkl
+target_column: generated
+test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_balanced_ai_human_prompts\test.csv
+test_preprocessed_path: data\interim\data_balanced_ai_human_prompts\test_preprocessed.csv
+test_selected_path: data/selected/data_balanced_ai_human_prompts\test_selected.csv
+test_transformed_path: data\processed\data_balanced_ai_human_prompts\test_transformed.csv
+train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_balanced_ai_human_prompts\train.csv
+train_preprocessed_path: data\interim\data_balanced_ai_human_prompts\train_preprocessed.csv
+train_selected_path: data/selected/data_balanced_ai_human_prompts\train_selected.csv
+train_transformed_path: data\processed\data_balanced_ai_human_prompts\train_transformed.csv
+transformation_pipeline_path: model\pipelines\preprocessing_balanced_ai_human_prompts\transformation.pkl

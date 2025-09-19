@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split
 import io
 import tempfile
 import shutil
+import re
 
 # Add the parent directory to the system path to import logger
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -48,13 +49,18 @@ RANDOM_STATE = 42
 OUTLIER_THRESHOLD = 1.5  # IQR multiplier for outlier detection
 ID_COLUMN_THRESHOLD = 0.9  # Threshold for unique value ratio to identify ID columns
 
+# Text detection constants
+MIN_TEXT_LENGTH = 10  # Minimum average text length to consider as textual
+TEXT_COLUMN_THRESHOLD = 0.7  # Threshold for text-like content ratio
+MAX_UNIQUE_RATIO_FOR_TEXT = 0.8  # Maximum unique ratio for text columns (to exclude IDs)
+
 
 class DataIngestion:
     """
     Class for handling data ingestion from uploaded files, performing initial analysis,
     and creating feature store metadata.
 
-    API-friendly version that doesn't rely on command-line interaction.
+    Supports both tabular and textual data processing modes.
     """
 
     def __init__(self, project_dir=None):
@@ -82,29 +88,212 @@ class DataIngestion:
 
         self.df = None
         self.dataset_name = None
+        self.processing_mode = "tabular"  # Default mode
+
         self.feature_store_data = {
             'original_cols': [],
             'numerical_cols': [],
             'categorical_cols': [],
-            'id_cols': [],  # Added ID columns list
+            'textual_cols': [],  # New: textual columns
+            'id_cols': [],
             'skewed_cols': [],
             'normal_cols': [],
             'contains_null': [],
             'contains_outliers': [],
             'correlated_cols': {},
             'target_col': None,
+            'processing_mode': 'tabular',  # New: processing mode
             'timestamp': datetime.now().strftime(DATETIME_FORMAT),
             'train_size': 1 - TEST_SIZE,
             'test_size': TEST_SIZE
         }
 
-    def ingest_uploaded_file(self, file: Union[BinaryIO, str], filename: str = None) -> pd.DataFrame:
+    def detect_processing_mode(self) -> str:
+        """
+        Automatically detect the processing mode based on data characteristics
+
+        Returns:
+            str: 'tabular', 'textual', or 'mixed'
+        """
+        section("DETECTING PROCESSING MODE", self.logger)
+
+        if self.df is None:
+            self.logger.error("No data loaded. Please load data first.")
+            return "tabular"
+
+        # Get basic column analysis
+        total_cols = len(self.df.columns)
+        text_cols = self._identify_textual_columns()
+        numerical_cols = self.df.select_dtypes(include=['number']).columns.tolist()
+
+        text_ratio = len(text_cols) / total_cols if total_cols > 0 else 0
+        numerical_ratio = len(numerical_cols) / total_cols if total_cols > 0 else 0
+
+        self.logger.info(f"Text columns ratio: {text_ratio:.2f}")
+        self.logger.info(f"Numerical columns ratio: {numerical_ratio:.2f}")
+
+        # Decision logic
+        if text_ratio >= 0.5:
+            mode = "textual"
+        elif text_ratio > 0.2 and numerical_ratio > 0.3:
+            mode = "mixed"
+        else:
+            mode = "tabular"
+
+        self.logger.info(f"Detected processing mode: {mode}")
+        return mode
+
+    def set_processing_mode(self, mode: str) -> str:
+        """
+        Set the processing mode manually
+
+        Args:
+            mode: 'tabular', 'textual', or 'mixed'
+
+        Returns:
+            str: The set processing mode
+        """
+        valid_modes = ['tabular', 'textual', 'mixed']
+        if mode not in valid_modes:
+            self.logger.warning(f"Invalid mode '{mode}'. Using 'tabular' as default.")
+            mode = 'tabular'
+
+        self.processing_mode = mode
+        self.feature_store_data['processing_mode'] = mode
+        self.logger.info(f"Processing mode set to: {mode}")
+        return mode
+
+    def _is_text_column(self, series: pd.Series) -> bool:
+        """
+        Determine if a pandas Series contains textual data
+
+        Args:
+            series: Pandas Series to analyze
+
+        Returns:
+            bool: True if column contains textual data
+        """
+        # Skip if mostly null
+        if series.isnull().sum() / len(series) > 0.8:
+            return False
+
+        # Convert to string and drop nulls for analysis
+        text_series = series.dropna().astype(str)
+
+        if len(text_series) == 0:
+            return False
+
+        # Check average length
+        avg_length = text_series.str.len().mean()
+        if avg_length < MIN_TEXT_LENGTH:
+            return False
+
+        # Check for text-like patterns
+        text_like_count = 0
+        total_count = min(len(text_series), 1000)  # Sample for performance
+
+        for text in text_series.head(total_count):
+            # Check if contains multiple words
+            word_count = len(str(text).split())
+            # Check if contains letters
+            has_letters = bool(re.search(r'[a-zA-Z]', str(text)))
+            # Check if not purely numeric
+            is_not_numeric = not str(text).replace('.', '').replace('-', '').isdigit()
+
+            if word_count >= 2 and has_letters and is_not_numeric:
+                text_like_count += 1
+
+        text_ratio = text_like_count / total_count
+
+        # Check uniqueness (to avoid ID columns)
+        unique_ratio = series.nunique() / len(series)
+
+        return (
+                text_ratio >= TEXT_COLUMN_THRESHOLD and
+                avg_length >= MIN_TEXT_LENGTH and
+                (
+                        unique_ratio <= MAX_UNIQUE_RATIO_FOR_TEXT  # normal text condition
+                        or text_ratio > 0.9  # free-text override
+                )
+        )
+
+    def _identify_textual_columns(self) -> List[str]:
+        """
+        Identify textual columns in the dataset
+
+        Returns:
+            List of column names that contain textual data
+        """
+        if self.df is None:
+            return []
+
+        textual_cols = []
+
+        # Only check string/object columns
+        object_cols = self.df.select_dtypes(include=['object', 'string']).columns
+
+        for col in object_cols:
+            if self._is_text_column(self.df[col]):
+                textual_cols.append(col)
+                self.logger.info(f"  - {col}: Identified as textual column")
+
+        return textual_cols
+
+    def analyze_text_characteristics(self) -> Dict[str, Dict]:
+        """
+        Analyze characteristics of textual columns
+
+        Returns:
+            Dictionary with text analysis results
+        """
+        section("ANALYZING TEXT CHARACTERISTICS", self.logger)
+
+        text_analysis = {}
+        textual_cols = self.feature_store_data.get('textual_cols', [])
+
+        for col in textual_cols:
+            try:
+                # Convert to string and drop nulls
+                text_series = self.df[col].dropna().astype(str)
+
+                # Basic statistics
+                analysis = {
+                    'total_texts': len(text_series),
+                    'unique_texts': text_series.nunique(),
+                    'avg_length': text_series.str.len().mean(),
+                    'max_length': text_series.str.len().max(),
+                    'min_length': text_series.str.len().min(),
+                    'avg_word_count': text_series.str.split().str.len().mean(),
+                    'contains_punctuation': text_series.str.contains(r'[.!?]').mean(),
+                    'avg_sentence_count': text_series.str.split(r'[.!?]').str.len().mean()
+                }
+
+                # Language detection indicators
+                analysis['likely_language'] = 'english'  # Simplified assumption
+
+                text_analysis[col] = analysis
+
+                self.logger.info(f"Text analysis for {col}:")
+                self.logger.info(f"  - Average length: {analysis['avg_length']:.1f} characters")
+                self.logger.info(f"  - Average words: {analysis['avg_word_count']:.1f}")
+                self.logger.info(f"  - Unique ratio: {analysis['unique_texts'] / analysis['total_texts']:.3f}")
+
+            except Exception as e:
+                self.logger.warning(f"Error analyzing text column {col}: {e}")
+                continue
+
+        # Store in feature store
+        self.feature_store_data['text_analysis'] = text_analysis
+        return text_analysis
+
+    def ingest_uploaded_file(self, file: Union[BinaryIO, str], filename: str = None, mode: str = None) -> pd.DataFrame:
         """
         Load data from an uploaded file
 
         Args:
             file: File-like object or path to file
             filename: Original filename (if file is a file-like object)
+            mode: Processing mode ('tabular', 'textual', 'mixed', or None for auto-detect)
 
         Returns:
             Pandas DataFrame containing the loaded data
@@ -136,6 +325,13 @@ class DataIngestion:
 
             self.logger.info(f"Dataset name: {self.dataset_name}")
 
+            # Set or detect processing mode
+            if mode:
+                self.set_processing_mode(mode)
+            else:
+                detected_mode = self.detect_processing_mode()
+                self.set_processing_mode(detected_mode)
+
             # Create dataset-specific directories
             self.raw_data_dir = os.path.join(RAW_DATA_DIR, f"data_{self.dataset_name}")
             self.feature_store_dir = os.path.join(FEATURE_STORE_DIR, f"feature_store_{self.dataset_name}")
@@ -157,24 +353,39 @@ class DataIngestion:
             self.df.to_csv(raw_file_path, index=False)
 
             self.logger.info(f"Successfully loaded CSV with shape: {self.df.shape}")
+            self.logger.info(f"Processing mode: {self.processing_mode}")
             return self.df
 
         except Exception as e:
             self.logger.error(f"Failed to read uploaded file: {e}")
             raise
 
-    def get_column_list(self) -> List[str]:
+    def get_column_list(self) -> Dict[str, List[str]]:
         """
-        Get list of columns from the loaded DataFrame
+        Get list of columns from the loaded DataFrame, categorized by type
 
         Returns:
-            List of column names
+            Dictionary containing categorized column lists
         """
         if self.df is None:
             self.logger.error("No data loaded. Please load data first.")
-            return []
+            return {}
 
-        return self.df.columns.tolist()
+        # Get all columns
+        all_columns = self.df.columns.tolist()
+
+        # Identify different types
+        textual_cols = self._identify_textual_columns()
+        numerical_cols = self.df.select_dtypes(include=['number']).columns.tolist()
+        categorical_cols = [col for col in self.df.select_dtypes(exclude=['number']).columns
+                            if col not in textual_cols]
+
+        return {
+            'all_columns': all_columns,
+            'textual_columns': textual_cols,
+            'numerical_columns': numerical_cols,
+            'categorical_columns': categorical_cols
+        }
 
     def display_data_info(self) -> Dict:
         """
@@ -191,6 +402,7 @@ class DataIngestion:
 
         # Get basic info
         self.logger.info(f"Data shape: {self.df.shape}")
+        self.logger.info(f"Processing mode: {self.processing_mode}")
         self.logger.info(f"First 5 rows:\n{self.df.head()}")
 
         # Data types
@@ -226,6 +438,7 @@ class DataIngestion:
         # Return information as dictionary
         info_dict = {
             "shape": self.df.shape,
+            "processing_mode": self.processing_mode,
             "columns": self.df.columns.tolist(),
             "dtypes": self.df.dtypes.to_dict(),
             "missing_values": missing_values.to_dict(),
@@ -234,13 +447,53 @@ class DataIngestion:
 
         return info_dict
 
-    def identify_id_columns(self) -> List[str]:
-        """
-        Identify potential ID columns based on unique value ratio and data type
+    def identify_column_types(self) -> Tuple[List[str], List[str], List[str]]:
+        section("IDENTIFYING COLUMN TYPES", self.logger)
 
-        Returns:
-            List of column names that are likely ID columns
-        """
+        if self.df is None:
+            self.logger.error("No data loaded. Please load data first.")
+            return [], [], []
+
+        # Store original columns
+        self.feature_store_data['original_cols'] = self.df.columns.tolist()
+        self.logger.info(f"Total columns: {len(self.feature_store_data['original_cols'])}")
+
+        # First identify textual columns
+        textual_cols = self._identify_textual_columns()
+
+        # Then identify ID columns, excluding textual columns
+        id_columns = self.identify_id_columns(exclude_cols=textual_cols)
+
+        # Identify numerical and categorical columns, excluding ID and textual columns
+        non_special_cols = [col for col in self.df.columns if col not in id_columns + textual_cols]
+        numerical_cols = [col for col in self.df[non_special_cols].select_dtypes(include=['number']).columns]
+        categorical_cols = [col for col in self.df[non_special_cols].select_dtypes(exclude=['number']).columns]
+
+        # Update feature store
+        self.feature_store_data['numerical_cols'] = numerical_cols
+        self.feature_store_data['categorical_cols'] = categorical_cols
+        self.feature_store_data['textual_cols'] = textual_cols
+        self.feature_store_data['id_cols'] = id_columns  # Make sure this includes only non-textual IDs
+
+        self.logger.info(f"Identified {len(numerical_cols)} numerical columns:")
+        for col in numerical_cols:
+            self.logger.info(f"  - {col}")
+
+        self.logger.info(f"Identified {len(categorical_cols)} categorical columns:")
+        for col in categorical_cols:
+            self.logger.info(f"  - {col}")
+
+        self.logger.info(f"Identified {len(textual_cols)} textual columns:")
+        for col in textual_cols:
+            self.logger.info(f"  - {col}")
+
+        # Analyze text characteristics if textual columns found
+        if textual_cols and self.processing_mode in ['textual', 'mixed']:
+            self.analyze_text_characteristics()
+
+        return numerical_cols, categorical_cols, textual_cols
+
+    def identify_id_columns(self, exclude_cols: List[str] = None) -> List[str]:
         section("IDENTIFYING ID COLUMNS", self.logger)
 
         if self.df is None:
@@ -248,9 +501,13 @@ class DataIngestion:
             return []
 
         id_columns = []
+        exclude_cols = exclude_cols or []
 
         # Check all columns for ID-like characteristics
         for col in self.df.columns:
+            if col in exclude_cols:
+                continue
+
             # Skip columns with too many nulls
             null_percent = (self.df[col].isnull().sum() / len(self.df)) * 100
             if null_percent > 5:
@@ -281,46 +538,6 @@ class DataIngestion:
         self.logger.info(f"Identified {len(id_columns)} potential ID columns")
 
         return id_columns
-
-    def identify_column_types(self) -> Tuple[List[str], List[str]]:
-        """
-        Identify numerical and categorical columns
-
-        Returns:
-            Tuple containing lists of numerical and categorical column names
-        """
-        section("IDENTIFYING COLUMN TYPES", self.logger)
-
-        if self.df is None:
-            self.logger.error("No data loaded. Please load data first.")
-            return [], []
-
-        # Store original columns
-        self.feature_store_data['original_cols'] = self.df.columns.tolist()
-        self.logger.info(f"Total columns: {len(self.feature_store_data['original_cols'])}")
-
-        # First identify ID columns
-        id_columns = self.identify_id_columns()
-
-        # Identify numerical and categorical columns, excluding ID columns
-        non_id_cols = [col for col in self.df.columns if col not in id_columns]
-        numerical_cols = [col for col in self.df[non_id_cols].select_dtypes(include=['number']).columns if
-                          col not in id_columns]
-        categorical_cols = [col for col in self.df[non_id_cols].select_dtypes(exclude=['number']).columns if
-                            col not in id_columns]
-
-        self.feature_store_data['numerical_cols'] = numerical_cols
-        self.feature_store_data['categorical_cols'] = categorical_cols
-
-        self.logger.info(f"Identified {len(numerical_cols)} numerical columns:")
-        for col in numerical_cols:
-            self.logger.info(f"  - {col}")
-
-        self.logger.info(f"Identified {len(categorical_cols)} categorical columns:")
-        for col in categorical_cols:
-            self.logger.info(f"  - {col}")
-
-        return numerical_cols, categorical_cols
 
     def analyze_distribution(self) -> Tuple[List[str], List[str]]:
         """
@@ -520,12 +737,6 @@ class DataIngestion:
             return None
 
     def save_feature_store_yaml(self) -> str:
-        """
-        Save feature store information to YAML file
-
-        Returns:
-            Path to the saved YAML file
-        """
         section("SAVING FEATURE STORE METADATA", self.logger)
 
         if not self.feature_store_data['target_col']:
@@ -534,15 +745,37 @@ class DataIngestion:
         try:
             # Custom YAML representer for NumPy data types
             def numpy_representer(dumper, data):
-                return dumper.represent_scalar('tag:yaml.org,2002:float', float(data))
+                if isinstance(data, (np.integer, np.floating)):
+                    return dumper.represent_scalar('tag:yaml.org,2002:float', float(data))
+                elif isinstance(data, np.ndarray):
+                    return dumper.represent_sequence('tag:yaml.org,2002:seq', data.tolist())
+                return None
 
-            # Register the representer for numpy types if they're still present anywhere
-            for numpy_type in [np.float64, np.float32, np.int64, np.int32]:
-                yaml.add_representer(numpy_type, numpy_representer)
+            # Register the representer for numpy types
+            yaml.add_representer(np.int64, numpy_representer)
+            yaml.add_representer(np.int32, numpy_representer)
+            yaml.add_representer(np.float64, numpy_representer)
+            yaml.add_representer(np.float32, numpy_representer)
+            yaml.add_representer(np.ndarray, numpy_representer)
+
+            # Convert any remaining numpy types to native Python types
+            def convert_numpy_types(obj):
+                if isinstance(obj, dict):
+                    return {k: convert_numpy_types(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_numpy_types(v) for v in obj]
+                elif isinstance(obj, (np.integer, np.floating)):
+                    return float(obj)
+                elif isinstance(obj, np.ndarray):
+                    return obj.tolist()
+                else:
+                    return obj
+
+            feature_store_data_converted = convert_numpy_types(self.feature_store_data)
 
             yaml_path = os.path.join(self.feature_store_dir, 'feature_store.yaml')
             with open(yaml_path, 'w') as f:
-                yaml.dump(self.feature_store_data, f, default_flow_style=False, sort_keys=False)
+                yaml.dump(feature_store_data_converted, f, default_flow_style=False, sort_keys=False)
 
             self.logger.info(f"Feature store metadata saved to: {yaml_path}")
             return yaml_path
@@ -564,6 +797,7 @@ class DataIngestion:
             intel_data = {
                 'dataset_name': self.dataset_name,
                 'original_file_name': self.feature_store_data.get('original_file_name', self.dataset_name),
+                'processing_mode': self.processing_mode,  # New: processing mode
                 'processed_timestamp': datetime.now().strftime(DATETIME_FORMAT),
                 'feature_store_path': os.path.join(self.feature_store_dir, 'feature_store.yaml'),
                 'train_path': os.path.join(self.raw_data_dir, 'train.csv'),
@@ -582,6 +816,49 @@ class DataIngestion:
         except Exception as e:
             self.logger.error(f"Failed to save intel YAML: {e}")
             return None
+
+    def analyze_text_characteristics(self) -> Dict[str, Dict]:
+        section("ANALYZING TEXT CHARACTERISTICS", self.logger)
+
+        text_analysis = {}
+        textual_cols = self.feature_store_data.get('textual_cols', [])
+
+        for col in textual_cols:
+            try:
+                # Convert to string and drop nulls
+                text_series = self.df[col].dropna().astype(str)
+
+                if len(text_series) == 0:
+                    self.logger.warning(f"Skipping text analysis for {col}: no valid text data")
+                    continue
+
+                # Basic statistics
+                analysis = {
+                    'total_texts': len(text_series),
+                    'unique_texts': text_series.nunique(),
+                    'avg_length': float(text_series.str.len().mean()),
+                    'max_length': int(text_series.str.len().max()),
+                    'min_length': int(text_series.str.len().min()),
+                    'avg_word_count': float(text_series.str.split().str.len().mean()),
+                    'contains_punctuation': float(text_series.str.contains(r'[.!?]').mean()),
+                    'avg_sentence_count': float(text_series.str.split(r'[.!?]').str.len().mean()),
+                    'likely_language': 'english'  # Simplified assumption
+                }
+
+                text_analysis[col] = analysis
+
+                self.logger.info(f"Text analysis for {col}:")
+                self.logger.info(f"  - Average length: {analysis['avg_length']:.1f} characters")
+                self.logger.info(f"  - Average words: {analysis['avg_word_count']:.1f}")
+                self.logger.info(f"  - Unique ratio: {analysis['unique_texts'] / analysis['total_texts']:.3f}")
+
+            except Exception as e:
+                self.logger.warning(f"Error analyzing text column {col}: {e}")
+                continue
+
+        # Store in feature store
+        self.feature_store_data['text_analysis'] = text_analysis
+        return text_analysis
 
     def generate_data_profile(self) -> Dict[str, str]:
         """
@@ -603,57 +880,111 @@ class DataIngestion:
             id_cols = self.feature_store_data.get('id_cols', [])
             plot_columns = [col for col in self.feature_store_data['numerical_cols'] if col not in id_cols][:10]
 
-            # Plot distributions for numerical columns
-            self.logger.info("Generating distribution plots for numerical columns")
-            for col in plot_columns:  # Limit to 10 columns, excluding IDs
-                plt.figure(figsize=(10, 4))
+            # Plot distributions for numerical columns (only for tabular/mixed modes)
+            if self.processing_mode in ['tabular', 'mixed'] and plot_columns:
+                self.logger.info("Generating distribution plots for numerical columns")
+                for col in plot_columns:  # Limit to 10 columns, excluding IDs
+                    plt.figure(figsize=(10, 4))
 
-                # Histogram with KDE
-                plt.subplot(1, 2, 1)
-                sns.histplot(self.df[col], kde=True)
-                plt.title(f'Distribution of {col}')
+                    # Histogram with KDE
+                    plt.subplot(1, 2, 1)
+                    sns.histplot(self.df[col], kde=True)
+                    plt.title(f'Distribution of {col}')
 
-                # Box plot
-                plt.subplot(1, 2, 2)
-                sns.boxplot(x=self.df[col])
-                plt.title(f'Boxplot of {col}')
+                    # Box plot
+                    plt.subplot(1, 2, 2)
+                    sns.boxplot(x=self.df[col])
+                    plt.title(f'Boxplot of {col}')
 
-                # Save plot
-                plot_path = os.path.join(self.plots_dir, f'distribution_{col}.png')
-                plt.tight_layout()
-                plt.savefig(plot_path)
-                plt.close()
+                    # Save plot
+                    plot_path = os.path.join(self.plots_dir, f'distribution_{col}.png')
+                    plt.tight_layout()
+                    plt.savefig(plot_path)
+                    plt.close()
 
-                plot_paths[f'distribution_{col}'] = plot_path
-                self.logger.info(f"Saved distribution plot for {col} to {plot_path}")
+                    plot_paths[f'distribution_{col}'] = plot_path
+                    self.logger.info(f"Saved distribution plot for {col} to {plot_path}")
 
-            # Plot correlation heatmap (excluding ID columns)
-            self.logger.info("Generating correlation heatmap")
-            numerical_cols = [col for col in self.feature_store_data['numerical_cols'] if col not in id_cols]
+            # Plot correlation heatmap (excluding ID columns) - only for tabular/mixed modes
+            if self.processing_mode in ['tabular', 'mixed']:
+                self.logger.info("Generating correlation heatmap")
+                numerical_cols = [col for col in self.feature_store_data['numerical_cols'] if col not in id_cols]
 
-            if len(numerical_cols) > 1:  # Need at least 2 columns for correlation
-                corr_matrix = self.df[numerical_cols].corr()
+                if len(numerical_cols) > 1:  # Need at least 2 columns for correlation
+                    corr_matrix = self.df[numerical_cols].corr()
 
-                plt.figure(figsize=(12, 10))
-                mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
-                sns.heatmap(corr_matrix, mask=mask, annot=False, cmap='coolwarm',
-                            center=0, square=True, linewidths=.5)
-                plt.title('Correlation Heatmap')
+                    plt.figure(figsize=(12, 10))
+                    mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
+                    sns.heatmap(corr_matrix, mask=mask, annot=False, cmap='coolwarm',
+                                center=0, square=True, linewidths=.5)
+                    plt.title('Correlation Heatmap')
 
-                # Save correlation heatmap
-                heatmap_path = os.path.join(self.plots_dir, 'correlation_heatmap.png')
-                plt.tight_layout()
-                plt.savefig(heatmap_path)
-                plt.close()
+                    # Save correlation heatmap
+                    heatmap_path = os.path.join(self.plots_dir, 'correlation_heatmap.png')
+                    plt.tight_layout()
+                    plt.savefig(heatmap_path)
+                    plt.close()
 
-                plot_paths['correlation_heatmap'] = heatmap_path
-                self.logger.info(f"Saved correlation heatmap to {heatmap_path}")
+                    plot_paths['correlation_heatmap'] = heatmap_path
+                    self.logger.info(f"Saved correlation heatmap to {heatmap_path}")
+
+            # Generate text-specific visualizations for textual/mixed modes
+            if self.processing_mode in ['textual', 'mixed']:
+                textual_cols = self.feature_store_data.get('textual_cols', [])
+                if textual_cols:
+                    self._generate_text_visualizations(textual_cols, plot_paths)
 
             return plot_paths
 
         except Exception as e:
             self.logger.error(f"Failed to generate data profile: {e}")
             return {}
+
+    def _generate_text_visualizations(self, textual_cols: List[str], plot_paths: Dict[str, str]):
+        """
+        Generate visualizations specific to textual data
+
+        Args:
+            textual_cols: List of textual column names
+            plot_paths: Dictionary to store plot paths
+        """
+        self.logger.info("Generating text-specific visualizations")
+
+        for col in textual_cols[:5]:  # Limit to 5 text columns
+            try:
+                # Text length distribution
+                text_series = self.df[col].dropna().astype(str)
+                text_lengths = text_series.str.len()
+
+                plt.figure(figsize=(12, 4))
+
+                # Text length histogram
+                plt.subplot(1, 2, 1)
+                plt.hist(text_lengths, bins=30, alpha=0.7, color='skyblue', edgecolor='black')
+                plt.title(f'Text Length Distribution - {col}')
+                plt.xlabel('Text Length (characters)')
+                plt.ylabel('Frequency')
+
+                # Word count distribution
+                word_counts = text_series.str.split().str.len()
+                plt.subplot(1, 2, 2)
+                plt.hist(word_counts, bins=30, alpha=0.7, color='lightgreen', edgecolor='black')
+                plt.title(f'Word Count Distribution - {col}')
+                plt.xlabel('Word Count')
+                plt.ylabel('Frequency')
+
+                # Save plot
+                plot_path = os.path.join(self.plots_dir, f'text_analysis_{col}.png')
+                plt.tight_layout()
+                plt.savefig(plot_path)
+                plt.close()
+
+                plot_paths[f'text_analysis_{col}'] = plot_path
+                self.logger.info(f"Saved text analysis plot for {col} to {plot_path}")
+
+            except Exception as e:
+                self.logger.warning(f"Error generating text visualization for {col}: {e}")
+                continue
 
     def perform_train_test_split(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
@@ -716,7 +1047,8 @@ class DataIngestion:
             self.logger.error(f"Failed to perform train-test split: {e}")
             return None, None
 
-    def run_ingestion_pipeline(self, file: Union[BinaryIO, str], filename: str = None, target_col: str = None) -> Dict:
+    def run_ingestion_pipeline(self, file: Union[BinaryIO, str], filename: str = None, target_col: str = None,
+                               mode: str = None) -> Dict:
         """
         Run the complete data ingestion pipeline
 
@@ -724,6 +1056,7 @@ class DataIngestion:
             file: File-like object or path to the CSV file
             filename: Original filename (if file is file-like object)
             target_col: Name of the target column (optional)
+            mode: Processing mode ('tabular', 'textual', 'mixed', or None for auto-detect)
 
         Returns:
             Dictionary containing feature store information
@@ -731,23 +1064,24 @@ class DataIngestion:
         section("STARTING DATA INGESTION PIPELINE", self.logger, char='*', length=80)
 
         try:
-            # Step 1: Load the file
-            self.ingest_uploaded_file(file, filename)
+            # Step 1: Load the file with mode detection/setting
+            self.ingest_uploaded_file(file, filename, mode)
 
             # Step 2: Display basic information
             data_info = self.display_data_info()
 
-            # Step 3: Identify column types (including ID columns)
-            numerical_cols, categorical_cols = self.identify_column_types()
+            # Step 3: Identify column types (including ID and textual columns)
+            numerical_cols, categorical_cols, textual_cols = self.identify_column_types()
 
-            # Step 4: Analyze distributions
-            skewed_cols, normal_cols = self.analyze_distribution()
-
-            # Step 5: Detect outliers
-            outlier_cols = self.detect_outliers()
-
-            # Step 6: Analyze correlations
-            correlated_cols = self.analyze_correlations()
+            # Step 4: Analyze distributions (only for numerical columns in tabular/mixed mode)
+            if self.processing_mode in ['tabular', 'mixed']:
+                skewed_cols, normal_cols = self.analyze_distribution()
+                # Step 5: Detect outliers (only for tabular/mixed mode)
+                outlier_cols = self.detect_outliers()
+                # Step 6: Analyze correlations (only for tabular/mixed mode)
+                correlated_cols = self.analyze_correlations()
+            else:
+                skewed_cols, normal_cols, outlier_cols, correlated_cols = [], [], [], {}
 
             # Step 7: Set target column if provided
             if target_col:
@@ -770,11 +1104,13 @@ class DataIngestion:
             # Create a results dictionary for API response
             results = {
                 "dataset_name": self.dataset_name,
+                "processing_mode": self.processing_mode,
                 "data_shape": self.df.shape,
                 "numerical_columns": numerical_cols,
                 "categorical_columns": categorical_cols,
-                "skewed_columns": skewed_cols,
-                "columns_with_outliers": outlier_cols,
+                "textual_columns": textual_cols,
+                "skewed_columns": skewed_cols if self.processing_mode in ['tabular', 'mixed'] else [],
+                "columns_with_outliers": outlier_cols if self.processing_mode in ['tabular', 'mixed'] else [],
                 "feature_store_path": feature_store_path,
                 "intel_path": intel_path,
                 "plots_dir": self.plots_dir,

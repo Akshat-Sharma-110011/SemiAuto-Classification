@@ -5,7 +5,7 @@
 {% block content %}
 <div class="main-content">
     <h1 class="section-title">Data Upload</h1>
-    <p>Upload your dataset to begin the Classification analysis process.</p>
+    <p>Upload your dataset to begin the Classification analysis process. Our system supports multiple data types including tabular, textual, and mixed datasets.</p>
 
     <div class="card">
         <div class="card-header">Upload Dataset</div>
@@ -13,12 +13,24 @@
             <div class="form-group">
                 <label for="datasetFile">Dataset File (CSV format only)</label>
                 <input type="file" id="datasetFile" name="file" accept=".csv" required>
+                <small>Supported: CSV files with tabular, textual, or mixed content</small>
             </div>
 
             <div class="form-group">
                 <label for="targetColumn">Target Column</label>
                 <input type="text" id="targetColumn" name="target_column" required placeholder="Enter the name of your target variable">
                 <small>This is the variable you want to predict.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="processingMode">Processing Mode</label>
+                <select id="processingMode" name="processing_mode">
+                    <option value="auto" selected>Auto-detect (Recommended)</option>
+                    <option value="tabular">Tabular - Traditional structured data</option>
+                    <option value="textual">Textual - Text-heavy data for NLP</option>
+                    <option value="mixed">Mixed - Both tabular and textual features</option>
+                </select>
+                <small>Choose how to process your data. Auto-detect will analyze your data and select the best mode.</small>
             </div>
 
             <div class="form-group">
@@ -36,7 +48,113 @@
             <a href="/preprocessing" class="btn btn-success">Continue to Preprocessing</a>
         </div>
     </div>
+
+    <!-- Processing Mode Information Panel -->
+    <div class="card">
+        <div class="card-header">Processing Mode Guide</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <h4>Auto-detect</h4>
+                <p>Automatically analyzes your data characteristics and selects the most appropriate processing mode.</p>
+            </div>
+            <div class="info-item">
+                <h4>Tabular</h4>
+                <p>For structured data with numerical and categorical columns. Best for traditional ML tasks like regression and classification on structured features.</p>
+            </div>
+            <div class="info-item">
+                <h4>Textual</h4>
+                <p>For text-heavy datasets suitable for NLP tasks. Focuses on text analysis, feature extraction from text, and text classification.</p>
+            </div>
+            <div class="info-item">
+                <h4>Mixed</h4>
+                <p>For datasets containing both structured features and significant text content. Combines tabular and textual processing approaches.</p>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.info-item {
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.info-item h4 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 1rem;
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+.processing-mode-info {
+    background-color: #e8f4f8;
+    border: 1px solid #bee5eb;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.processing-mode-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #0c5460;
+}
+
+.column-breakdown {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.column-type {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.column-type h5 {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+}
+
+.column-type ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.9rem;
+}
+
+.column-type li {
+    margin-bottom: 0.2rem;
+}
+
+.detected-mode {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #28a745;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -49,6 +167,7 @@
         const formData = new FormData(form);
         const uploadStatus = document.getElementById('uploadStatus');
         const dataOverview = document.getElementById('dataOverview');
+        const dataDetails = document.getElementById('dataDetails');
 
         uploadStatus.className = 'alert hidden';
         showSpinner();
@@ -65,15 +184,47 @@
                 uploadStatus.textContent = result.message;
                 uploadStatus.className = 'alert alert-success';
 
+                // Create processing mode info
+                const processingModeInfo = `
+                    <div class="processing-mode-info">
+                        <h4>Detected Processing Mode: <span class="detected-mode">${result.processing_mode.toUpperCase()}</span></h4>
+                        <p>${getProcessingModeDescription(result.processing_mode)}</p>
+                    </div>
+                `;
+
+                // Create column breakdown
+                const datasetInfo = result.dataset_info || {};
+                const columnBreakdown = `
+                    <div class="column-breakdown">
+                        <div class="column-type">
+                            <h5>Numerical Columns (${datasetInfo.numerical_columns?.length || 0})</h5>
+                            <ul>
+                                ${(datasetInfo.numerical_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
+                            </ul>
+                        </div>
+                        <div class="column-type">
+                            <h5>Categorical Columns (${datasetInfo.categorical_columns?.length || 0})</h5>
+                            <ul>
+                                ${(datasetInfo.categorical_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
+                            </ul>
+                        </div>
+                        <div class="column-type">
+                            <h5>Textual Columns (${datasetInfo.textual_columns?.length || 0})</h5>
+                            <ul>
+                                ${(datasetInfo.textual_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+
                 // Display data overview
-                // Update this part:
                 dataDetails.innerHTML = `
                     <p><strong>Dataset uploaded successfully!</strong></p>
+                    <p><strong>Dataset Shape:</strong> ${datasetInfo.shape ? datasetInfo.shape[0] + ' rows × ' + datasetInfo.shape[1] + ' columns' : 'Unknown'}</p>
                     <p><strong>Target Column:</strong> ${formData.get('target_column')}</p>
-                    <p><strong>Available Columns:</strong></p>
-                    <ul>
-                        ${result.columns.map(col => `<li>${col}</li>`).join('')}
-                    </ul>
+
+                    ${processingModeInfo}
+                    ${columnBreakdown}
                 `;
 
                 dataOverview.classList.remove('hidden');
@@ -88,5 +239,24 @@
             hideSpinner();
         }
     }
+
+    function getProcessingModeDescription(mode) {
+        const descriptions = {
+            'tabular': 'Your data appears to be traditional structured data with numerical and categorical features.',
+            'textual': 'Your data contains significant text content suitable for NLP tasks and text analysis.',
+            'mixed': 'Your data contains both structured features and significant text content, enabling hybrid analysis approaches.',
+            'auto': 'Processing mode was automatically determined based on data characteristics.'
+        };
+        return descriptions[mode] || 'Unknown processing mode.';
+    }
+
+    // Add processing mode change handler
+    document.getElementById('processingMode').addEventListener('change', function() {
+        const selectedMode = this.value;
+        const description = getProcessingModeDescription(selectedMode);
+
+        // You could show a dynamic description here if needed
+        console.log(`Selected mode: ${selectedMode} - ${description}`);
+    });
 </script>
 {% endblock %}
