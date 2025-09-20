@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Body, BackgroundTasks, Request
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Body, Request
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -15,30 +15,94 @@ import uvicorn
 import shutil
 import sys
 
-from semiauto_classification.features.feature_selection import feature_selection_pipeline, MetaHeuristicFeatureSelector
 # Configure logging first thing - before any other imports that might use logging
-from semiauto_classification.logger import configure_logger, get_logger
+import logging
 
-configure_logger()  # Configure logging once at startup
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("app.log")
+    ]
+)
 
-# Get logger for this module
-logger = get_logger("FastAPI-App")
+logger = logging.getLogger("FastAPI-App")
 
 # Import internal modules after logging is configured
-from semiauto_classification.data.data_ingestion import create_data_ingestion
-from semiauto_classification.utils import (load_yaml, update_intel_yaml)
-from semiauto_classification.data.data_cleaning import main as data_cleaning_main
-from semiauto_classification.features.feature_engineering import run_feature_engineering
-from semiauto_classification.model.model_building import (
-    build_single_model_api_patched,
-    build_parallel_models_api_patched,
-    build_ensemble_model_api,
-    select_best_model_api_patched,
-    EnhancedModelBuilder,
-    build_staged_ensemble_api  # New import for staged ensemble
-)
-from semiauto_classification.model.model_evaluation import run_evaluation, get_evaluation_summary
-from semiauto_classification.model.model_optimization import optimize_model
+try:
+    from semiauto_classification.features.feature_selection import feature_selection_pipeline, \
+        MetaHeuristicFeatureSelector
+    from semiauto_classification.data.data_ingestion import create_data_ingestion
+    from semiauto_classification.utils import load_yaml, update_intel_yaml
+    from semiauto_classification.data.data_cleaning import main as data_cleaning_main
+    from semiauto_classification.features.feature_engineering import run_feature_engineering
+    from semiauto_classification.model.model_building import (
+        build_single_model_api_patched,
+        build_parallel_models_api_patched,
+        build_ensemble_model_api,
+        select_best_model_api_patched,
+        EnhancedModelBuilder,
+        build_staged_ensemble_api
+    )
+    from semiauto_classification.model.model_evaluation import run_evaluation, get_evaluation_summary
+    from semiauto_classification.model.model_optimization import optimize_model
+    from semiauto_classification.data.data_preprocessing import (
+        PreprocessingPipeline, PreprocessingParameters, ImagePreprocessingConfig,
+        check_for_duplicates, get_numerical_columns,
+        get_categorical_columns, recommend_skewness_transformer,
+        preprocess_image_dataset
+    )
+
+    # Set a flag to indicate successful imports
+    MODULES_AVAILABLE = True
+    logger.info("All internal modules imported successfully")
+
+except ImportError as e:
+    logger.error(f"Some internal modules could not be imported: {str(e)}")
+    MODULES_AVAILABLE = False
+
+    # Create placeholder functions to prevent crashes
+    def placeholder_function(*args, **kwargs):
+        logger.error("Internal module function called but not available")
+        raise HTTPException(status_code=500, detail=f"Required module not available. Please install missing dependencies: {str(e)}")
+
+    # Create placeholder classes
+    class PreprocessingPipeline:
+        def __init__(self, *args, **kwargs):
+            pass
+
+    class PreprocessingParameters:
+        def __init__(self, *args, **kwargs):
+            pass
+
+    class ImagePreprocessingConfig:
+        def __init__(self, *args, **kwargs):
+            pass
+
+    # Assign placeholder functions
+    feature_selection_pipeline = placeholder_function
+    MetaHeuristicFeatureSelector = type('MetaHeuristicFeatureSelector', (), {})
+    create_data_ingestion = placeholder_function
+    load_yaml = placeholder_function
+    update_intel_yaml = placeholder_function
+    data_cleaning_main = placeholder_function
+    run_feature_engineering = placeholder_function
+    build_single_model_api_patched = placeholder_function
+    build_parallel_models_api_patched = placeholder_function
+    build_ensemble_model_api = placeholder_function
+    select_best_model_api_patched = placeholder_function
+    EnhancedModelBuilder = type('EnhancedModelBuilder', (), {})
+    build_staged_ensemble_api = placeholder_function
+    run_evaluation = placeholder_function
+    get_evaluation_summary = placeholder_function
+    optimize_model = placeholder_function
+    check_for_duplicates = placeholder_function
+    get_numerical_columns = placeholder_function
+    get_categorical_columns = placeholder_function
+    recommend_skewness_transformer = placeholder_function
+    preprocess_image_dataset = placeholder_function
 
 # Log application startup
 logger.info("Starting SemiAuto Classification FastAPI application")
@@ -46,18 +110,35 @@ logger.info("Starting SemiAuto Classification FastAPI application")
 app = FastAPI(title="SemiAuto Classification", version="1.0")
 
 # Set up static files and templates
-app.mount("/classification-static", StaticFiles(directory="static"), name="classification-static")
-templates = Jinja2Templates(directory="templates")
+static_dir = Path("static")
+static_dir.mkdir(exist_ok=True)
+app.mount("/classification-static", StaticFiles(directory=static_dir), name="classification-static")
+
+templates_dir = Path("templates")
+templates_dir.mkdir(exist_ok=True)
+templates = Jinja2Templates(directory=templates_dir)
 templates.env.filters["zip"] = zip
+
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"],
                    allow_headers=["*"])
 
 logger.info("FastAPI application and middleware configured")
 
 
+# Add a health check endpoint
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint to verify module availability"""
+    return {
+        "status": "healthy" if MODULES_AVAILABLE else "degraded",
+        "modules_available": MODULES_AVAILABLE,
+        "message": "All modules loaded successfully" if MODULES_AVAILABLE else "Some modules are missing - please install dependencies"
+    }
+
+
 class ProcessingModeConfig(BaseModel):
     """Configuration for processing mode selection"""
-    mode: str = Field(..., description="Processing mode: 'auto', 'tabular', 'textual', or 'mixed'")
+    mode: str = Field(..., description="Processing mode: 'auto', 'tabular', 'textual', 'image', or 'mixed'")
 
 
 class TextPreprocessingConfig(BaseModel):
@@ -76,6 +157,77 @@ class TextPreprocessingConfig(BaseModel):
     ngram_range: Optional[List[int]] = [1, 2]  # for n-grams
     max_features: Optional[int] = 1000  # for vectorization methods
     vector_size: Optional[int] = 100  # for word2vec/glove
+
+
+class ImagePreprocessingConfig(BaseModel):
+    """Configuration for image preprocessing options"""
+    resize_images: bool = True
+    target_size: List[int] = [224, 224]  # width, height
+    normalize: bool = True
+    augmentation: bool = False
+    augmentation_options: Optional[Dict[str, Any]] = {
+        'rotation': 10,
+        'zoom': 0.1,
+        'horizontal_flip': True,
+        'vertical_flip': False
+    }
+
+
+class EnhancedImagePreprocessingConfig(BaseModel):
+    """Enhanced configuration for image preprocessing options"""
+    # Resizing/Rescaling
+    resize_images: bool = True
+    target_size: List[int] = [224, 224]  # width, height
+    maintain_aspect_ratio: bool = False
+    padding_color: List[int] = [0, 0, 0]  # RGB values for padding
+
+    # Color Normalization
+    normalize: bool = True
+    normalization_method: str = 'standard'  # standard, minmax, custom
+    mean: List[float] = [0.485, 0.456, 0.406]  # ImageNet means
+    std: List[float] = [0.229, 0.224, 0.225]  # ImageNet stds
+
+    # Noise Reduction/Smoothing
+    noise_reduction: bool = False
+    noise_method: str = 'gaussian'  # gaussian, median, bilateral
+    kernel_size: int = 5
+
+    # Image Enhancement
+    enhance_images: bool = False
+    enhance_brightness: float = 1.0
+    enhance_contrast: float = 1.0
+    enhance_sharpness: float = 1.0
+    enhance_color: float = 1.0
+
+    # Segmentation/ROI Extraction
+    roi_extraction: bool = False
+    roi_method: str = 'contour'  # contour, threshold, watershed
+    roi_threshold: int = 127
+
+    # Morphological Operations
+    morphological_ops: bool = False
+    morph_operation: str = 'opening'  # opening, closing, gradient, tophat, blackhat
+    morph_kernel_size: int = 5
+    morph_iterations: int = 1
+
+    # Binarization/Thresholding
+    binarization: bool = False
+    threshold_method: str = 'otsu'  # otsu, adaptive, binary, truncate
+    threshold_value: int = 127
+
+    # Data Augmentation
+    augmentation: bool = False
+    augmentation_factor: float = 1.0  # multiplier for augmented images
+    horizontal_flip: bool = True
+    vertical_flip: bool = False
+    rotation_range: float = 30.0
+    zoom_range: float = 0.2
+    brightness_range: float = 0.2
+    contrast_range: float = 0.2
+    blur_limit: int = 3
+    random_crop: bool = False
+    elastic_transform: bool = False
+    noise_augmentation: bool = False
 
 
 class PreprocessingConfig(BaseModel):
@@ -99,6 +251,23 @@ class PreprocessingConfig(BaseModel):
             max_features=1000
         )
     )
+    image_preprocessing: Optional[EnhancedImagePreprocessingConfig] = Field(
+        default_factory=lambda: EnhancedImagePreprocessingConfig(
+            resize_images=True,
+            target_size=[224, 224],
+            normalize=True,
+            augmentation=False
+        )
+    )
+
+
+# Function to check module availability before calling functions
+def check_modules_available():
+    if not MODULES_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Required modules are not available. Please install missing dependencies. Run: pip install albumentations opencv-python"
+        )
 
 
 class FeatureEngineeringRequest(BaseModel):
@@ -140,7 +309,6 @@ class EnsembleModelRequest(BaseModel):
     config: Dict[str, Any] = {}
 
 
-# New class for staged ensemble architecture
 class StagedEnsembleRequest(BaseModel):
     architecture: List[Dict[str, Any]]  # Each stage configuration
     final_meta_model: Optional[Dict[str, Any]] = None
@@ -173,14 +341,15 @@ async def index(request: Request):
 @app.get("/data-upload", response_class=HTMLResponse)
 async def data_upload_page(request: Request):
     logger.info("Serving data upload page")
-    return templates.TemplateResponse("data_upload.html", {"request": request})
+    return templates.TemplateResponse("data_upload.html", {"request": request, "modules_available": MODULES_AVAILABLE})
 
 
-# Route to preprocessing page
+# Route to preprocessing page with enhanced image support
 @app.get("/preprocessing", response_class=HTMLResponse)
 async def preprocessing_page(request: Request):
     logger.info("Serving preprocessing page")
     try:
+        check_modules_available()
         intel = load_yaml("intel.yaml")
         feature_store = {}
         if 'feature_store_path' in intel and os.path.exists(intel['feature_store_path']):
@@ -188,10 +357,8 @@ async def preprocessing_page(request: Request):
 
         logger.info(f"Loaded preprocessing page data for dataset: {intel.get('dataset_name', 'Unknown')}")
 
-        # Get processing mode information
         processing_mode = feature_store.get('processing_mode', 'tabular')
 
-        # Determine which columns/features to show based on processing mode
         template_data = {
             "request": request,
             "dataset_name": intel.get('dataset_name', ''),
@@ -199,17 +366,23 @@ async def preprocessing_page(request: Request):
             "processing_mode": processing_mode,
             "numerical_cols": feature_store.get('numerical_cols', []),
             "categorical_cols": feature_store.get('categorical_cols', []),
-            "textual_cols": feature_store.get('textual_cols', []),  # New: textual columns
+            "textual_cols": feature_store.get('textual_cols', []),
+            "image_cols": feature_store.get('image_cols', []),
             "nulls": feature_store.get('contains_null', []),
             "outliers": feature_store.get('contains_outliers', []),
             "skewed": feature_store.get('skewed_cols', [])
         }
 
-        # Add text analysis data if available
         if 'text_analysis' in feature_store:
             template_data['text_analysis'] = feature_store['text_analysis']
 
+        if 'image_analysis' in feature_store:
+            template_data['image_analysis'] = feature_store['image_analysis']
+
         return templates.TemplateResponse("preprocessing.html", template_data)
+    except HTTPException:
+        # Re-raise HTTPException
+        raise
     except Exception as e:
         logger.warning(f"Failed to load preprocessing page data: {str(e)}")
         return templates.TemplateResponse("error.html", {
@@ -224,8 +397,9 @@ async def preprocessing_page(request: Request):
 async def feature_engineering_page(request: Request):
     logger.info("Serving feature engineering page")
     try:
+        check_modules_available()
         intel = load_yaml("intel.yaml")
-        if not intel.get('train_preprocessed_path'):
+        if not intel.get('train_preprocessed_path') and not intel.get('train_images_path'):
             logger.warning("Preprocessing not completed, redirecting to preprocessing page")
             return templates.TemplateResponse("error.html", {
                 "request": request,
@@ -243,8 +417,12 @@ async def feature_engineering_page(request: Request):
         return templates.TemplateResponse("feature_engineering.html", {
             "request": request,
             "processing_mode": processing_mode,
-            "textual_cols": feature_store.get('textual_cols', [])
+            "textual_cols": feature_store.get('textual_cols', []),
+            "image_cols": feature_store.get('image_cols', [])
         })
+    except HTTPException:
+        # Re-raise HTTPException
+        raise
     except Exception as e:
         logger.error(f"Error loading feature engineering page: {str(e)}")
         return templates.TemplateResponse("error.html", {
@@ -258,8 +436,9 @@ async def feature_engineering_page(request: Request):
 async def feature_selection_page(request: Request):
     logger.info("Serving feature selection page")
     try:
+        check_modules_available()
         intel = load_yaml("intel.yaml")
-        if not intel.get('train_transformed_path'):
+        if not intel.get('train_transformed_path') and not intel.get('train_images_path'):
             logger.warning("Feature engineering not completed, redirecting")
             return templates.TemplateResponse("error.html", {
                 "request": request,
@@ -267,6 +446,9 @@ async def feature_selection_page(request: Request):
                 "redirect_url": "/feature-engineering"
             })
         return templates.TemplateResponse("feature_selection.html", {"request": request})
+    except HTTPException:
+        # Re-raise HTTPException
+        raise
     except Exception as e:
         logger.error(f"Error loading feature selection page: {str(e)}")
         return templates.TemplateResponse("error.html", {
@@ -276,56 +458,15 @@ async def feature_selection_page(request: Request):
         })
 
 
-@app.get("/api/feature-selection/algorithms")
-async def get_feature_selection_algorithms():
-    try:
-        selector = MetaHeuristicFeatureSelector()
-        algorithms = selector.get_available_algorithms()
-        return JSONResponse(content=algorithms)
-    except Exception as e:
-        logger.error(f"Error getting feature selection algorithms: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/feature-selection")
-async def run_feature_selection(
-        algorithm: str = Body(...),
-        n_features: Optional[int] = Body(None),
-        max_iter: int = Body(50),
-        population_size: int = Body(20)
-):
-    try:
-        # Run feature selection pipeline
-        feature_selection_pipeline(
-            intel_path="intel.yaml",
-            algorithm=algorithm,
-            n_features=n_features,
-            max_iter=max_iter,
-            population_size=population_size
-        )
-
-        # Load results to return
-        intel = load_yaml("intel.yaml")
-        config = intel.get('feature_selection_config', {})
-
-        return {
-            "status": "success",
-            "message": "Feature selection completed",
-            "selected_features": config.get('selected_features', []),
-            "cv_accuracy": 0.95  # Placeholder - actual value would come from the pipeline
-        }
-    except Exception as e:
-        logger.error(f"Error during feature selection: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Feature selection failed: {str(e)}")
-
-
 # Route to model building page
 @app.get("/model-building", response_class=HTMLResponse)
 async def model_building_page(request: Request):
     logger.info("Serving model building page")
     try:
+        check_modules_available()
         intel = load_yaml("intel.yaml")
-        if not intel.get('train_selected_path') and not intel.get('train_transformed_path'):
+        if not intel.get('train_selected_path') and not intel.get('train_transformed_path') and not intel.get(
+                'train_images_path'):
             logger.warning("Feature engineering not completed, redirecting to feature engineering page")
             return templates.TemplateResponse("error.html", {
                 "request": request,
@@ -349,6 +490,9 @@ async def model_building_page(request: Request):
             "available_models": list(available_models.keys()),
             "processing_mode": processing_mode
         })
+    except HTTPException:
+        # Re-raise HTTPException
+        raise
     except Exception as e:
         logger.error(f"Error loading model building page: {str(e)}")
         return templates.TemplateResponse("error.html", {
@@ -363,6 +507,7 @@ async def model_building_page(request: Request):
 async def optimization_page(request: Request):
     logger.info("Serving optimization page")
     try:
+        check_modules_available()
         intel = load_yaml("intel.yaml")
         if not intel.get('model_path'):
             logger.warning("Model not built, redirecting to model building page")
@@ -373,6 +518,9 @@ async def optimization_page(request: Request):
             })
 
         return templates.TemplateResponse("optimization.html", {"request": request})
+    except HTTPException:
+        # Re-raise HTTPException
+        raise
     except Exception as e:
         logger.error(f"Error loading optimization page: {str(e)}")
         return templates.TemplateResponse("error.html", {
@@ -387,6 +535,7 @@ async def optimization_page(request: Request):
 async def results_page(request: Request):
     logger.info("Serving results page")
     try:
+        check_modules_available()
         intel = load_yaml("intel.yaml")
         if not intel.get('performance_metrics_path'):
             logger.warning("No evaluation results available, redirecting to model building page")
@@ -412,6 +561,9 @@ async def results_page(request: Request):
             "dataset_name": intel.get('dataset_name', 'unnamed'),
             "processing_mode": processing_mode
         })
+    except HTTPException:
+        # Re-raise HTTPException
+        raise
     except Exception as e:
         logger.error(f"Error loading results page: {str(e)}")
         return templates.TemplateResponse("error.html", {
@@ -424,63 +576,147 @@ async def results_page(request: Request):
 # API endpoints
 @app.post("/api/upload")
 async def upload_dataset(
-        file: UploadFile = File(...),
+        file: Optional[UploadFile] = File(None),
         target_column: str = Form(...),
-        processing_mode: str = Form("auto")  # New: processing mode parameter
+        processing_mode: str = Form("auto"),
+        images_zip: Optional[UploadFile] = File(None),
+        labels_csv: Optional[UploadFile] = File(None),
 ):
     logger.info(
-        f"Received file upload: {file.filename}, target column: {target_column}, processing mode: {processing_mode}")
+        f"Received upload request - processing mode: {processing_mode}, target column: {target_column}"
+    )
 
-    if not file.filename.endswith(".csv"):
-        logger.error(f"Invalid file type: {file.filename}")
-        raise HTTPException(status_code=400, detail="Only CSV files are supported")
+    # Check if modules are available
+    check_modules_available()
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as temp:
-        contents = await file.read()
-        temp.write(contents)
-        temp.flush()
-        path = temp.name
+    # Handle image mode
+    if processing_mode == "image" or (images_zip and labels_csv):
+        if not (images_zip and labels_csv):
+            raise HTTPException(
+                status_code=400,
+                detail="Images zip and labels CSV are required for image mode",
+            )
 
-    try:
-        df = pd.read_csv(path)
-        columns = df.columns.tolist()
-        logger.info(f"Successfully read CSV with {len(df)} rows and {len(columns)} columns")
-
-        ingestion = create_data_ingestion()
-        with open(path, "rb") as f:
-            # Pass processing mode to ingestion pipeline
-            mode = None if processing_mode == "auto" else processing_mode
-            result = ingestion.run_ingestion_pipeline(f, file.filename, target_column, mode)
-
-        os.unlink(path)
-        ingestion.save_intel_yaml()
         logger.info(
-            f"Data ingestion completed successfully with processing mode: {result.get('processing_mode', 'unknown')}")
+            f"Image mode upload: images={images_zip.filename}, labels={labels_csv.filename}"
+        )
 
-        # Run data cleaning
+        # Validate files
+        if not images_zip.filename.endswith(".zip"):
+            raise HTTPException(status_code=400, detail="Images must be a zip file")
+        if not labels_csv.filename.endswith(".csv"):
+            raise HTTPException(status_code=400, detail="Labels must be a CSV file")
+
         try:
-            data_cleaning_main()
-            logger.info("Data cleaning completed successfully")
-        except Exception as e:
-            logger.error(f"Data cleaning failed: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Data cleaning failed: {str(e)}")
+            # Create temporary files
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as temp_images:
+                images_content = await images_zip.read()
+                temp_images.write(images_content)
+                temp_images.flush()
+                images_path = temp_images.name
 
-        return {
-            "message": "Data ingestion and cleaning completed",
-            "columns": columns,
-            "processing_mode": result.get('processing_mode', 'tabular'),
-            "dataset_info": {
-                "shape": result.get('data_shape'),
-                "numerical_columns": result.get('numerical_columns', []),
-                "categorical_columns": result.get('categorical_columns', []),
-                "textual_columns": result.get('textual_columns', [])
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as temp_labels:
+                labels_content = await labels_csv.read()
+                temp_labels.write(labels_content)
+                temp_labels.flush()
+                labels_path = temp_labels.name
+
+            ingestion = create_data_ingestion()
+            dataset_name = os.path.splitext(images_zip.filename)[0]
+
+            result = ingestion.run_ingestion_pipeline(
+                mode="image",
+                images_zip=images_path,
+                labels_csv=labels_path,
+                filename=dataset_name,
+                target_col=target_column,
+            )
+
+            # Clean up
+            os.unlink(images_path)
+            os.unlink(labels_path)
+
+            ingestion.save_intel_yaml()
+            logger.info("Image ingestion completed successfully")
+
+            return {
+                "message": "Image dataset ingestion completed",
+                "processing_mode": result.get("processing_mode", "image"),
+                "dataset_info": {
+                    "total_images": result.get("total_images", 0),
+                    "total_labels": result.get("total_labels", 0),
+                    "classes": result.get("classes", []),
+                    "image_formats": result.get("image_formats", {}),
+                    "images_path": result.get("images_path"),
+                    "labels_path": result.get("labels_path"),
+                },
             }
-        }
-    except Exception as e:
-        logger.error(f"Error during data upload: {str(e)}")
-        if os.path.exists(path):
+
+        except Exception as e:
+            # Clean up temp files if they exist
+            for temp_path in [locals().get("images_path"), locals().get("labels_path")]:
+                if temp_path and os.path.exists(temp_path):
+                    os.unlink(temp_path)
+            logger.error(f"Error during image upload: {e}")
+            raise HTTPException(
+                status_code=500, detail=f"Error processing image files: {e}"
+            )
+
+    # Handle tabular/textual mode
+    else:
+        if not file:
+            raise HTTPException(status_code=400, detail="CSV file is required for tabular/textual modes")
+
+        if not file.filename.endswith(".csv"):
+            logger.error(f"Invalid file type: {file.filename}")
+            raise HTTPException(status_code=400, detail="Only CSV files are supported for tabular/textual modes")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as temp:
+            contents = await file.read()
+            temp.write(contents)
+            temp.flush()
+            path = temp.name
+
+        try:
+            df = pd.read_csv(path)
+            columns = df.columns.tolist()
+            logger.info(f"Successfully read CSV with {len(df)} rows and {len(columns)} columns")
+
+            ingestion = create_data_ingestion()
+            with open(path, "rb") as f:
+                # Pass processing mode to ingestion pipeline
+                mode = None if processing_mode == "auto" else processing_mode
+                result = ingestion.run_ingestion_pipeline(f, file.filename, target_column, mode)
+
             os.unlink(path)
-        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+            ingestion.save_intel_yaml()
+            logger.info(
+                f"Data ingestion completed successfully with processing mode: {result.get('processing_mode', 'unknown')}")
+
+            # Run data cleaning
+            try:
+                data_cleaning_main()
+                logger.info("Data cleaning completed successfully")
+            except Exception as e:
+                logger.error(f"Data cleaning failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Data cleaning failed: {str(e)}")
+
+            return {
+                "message": "Data ingestion and cleaning completed",
+                "columns": columns,
+                "processing_mode": result.get('processing_mode', 'tabular'),
+                "dataset_info": {
+                    "shape": result.get('data_shape'),
+                    "numerical_columns": result.get('numerical_columns', []),
+                    "categorical_columns": result.get('categorical_columns', []),
+                    "textual_columns": result.get('textual_columns', [])
+                }
+            }
+        except Exception as e:
+            logger.error(f"Error during data upload: {str(e)}")
+            if os.path.exists(path):
+                os.unlink(path)
+            raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
 
 @app.get("/api/processing-modes")
@@ -490,6 +726,7 @@ async def get_processing_modes():
         "auto": "Automatically detect the best processing mode based on data characteristics",
         "tabular": "Traditional tabular data with numerical and categorical features",
         "textual": "Text-heavy data suitable for NLP tasks",
+        "image": "Image datasets with images and corresponding labels",
         "mixed": "Data containing both tabular and textual features"
     }
 
@@ -497,6 +734,7 @@ async def get_processing_modes():
 @app.post("/api/set-processing-mode")
 async def set_processing_mode(config: ProcessingModeConfig):
     """Manually set the processing mode for the current dataset"""
+    check_modules_available()
     logger.info(f"Setting processing mode to: {config.mode}")
 
     try:
@@ -529,6 +767,7 @@ async def set_processing_mode(config: ProcessingModeConfig):
 @app.get("/api/dataset-info")
 async def get_dataset_info():
     """Get information about the currently loaded dataset"""
+    check_modules_available()
     try:
         intel = load_yaml("intel.yaml")
         feature_store = {}
@@ -536,23 +775,50 @@ async def get_dataset_info():
         if 'feature_store_path' in intel and os.path.exists(intel['feature_store_path']):
             feature_store = load_yaml(intel['feature_store_path'])
 
-        return {
+        processing_mode = feature_store.get('processing_mode', 'tabular')
+
+        # Base information common to all modes
+        base_info = {
             "dataset_name": intel.get('dataset_name', 'Unknown'),
-            "processing_mode": feature_store.get('processing_mode', 'tabular'),
+            "processing_mode": processing_mode,
             "target_column": intel.get('target_column', ''),
-            "columns": {
-                "numerical": feature_store.get('numerical_cols', []),
-                "categorical": feature_store.get('categorical_cols', []),
-                "textual": feature_store.get('textual_cols', []),
-                "id": feature_store.get('id_cols', [])
-            },
-            "data_quality": {
-                "contains_null": feature_store.get('contains_null', []),
-                "contains_outliers": feature_store.get('contains_outliers', []),
-                "skewed_cols": feature_store.get('skewed_cols', [])
-            },
-            "text_analysis": feature_store.get('text_analysis', {})
         }
+
+        if processing_mode == 'image':
+            # Image-specific information
+            image_analysis = feature_store.get('image_analysis', {})
+            base_info.update({
+                "images_path": intel.get('images_path', ''),
+                "labels_path": intel.get('labels_path', ''),
+                "total_images": image_analysis.get('total_images', 0),
+                "total_labels": image_analysis.get('total_labels', 0),
+                "classes": image_analysis.get('classes', []),
+                "image_formats": image_analysis.get('image_formats', {}),
+                "label_format": image_analysis.get('label_format', 'unknown'),
+                "avg_image_size": image_analysis.get('avg_image_size', None),
+                "columns": {
+                    "image": feature_store.get('image_cols', [])
+                }
+            })
+        else:
+            # Tabular/textual information
+            base_info.update({
+                "columns": {
+                    "numerical": feature_store.get('numerical_cols', []),
+                    "categorical": feature_store.get('categorical_cols', []),
+                    "textual": feature_store.get('textual_cols', []),
+                    "id": feature_store.get('id_cols', [])
+                },
+                "data_quality": {
+                    "contains_null": feature_store.get('contains_null', []),
+                    "contains_outliers": feature_store.get('contains_outliers', []),
+                    "skewed_cols": feature_store.get('skewed_cols', [])
+                },
+                "text_analysis": feature_store.get('text_analysis', {})
+            })
+
+        return base_info
+
     except Exception as e:
         logger.error(f"Error getting dataset info: {str(e)}")
         raise HTTPException(status_code=404, detail="Dataset information not found")
@@ -561,22 +827,75 @@ async def get_dataset_info():
 @app.post("/api/preprocess")
 def preprocess_data(config: PreprocessingConfig):
     logger.info("Starting data preprocessing")
-
-    from semiauto_classification.data.data_preprocessing import (
-        PreprocessingPipeline, PreprocessingParameters,
-        check_for_duplicates, get_numerical_columns,
-        get_categorical_columns, recommend_skewness_transformer,
-        load_yaml, update_intel_yaml
-    )
+    check_modules_available()
 
     try:
         intel = load_yaml("intel.yaml")
+        feature_store = load_yaml(intel['feature_store_path'])
+        processing_mode = feature_store.get('processing_mode', 'tabular')
+
+        logger.info(f"Processing mode: {processing_mode}")
+
+        if processing_mode == 'image':
+            return preprocess_image_data(config, intel, feature_store)
+        else:
+            return preprocess_tabular_data(config, intel, feature_store)
+
+    except Exception as e:
+        logger.error(f"Error during preprocessing: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Preprocessing failed: {str(e)}")
+
+
+def preprocess_image_data(config: PreprocessingConfig, intel: dict, feature_store: dict):
+    """Handle image-specific preprocessing with comprehensive options - Fixed version"""
+    logger.info("Starting image preprocessing")
+
+    try:
+        if not config.image_preprocessing:
+            # Use default configuration
+            image_config = EnhancedImagePreprocessingConfig()
+        else:
+            image_config = config.image_preprocessing
+
+        # Convert to dictionary format for the preprocessing function
+        preprocessing_config = image_config.dict()
+
+        logger.info(f"Image preprocessing configuration: {preprocessing_config}")
+
+        # Call the image preprocessing function
+        result = preprocess_image_dataset("intel.yaml", preprocessing_config)
+
+        # The result already contains all necessary paths from the fixed function
+        return {
+            "message": result['message'],
+            "processing_mode": "image",
+            "processed_images": {
+                "original_train_images": result['original_train_images'],
+                "processed_train_images": result['processed_train_images'],
+                "original_test_images": result['original_test_images'],
+                "processed_test_images": result['processed_test_images'],
+                "augmentation_factor": result.get('augmentation_factor', 1.0),
+                "preprocessing_applied": True
+            },
+            "paths": {
+                "train_images": result.get('train_images_preprocessed_path'),
+                "test_images": result.get('test_images_preprocessed_path'),
+                "train_labels": result.get('train_labels_preprocessed_path'),
+                "test_labels": result.get('test_labels_preprocessed_path')
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error during image preprocessing: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Image preprocessing failed: {str(e)}")
+
+
+def preprocess_tabular_data(config: PreprocessingConfig, intel: dict, feature_store: dict):
+    """Handle tabular/textual preprocessing"""
+    try:
         train_df = pd.read_csv(intel['cleaned_train_path'])
         test_df = pd.read_csv(intel['cleaned_test_path']) if 'cleaned_test_path' in intel else pd.DataFrame()
 
-        feature_store = load_yaml(intel['feature_store_path'])
         logger.info(f"Loaded data for preprocessing: {len(train_df)} train rows, {len(test_df)} test rows")
-        logger.info(f"Processing mode: {feature_store.get('processing_mode', 'tabular')}")
 
         numerical = feature_store.get('numerical_cols', [])
         categorical = feature_store.get('categorical_cols', [])
@@ -647,14 +966,81 @@ def preprocess_data(config: PreprocessingConfig):
         }
 
     except Exception as e:
-        logger.error(f"Error during preprocessing: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Preprocessing failed: {str(e)}")
+        logger.error(f"Error during tabular preprocessing: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Tabular preprocessing failed: {str(e)}")
+
+
+# API endpoint to get image preprocessing options
+@app.get("/api/image-preprocessing-options")
+async def get_image_preprocessing_options():
+    """Get available image preprocessing options and their descriptions"""
+    return {
+        "resize_options": {
+            "resize_images": "Resize all images to a standard size",
+            "target_size": "Target dimensions [width, height] in pixels",
+            "maintain_aspect_ratio": "Preserve original aspect ratio with padding",
+            "padding_color": "RGB color values for padding [R, G, B]"
+        },
+        "normalization_options": {
+            "normalize": "Apply color normalization to images",
+            "normalization_method": "Method: 'standard' (ImageNet), 'minmax', 'custom'",
+            "mean": "Mean values for standard normalization [R, G, B]",
+            "std": "Standard deviation for normalization [R, G, B]"
+        },
+        "enhancement_options": {
+            "enhance_images": "Apply image enhancement techniques",
+            "enhance_brightness": "Brightness factor (1.0 = no change)",
+            "enhance_contrast": "Contrast factor (1.0 = no change)",
+            "enhance_sharpness": "Sharpness factor (1.0 = no change)",
+            "enhance_color": "Color saturation factor (1.0 = no change)"
+        },
+        "noise_reduction_options": {
+            "noise_reduction": "Apply noise reduction/smoothing",
+            "noise_method": "Method: 'gaussian', 'median', 'bilateral'",
+            "kernel_size": "Size of the filtering kernel"
+        },
+        "morphological_options": {
+            "morphological_ops": "Apply morphological operations",
+            "morph_operation": "Operation: 'opening', 'closing', 'gradient', 'tophat', 'blackhat'",
+            "morph_kernel_size": "Size of morphological kernel",
+            "morph_iterations": "Number of iterations to apply"
+        },
+        "binarization_options": {
+            "binarization": "Convert images to binary (black and white)",
+            "threshold_method": "Method: 'otsu', 'adaptive', 'binary', 'truncate'",
+            "threshold_value": "Threshold value for binary methods"
+        },
+        "roi_options": {
+            "roi_extraction": "Extract region of interest",
+            "roi_method": "Method: 'contour', 'threshold', 'watershed'",
+            "roi_threshold": "Threshold value for ROI extraction"
+        },
+        "augmentation_options": {
+            "augmentation": "Apply data augmentation",
+            "augmentation_factor": "Multiplier for number of augmented images",
+            "horizontal_flip": "Enable horizontal flipping",
+            "vertical_flip": "Enable vertical flipping",
+            "rotation_range": "Maximum rotation angle in degrees",
+            "zoom_range": "Zoom range as fraction",
+            "brightness_range": "Brightness variation range",
+            "contrast_range": "Contrast variation range",
+            "blur_limit": "Maximum blur kernel size",
+            "random_crop": "Enable random cropping",
+            "elastic_transform": "Enable elastic deformation",
+            "noise_augmentation": "Add random noise"
+        }
+    }
 
 
 @app.post("/api/feature-engineering")
 def feature_engineering(request: FeatureEngineeringRequest):
     logger.info(
-        f"Starting feature engineering with parameters: use_feature_tools={request.use_feature_tools}, use_shap={request.use_shap}, n_features={request.n_features}")
+        f"Starting feature engineering with parameters: "
+        f"use_feature_tools={request.use_feature_tools}, "
+        f"use_shap={request.use_shap}, "
+        f"n_features={request.n_features}"
+    )
+    check_modules_available()
 
     try:
         result = run_feature_engineering(
@@ -673,6 +1059,7 @@ def feature_engineering(request: FeatureEngineeringRequest):
 @app.get("/api/available-models")
 def get_model_list():
     logger.info("Fetching available models")
+    check_modules_available()
     try:
         builder = EnhancedModelBuilder()
         models = builder.get_available_models()
@@ -686,6 +1073,7 @@ def get_model_list():
 @app.post("/api/build-single-model")
 def build_single_model(request: ModelBuildRequest):
     logger.info(f"Starting single model building with model: {request.model_name}")
+    check_modules_available()
 
     try:
         result = build_single_model_api_patched(
@@ -706,6 +1094,7 @@ def build_single_model(request: ModelBuildRequest):
 @app.post("/api/build-parallel-models")
 def build_parallel_models(request: ParallelModelRequest):
     logger.info(f"Starting parallel model building with {len(request.models)} models")
+    check_modules_available()
     try:
         result = build_parallel_models_api_patched(
             models_config=request.models,
@@ -721,6 +1110,7 @@ def build_parallel_models(request: ParallelModelRequest):
 @app.post("/api/build-ensemble-model")
 def build_ensemble_model(request: EnsembleModelRequest):
     logger.info(f"Starting ensemble model building: {request.ensemble_category} - {request.ensemble_type}")
+    check_modules_available()
 
     try:
         # Prepare ensemble configuration based on category and type
@@ -755,6 +1145,7 @@ def build_ensemble_model(request: EnsembleModelRequest):
 @app.post("/api/build-staged-ensemble")
 def build_staged_ensemble(request: StagedEnsembleRequest):
     logger.info(f"Starting staged ensemble model building with {len(request.architecture)} stages")
+    check_modules_available()
 
     try:
         staged_config = {
@@ -828,6 +1219,7 @@ def debug_ensemble_config(config: Dict[str, Any] = Body(...)):
 def build_simple_ensemble(request: SimpleEnsembleRequest):
     """Build simple ensemble models (voting, stacking, bagging)"""
     logger.info(f"Starting simple ensemble model building: {request.ensemble_type}")
+    check_modules_available()
 
     try:
         ensemble_config = {
@@ -851,6 +1243,7 @@ def build_simple_ensemble(request: SimpleEnsembleRequest):
 def build_multi_stage_stacking(request: MultiStageStackingRequest):
     """Build multi-stage stacking ensemble models"""
     logger.info(f"Starting multi-stage stacking model building with {len(request.stages)} stages")
+    check_modules_available()
 
     try:
         ensemble_config = {
@@ -877,6 +1270,7 @@ def build_multi_stage_stacking(request: MultiStageStackingRequest):
 def build_hybrid_ensemble(request: HybridEnsembleRequest):
     """Build hybrid ensemble models (voting+stacking, bagging+stacking)"""
     logger.info(f"Starting hybrid ensemble model building: {request.ensemble_type}")
+    check_modules_available()
 
     try:
         ensemble_config = {
@@ -899,6 +1293,7 @@ def build_hybrid_ensemble(request: HybridEnsembleRequest):
 @app.post("/api/select-best-model")
 def select_best_model(request: ModelSelectionRequest):
     logger.info(f"Selecting best model based on {request.selection_metric}")
+    check_modules_available()
 
     try:
         result = select_best_model_api_patched(
@@ -930,7 +1325,8 @@ def optimize(request: OptimizationRequest):
         return {"message": "Optimization skipped."}
 
     logger.info(
-        f"Starting model optimization with method: {request.method}, n_trials: {request.n_trials}, metric: {request.metric}")
+        f"Starting model optimization with method: {request.method}, n_trials: {request.n_trials, metric: {request.metric}}")
+    check_modules_available()
 
     try:
         result = optimize_model(
@@ -954,6 +1350,7 @@ def optimize(request: OptimizationRequest):
 @app.get("/api/download-model")
 def download_model():
     logger.info("Model download requested")
+    check_modules_available()
     try:
         intel = load_yaml("intel.yaml")
         dataset_name = intel.get("dataset_name", "unnamed")
@@ -991,6 +1388,7 @@ def download_model():
 @app.get("/api/download-pipeline")
 def download_pipeline():
     logger.info("Pipeline download requested")
+    check_modules_available()
     try:
         intel = load_yaml("intel.yaml")
         dataset_name = intel.get("dataset_name", "unnamed")
@@ -1033,6 +1431,7 @@ def download_pipeline():
 @app.get("/api/download-feature-pipeline")
 def download_feature_pipeline():
     logger.info("Feature pipeline download requested")
+    check_modules_available()
     try:
         intel = load_yaml("intel.yaml")
         dataset_name = intel.get("dataset_name", "unnamed")
@@ -1057,6 +1456,7 @@ def download_feature_pipeline():
 @app.get("/api/generate-report")
 def generate_report():
     logger.info("Report generation requested")
+    check_modules_available()
     try:
         from semiauto_classification.visualization.projectflow_report import ClassificationProjectFlowReport
         report_generator = ClassificationProjectFlowReport("intel.yaml")
@@ -1080,7 +1480,53 @@ def generate_report():
         raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
 
 
+@app.post("/api/feature-selection")
+async def run_feature_selection(
+        algorithm: str = Body(...),
+        n_features: Optional[int] = Body(None),
+        max_iter: int = Body(50),
+        population_size: int = Body(20)
+):
+    check_modules_available()
+    try:
+        # Run feature selection pipeline
+        feature_selection_pipeline(
+            intel_path="intel.yaml",
+            algorithm=algorithm,
+            n_features=n_features,
+            max_iter=max_iter,
+            population_size=population_size
+        )
+
+        # Load results to return
+        intel = load_yaml("intel.yaml")
+        config = intel.get('feature_selection_config', {})
+
+        return {
+            "status": "success",
+            "message": "Feature selection completed",
+            "selected_features": config.get('selected_features', []),
+            "cv_accuracy": 0.95  # Placeholder - actual value would come from the pipeline
+        }
+    except Exception as e:
+        logger.error(f"Error during feature selection: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Feature selection failed: {str(e)}")
+
+
+@app.get("/api/feature-selection/algorithms")
+async def get_feature_selection_algorithms():
+    check_modules_available()
+    try:
+        selector = MetaHeuristicFeatureSelector()
+        algorithms = selector.get_available_algorithms()
+        return JSONResponse(content=algorithms)
+    except Exception as e:
+        logger.error(f"Error getting feature selection algorithms: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting feature selection algorithms: {str(e)}")
+
+
 if __name__ == "__main__":
+    # Create necessary directories
     os.makedirs("classification-static/css", exist_ok=True)
     os.makedirs("classification-static/js", exist_ok=True)
     os.makedirs("classification-static/images", exist_ok=True)

@@ -1,448 +1,72 @@
-best_params_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\metrics\best_params_balanced_ai_human_prompts\params.json
-cleaned_test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_balanced_ai_human_prompts\test.csv
-cleaned_train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\cleaned\data_balanced_ai_human_prompts\train.csv
-cleaning_pipeline_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\pipelines\preprocessing_balanced_ai_human_prompts\cleaning.pkl
-cleaning_report_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports\readme\cleaning_report.md
-cleaning_timestamp: '2025-09-19 23:45:44'
-dataset_name: balanced_ai_human_prompts
-evaluation_timestamp: '2025-09-20 00:05:57'
-feature_engineering_config:
-  n_features_selected: 500
-  resampling_method: null
-  timestamp: '2025-09-19 23:56:06'
-  use_feature_tools: false
-  use_shap_selection: true
-feature_selection_config:
-  algorithm: whale_optimization
-  max_iter: 50
-  n_features_selected: 400
-  population_size: 20
-  selected_features:
-  - text_electoral
-  - text_vote
-  - text_cars
-  - text_college
-  - text_car
-  - text_exploration
-  - text_context
-  - text_education
-  - text_review
-  - text_president
-  - text_stepbystep
-  - text_outline
-  - text_structured
-  - text_developing
-  - text_balanced
-  - text_develop
-  - text_formulate
-  - text_critical
-  - text_indepth
-  - text_compose
-  - text_analysis
-  - text_sustainability
-  - text_advancement
-  - text_produce
-  - text_technological
-  - text_policy
-  - text_21st
-  - text_draft
-  - text_analyzing
-  - text_detailed
-  - text_compile
-  - text_insights
-  - text_comprehensive
-  - text_summary
-  - text_generate
-  - text_report
-  - text_strategy
-  - text_electors
-  - text_argument
-  - text_global
-  - text_list
-  - text_votes
-  - text_essay
-  - text_key
-  - text_environmental
-  - text_everyday
-  - text_century
-  - text_modern
-  - text_thee
-  - text_create
-  - text_business
-  - text_applications
-  - text_autonomous
-  - text_states
-  - text_healthcare
-  - text_blockchain
-  - text_climate
-  - text_network
-  - text_society
-  - text_would
-  - text_public
-  - text_system
-  - text_history
-  - text_chain
-  - text_management
-  - text_editing
-  - text_internet
-  - text_life
-  - text_supply
-  - text_infrastructure
-  - text_space
-  - text_voters
-  - text_innovations
-  - text_voting
-  - text_popular
-  - text_election
-  - text_source
-  - text_driving
-  - text_financial
-  - text_limiting
-  - text_reality
-  - text_vehicles
-  - text_smart
-  - text_city
-  - text_air
-  - text_day
-  - text_smog
-  - text_use
-  - text_environment
-  - text_less
-  - text_change
-  - text_transportation
-  - text_ai
-  - text_paragraph
-  - text_money
-  - text_things
-  - text_many
-  - text_citizens
-  - text_process
-  - text_stress
-  - text_cities
-  - text_candidates
-  - text_one
-  - text_us
-  - text_unfair
-  - text_tohe
-  - text_get
-  - text_gas
-  - text_country
-  - text_paris
-  - text_percent
-  - text_greenhouse
-  - text_want
-  - text_without
-  - text_new
-  - text_think
-  - text_may
-  - text_amount
-  - text_ii
-  - text_power
-  - text_like
-  - text_human
-  - text_help
-  - text_way
-  - text_experience
-  - text_method
-  - text_ahe
-  - text_community
-  - text_make
-  - text_reduce
-  - text_fair
-  - text_around
-  - text_much
-  - text_french
-  - text_tie
-  - text_earth
-  - text_advantages
-  - text_walking
-  - text_presidential
-  - text_ban
-  - text_united
-  - text_really
-  - text_health
-  - text_work
-  - text_limited
-  - text_know
-  - text_say
-  - text_using
-  - text_majority
-  - text_gases
-  - text_choose
-  - text_elector
-  - text_america
-  - text_elections
-  - text_collage
-  - text_limit
-  - text_bogota
-  - text_rosenthal
-  - text_balance
-  - text_lot
-  - text_drive
-  - text_government
-  - text_good
-  - text_vauban
-  - text_countries
-  - text_places
-  - text_take
-  - text_potential
-  - text_bike
-  - text_believe
-  - text_place
-  - text_plumer
-  - text_win
-  - text_automobiles
-  - text_become
-  - text_gasses
-  - text_electorsal
-  - text_swing
-  - text_role
-  - text_polution
-  - text_says
-  - text_personal
-  - text_according
-  - text_feel
-  - text_campaign
-  - text_making
-  - text_france
-  - text_right
-  - text_days
-  - text_representatives
-  - text_means
-  - text_nation
-  - text_everyone
-  - text_well
-  - text_advantage
-  - text_american
-  - text_keep
-  - text_save
-  - text_individuals
-  - text_benefits
-  - text_point
-  - text_reducing
-  - text_streets
-  - text_getting
-  - text_pay
-  - text_ways
-  - text_future
-  - text_chance
-  - text_due
-  - text_impact
-  - text_big
-  - text_plates
-  - text_americans
-  - text_winner
-  - text_person
-  - text_idea
-  - text_happier
-  - text_though
-  - text_however
-  - text_decision
-  - text_road
-  - text_individual
-  - text_reasons
-  - text_since
-  - text_reason
-  - text_atmosphere
-  - text_appeal
-  - text_planet
-  - text_accidents
-  - text_slate
-  - text_direct
-  - text_diesel
-  - text_economy
-  - text_didnt
-  - text_helps
-  - text_away
-  - text_past
-  - text_jams
-  - text_congestion
-  - text_exercise
-  - text_instead
-  - text_best
-  - text_always
-  - text_improve
-  - text_distant
-  - text_thing
-  - text_fewer
-  - text_used
-  - text_travel
-  - text_outcome
-  - text_often
-  - text_positive
-  - text_healthier
-  - text_sidewalks
-  - text_smaller
-  - text_able
-  - text_although
-  - text_across
-  - text_reduction
-  - text_problems
-  - text_shows
-  - text_must
-  - text_house
-  - text_year
-  - text_lower
-  - text_bus
-  - text_larger
-  - text_physical
-  - text_congress
-  - text_presidents
-  - text_voted
-  - text_show
-  - text_bad
-  - text_made
-  - text_another
-  - text_sometimes
-  - text_disaster
-  - text_cause
-  - text_years
-  - text_fuel
-  - text_based
-  - text_gore
-  - text_thats
-  - text_behind
-  - text_end
-  - text_stated
-  - text_cut
-  - text_safer
-  - text_matter
-  - text_party
-  - text_elected
-  - text_bush
-  - text_taking
-  - text_effect
-  - text_children
-  - text_next
-  - text_office
-  - text_2000
-  - text_makes
-  - text_living
-  - text_something
-  - text_germany
-  - text_senator
-  - text_drivers
-  - text_result
-  - text_democracy
-  - text_count
-  - text_resources
-  - text_sense
-  - text_alternative
-  - text_regions
-  - text_chosen
-  - text_motor
-  - text_rather
-  - text_play
-  - text_license
-  - text_gives
-  - text_becomes
-  - text_imagine
-  - text_back
-  - text_rid
-  - text_favor
-  - text_major
-  - text_theres
-  - text_first
-  - text_outdated
-  - text_factor
-  - text_kennedy
-  - text_issues
-  - text_happen
-  - text_doesnt
-  - text_control
-  - text_emission
-  - text_bradford
-  - text_humans
-  - text_area
-  - text_goes
-  - text_winning
-  - text_founding
-  - text_part
-  - text_known
-  - text_effects
-  - text_voice
-  - text_changing
-  - text_decisions
-  - text_rain
-  - text_elisabeth
-  - text_companies
-  - text_peoples
-  - text_certain
-  - text_warming
-  - text_harmful
-  - text_small
-  - text_times
-  - text_stop
-  - text_completely
-  - text_ride
-  - text_passage
-  - text_responsible
-  - text_program
-  - text_important
-  - text_enough
-  - text_region
-  - text_comes
-  - text_helping
-  - text_miles
-  - text_lifestyle
-  - text_keeping
-  - text_event
-  - text_spend
-  - text_al
-  - text_whole
-  - text_levels
-  - text_im
-  - text_stores
-  - text_today
-  - text_cost
-  - text_fathers
-  - text_residents
-  - text_cant
-  - text_wont
-  - text_causes
-  - text_long
-  - text_banning
-  - text_wouldnt
-  - text_daily
-  - text_come
-  - text_beginning
-  - text_directly
-  - text_easier
-  - text_represent
-  - text_suburb
-  - text_presidency
-  - text_town
-  - text_give
-  - text_throughout
-  - text_richard
-  - text_fine
-  - text_irrational
-  - text_ones
-  timestamp: '2025-09-19 23:58:06'
-feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_balanced_ai_human_prompts\feature_store.yaml
-model_name: Random Forest_4
-model_path: model\model_balanced_ai_human_prompts\model.pkl
-model_timestamp: '2025-09-20 00:05:21'
-model_type: baseline
-optimization_timestamp: '2025-09-20 00:05:57'
-optimized_evaluation_timestamp: '2025-09-20 00:05:57'
-optimized_model_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\model\model_balanced_ai_human_prompts\optimized_model.pkl
-optimized_performance_metrics_path: reports\metrics\performance_balanced_ai_human_prompts\optimized_performance.yaml
-original_file_name: balanced_ai_human_prompts.csv
-performance_metrics_path: reports\metrics\performance_balanced_ai_human_prompts\performance.yaml
-plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_balanced_ai_human_prompts
-preprocessing_pipeline_path: model\pipelines\preprocessing_balanced_ai_human_prompts\preprocessing.pkl
-processed_timestamp: '2025-09-19 23:46:32'
-processing_mode: textual
-processor_pipeline_path: model/pipelines/preprocessing_balanced_ai_human_prompts\processor.pkl
-selection_pipeline_path: model/pipelines/preprocessing_balanced_ai_human_prompts\selection.pkl
-target_column: generated
-test_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_balanced_ai_human_prompts\test.csv
-test_preprocessed_path: data\interim\data_balanced_ai_human_prompts\test_preprocessed.csv
-test_selected_path: data/selected/data_balanced_ai_human_prompts\test_selected.csv
-test_transformed_path: data\processed\data_balanced_ai_human_prompts\test_transformed.csv
-train_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_balanced_ai_human_prompts\train.csv
-train_preprocessed_path: data\interim\data_balanced_ai_human_prompts\train_preprocessed.csv
-train_selected_path: data/selected/data_balanced_ai_human_prompts\train_selected.csv
-train_transformed_path: data\processed\data_balanced_ai_human_prompts\train_transformed.csv
-transformation_pipeline_path: model\pipelines\preprocessing_balanced_ai_human_prompts\transformation.pkl
+dataset_name: images
+processing_mode: image
+processed_timestamp: '2025-09-20 17:45:09'
+feature_store_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\references\feature_store_images\feature_store.yaml
+plots_dir: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\reports/figures\plots_images
+target_column: Risk of macular edema
+original_file_name: images
+original_images_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_images\original\images
+original_labels_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_images\original\labels\labels.csv
+train_images_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_images\train\images
+test_images_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_images\test\images
+train_labels_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_images\train\labels\labels.csv
+test_labels_path: D:\MLOps-Projects\SemiAuto\SemiAuto-Classification\data\raw\data_images\test\labels\labels.csv
+image_column: Image name
+train_preprocessed_path: data\interim\data_images\train
+test_preprocessed_path: data\interim\data_images\test
+train_images_preprocessed_path: data\interim\data_images\train\images
+test_images_preprocessed_path: data\interim\data_images\test\images
+train_labels_preprocessed_path: data\interim\data_images\train\labels\labels.csv
+test_labels_preprocessed_path: data\interim\data_images\test\labels\labels.csv
+image_preprocessing_pipeline_path: model\pipelines\preprocessing_images\image_preprocessing.pkl
+image_preprocessing_config:
+  resize_images: true
+  target_size:
+  - 224
+  - 224
+  maintain_aspect_ratio: true
+  padding_color:
+  - 0
+  - 0
+  - 0
+  normalize: true
+  normalization_method: standard
+  mean:
+  - 0.485
+  - 0.456
+  - 0.406
+  std:
+  - 0.229
+  - 0.224
+  - 0.225
+  noise_reduction: true
+  noise_method: gaussian
+  kernel_size: 5
+  enhance_images: true
+  enhance_brightness: 1.0
+  enhance_contrast: 1.0
+  enhance_sharpness: 1.0
+  enhance_color: 1.0
+  roi_extraction: true
+  roi_method: contour
+  roi_threshold: 127
+  morphological_ops: true
+  morph_operation: opening
+  morph_kernel_size: 5
+  morph_iterations: 1
+  binarization: true
+  threshold_method: otsu
+  threshold_value: 127
+  augmentation: true
+  augmentation_factor: 1.0
+  horizontal_flip: true
+  vertical_flip: true
+  rotation_range: 30.0
+  zoom_range: 0.2
+  brightness_range: 0.2
+  contrast_range: 0.2
+  blur_limit: 3
+  random_crop: true
+  elastic_transform: true
+  noise_augmentation: true
+preprocessed_timestamp: '2025-09-20T19:00:21.338861'

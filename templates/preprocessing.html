@@ -13,6 +13,35 @@
         <p><strong>Target Column:</strong> {{ target_column }}</p>
         <p><strong>Processing Mode:</strong> {{ processing_mode|title }}</p>
 
+        {% if processing_mode == 'image' %}
+        <!-- Image Dataset Information -->
+        <div class="form-group">
+            <h3>Image Dataset Information:</h3>
+            <div class="metrics-container">
+                {% if image_analysis %}
+                <div class="metric-card">
+                    <div class="metric-title">Total Images</div>
+                    <div class="metric-value">{{ image_analysis.total_images }}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Number of Classes</div>
+                    <div class="metric-value">{{ image_analysis.classes|length }}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Image Formats</div>
+                    <div class="metric-value">{{ image_analysis.image_formats.keys()|join(', ') }}</div>
+                </div>
+                {% if image_analysis.avg_image_size %}
+                <div class="metric-card">
+                    <div class="metric-title">Average Image Size</div>
+                    <div class="metric-value">{{ image_analysis.avg_image_size[0] }}x{{ image_analysis.avg_image_size[1] }}</div>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Tabular/Textual Dataset Information -->
         <div class="form-group">
             <h3>Data Issues Detected:</h3>
             <div class="metrics-container">
@@ -45,10 +74,255 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 
     <div class="card">
         <div class="card-header">Preprocessing Options</div>
+
+        {% if processing_mode == 'image' %}
+        <!-- Image Preprocessing Form -->
+        <form id="imagePreprocessingForm">
+            <div class="card" style="margin-top: 20px; background-color: #f0f8ff;">
+                <div class="card-header" style="background-color: #e1f5fe; color: #0277bd;">
+                    <h3>Image Preprocessing Options</h3>
+                </div>
+
+                <!-- Resizing/Rescaling Section -->
+                <div class="form-section">
+                    <h4>Image Resizing & Rescaling</h4>
+
+                    <div class="form-group">
+                        <label for="resizeImages">Resize Images</label>
+                        <select id="resizeImages" name="resize_images">
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="resizeOptions">
+                        <label for="targetWidth">Target Width</label>
+                        <input type="number" id="targetWidth" name="target_width" value="224" min="32" max="1024">
+
+                        <label for="targetHeight">Target Height</label>
+                        <input type="number" id="targetHeight" name="target_height" value="224" min="32" max="1024">
+
+                        <div class="form-group">
+                            <label for="maintainAspectRatio">Maintain Aspect Ratio</label>
+                            <select id="maintainAspectRatio" name="maintain_aspect_ratio">
+                                <option value="false" selected>No</option>
+                                <option value="true">Yes (with padding)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color Normalization Section -->
+                <div class="form-section">
+                    <h4>Color Normalization</h4>
+
+                    <div class="form-group">
+                        <label for="normalize">Apply Normalization</label>
+                        <select id="normalize" name="normalize">
+                            <option value="false">No</option>
+                            <option value="true" selected>Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="normalizationOptions">
+                        <label for="normalizationMethod">Normalization Method</label>
+                        <select id="normalizationMethod" name="normalization_method">
+                            <option value="standard" selected>Standard (ImageNet)</option>
+                            <option value="minmax">Min-Max (0-1)</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Noise Reduction Section -->
+                <div class="form-section">
+                    <h4>Noise Reduction & Smoothing</h4>
+
+                    <div class="form-group">
+                        <label for="noiseReduction">Apply Noise Reduction</label>
+                        <select id="noiseReduction" name="noise_reduction">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="noiseOptions" style="display: none;">
+                        <label for="noiseMethod">Noise Reduction Method</label>
+                        <select id="noiseMethod" name="noise_method">
+                            <option value="gaussian" selected>Gaussian Blur</option>
+                            <option value="median">Median Filter</option>
+                            <option value="bilateral">Bilateral Filter</option>
+                        </select>
+
+                        <label for="kernelSize">Kernel Size</label>
+                        <input type="number" id="kernelSize" name="kernel_size" value="5" min="3" max="15" step="2">
+                    </div>
+                </div>
+
+                <!-- Image Enhancement Section -->
+                <div class="form-section">
+                    <h4>Image Enhancement</h4>
+
+                    <div class="form-group">
+                        <label for="enhanceImages">Apply Enhancement</label>
+                        <select id="enhanceImages" name="enhance_images">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="enhancementOptions" style="display: none;">
+                        <label for="enhanceBrightness">Brightness Factor</label>
+                        <input type="number" id="enhanceBrightness" name="enhance_brightness" value="1.0" min="0.1" max="3.0" step="0.1">
+
+                        <label for="enhanceContrast">Contrast Factor</label>
+                        <input type="number" id="enhanceContrast" name="enhance_contrast" value="1.0" min="0.1" max="3.0" step="0.1">
+
+                        <label for="enhanceSharpness">Sharpness Factor</label>
+                        <input type="number" id="enhanceSharpness" name="enhance_sharpness" value="1.0" min="0.1" max="3.0" step="0.1">
+
+                        <label for="enhanceColor">Color Saturation Factor</label>
+                        <input type="number" id="enhanceColor" name="enhance_color" value="1.0" min="0.1" max="3.0" step="0.1">
+                    </div>
+                </div>
+
+                <!-- ROI Extraction Section -->
+                <div class="form-section">
+                    <h4>ROI (Region of Interest) Extraction</h4>
+
+                    <div class="form-group">
+                        <label for="roiExtraction">Extract ROI</label>
+                        <select id="roiExtraction" name="roi_extraction">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="roiOptions" style="display: none;">
+                        <label for="roiMethod">ROI Method</label>
+                        <select id="roiMethod" name="roi_method">
+                            <option value="contour" selected>Contour Detection</option>
+                            <option value="threshold">Thresholding</option>
+                            <option value="watershed">Watershed</option>
+                        </select>
+
+                        <label for="roiThreshold">ROI Threshold</label>
+                        <input type="number" id="roiThreshold" name="roi_threshold" value="127" min="0" max="255">
+                    </div>
+                </div>
+
+                <!-- Morphological Operations Section -->
+                <div class="form-section">
+                    <h4>Morphological Operations</h4>
+
+                    <div class="form-group">
+                        <label for="morphologicalOps">Apply Morphological Operations</label>
+                        <select id="morphologicalOps" name="morphological_ops">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="morphOptions" style="display: none;">
+                        <label for="morphOperation">Operation Type</label>
+                        <select id="morphOperation" name="morph_operation">
+                            <option value="opening" selected>Opening (Remove noise)</option>
+                            <option value="closing">Closing (Fill gaps)</option>
+                            <option value="gradient">Gradient (Edge detection)</option>
+                            <option value="tophat">Top Hat (Small objects)</option>
+                            <option value="blackhat">Black Hat (Dark objects)</option>
+                        </select>
+
+                        <label for="morphKernelSize">Kernel Size</label>
+                        <input type="number" id="morphKernelSize" name="morph_kernel_size" value="5" min="3" max="15" step="2">
+
+                        <label for="morphIterations">Iterations</label>
+                        <input type="number" id="morphIterations" name="morph_iterations" value="1" min="1" max="10">
+                    </div>
+                </div>
+
+                <!-- Binarization/Thresholding Section -->
+                <div class="form-section">
+                    <h4>Binarization & Thresholding</h4>
+
+                    <div class="form-group">
+                        <label for="binarization">Apply Binarization</label>
+                        <select id="binarization" name="binarization">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="binarizationOptions" style="display: none;">
+                        <label for="thresholdMethod">Threshold Method</label>
+                        <select id="thresholdMethod" name="threshold_method">
+                            <option value="otsu" selected>Otsu (Automatic)</option>
+                            <option value="adaptive">Adaptive</option>
+                            <option value="binary">Binary (Fixed)</option>
+                            <option value="truncate">Truncate</option>
+                        </select>
+
+                        <label for="thresholdValue">Threshold Value (for Binary)</label>
+                        <input type="number" id="thresholdValue" name="threshold_value" value="127" min="0" max="255">
+                    </div>
+                </div>
+
+                <!-- Data Augmentation Section -->
+                <div class="form-section" style="border: 2px solid #ff9800; background-color: #fff3e0;">
+                    <h4 style="color: #e65100;">Data Augmentation</h4>
+                    <small style="color: #bf360c;">⚠️ Augmentation will create additional training images with modified versions</small>
+
+                    <div class="form-group">
+                        <label for="augmentation">Enable Data Augmentation</label>
+                        <select id="augmentation" name="augmentation">
+                            <option value="false" selected>No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="augmentationOptions" style="display: none;">
+                        <label for="augmentationFactor">Augmentation Factor</label>
+                        <input type="number" id="augmentationFactor" name="augmentation_factor" value="1.0" min="0.5" max="5.0" step="0.5">
+                        <small>1.0 = same amount, 2.0 = double the images</small>
+
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="horizontalFlip" name="horizontal_flip" checked> Horizontal Flip</label>
+                            <label><input type="checkbox" id="verticalFlip" name="vertical_flip"> Vertical Flip</label>
+                            <label><input type="checkbox" id="randomCrop" name="random_crop"> Random Crop</label>
+                            <label><input type="checkbox" id="elasticTransform" name="elastic_transform"> Elastic Transform</label>
+                            <label><input type="checkbox" id="noiseAugmentation" name="noise_augmentation"> Add Noise</label>
+                        </div>
+
+                        <label for="rotationRange">Rotation Range (degrees)</label>
+                        <input type="number" id="rotationRange" name="rotation_range" value="30" min="0" max="180">
+
+                        <label for="zoomRange">Zoom Range</label>
+                        <input type="number" id="zoomRange" name="zoom_range" value="0.2" min="0" max="1.0" step="0.1">
+
+                        <label for="brightnessRange">Brightness Range</label>
+                        <input type="number" id="brightnessRange" name="brightness_range" value="0.2" min="0" max="1.0" step="0.1">
+
+                        <label for="contrastRange">Contrast Range</label>
+                        <input type="number" id="contrastRange" name="contrast_range" value="0.2" min="0" max="1.0" step="0.1">
+
+                        <label for="blurLimit">Blur Limit</label>
+                        <input type="number" id="blurLimit" name="blur_limit" value="3" min="1" max="10">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" onclick="preprocessImage(event)">Run Image Preprocessing</button>
+            </div>
+        </form>
+
+        {% else %}
+        <!-- Tabular/Textual Preprocessing Form (existing code) -->
         <form id="preprocessingForm">
             <!-- Missing Values -->
             {% if nulls %}
@@ -197,24 +471,6 @@
 
                     <!-- Advanced Text Processing -->
                     <div class="form-group">
-                        <label for="handleChatWords">Handle Chat Words/Slang</label>
-                        <select id="handleChatWords" name="text_handle_chat_words">
-                            <option value="false" selected>No</option>
-                            <option value="true">Yes</option>
-                        </select>
-                        <small>Expand contractions and common internet slang</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="spellingCorrection">Spelling Correction</label>
-                        <select id="spellingCorrection" name="text_spelling_correction">
-                            <option value="false" selected>No</option>
-                            <option value="true">Yes</option>
-                        </select>
-                        <small>Warning: Can be slow for large datasets</small>
-                    </div>
-
-                    <div class="form-group">
                         <label for="removeStopwords">Remove Stopwords</label>
                         <select id="removeStopwords" name="text_remove_stopwords">
                             <option value="false">No</option>
@@ -230,16 +486,6 @@
                             <option value="stemming">Stemming (Porter)</option>
                             <option value="lemmatization">Lemmatization</option>
                         </select>
-                        <small>Stemming: faster, Lemmatization: more accurate</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="posTagging">POS (Part-of-Speech) Tagging</label>
-                        <select id="posTagging" name="text_pos_tagging">
-                            <option value="false" selected>No</option>
-                            <option value="true">Yes</option>
-                        </select>
-                        <small>Extract grammatical information</small>
                     </div>
 
                     <!-- Tokenization/Vectorization -->
@@ -250,21 +496,8 @@
                             <option value="bow">Bag of Words (CountVectorizer)</option>
                             <option value="tfidf" selected>TF-IDF</option>
                             <option value="word2vec">Word2Vec</option>
-                            <option value="glove">GloVe</option>
                             <option value="ngrams">N-grams</option>
                         </select>
-                    </div>
-
-                    <!-- N-gram options -->
-                    <div class="form-group" id="ngramOptions" style="display: none;">
-                        <label for="ngramRange">N-gram Range</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <label>Min:</label>
-                            <input type="number" id="ngramMin" name="text_ngram_min" value="1" min="1" max="5" style="width: 60px;">
-                            <label>Max:</label>
-                            <input type="number" id="ngramMax" name="text_ngram_max" value="2" min="1" max="5" style="width: 60px;">
-                        </div>
-                        <small>1=unigrams, 2=bigrams, 3=trigrams, etc.</small>
                     </div>
 
                     <!-- Vectorization parameters -->
@@ -272,13 +505,6 @@
                         <label for="maxFeatures">Maximum Features</label>
                         <input type="number" id="maxFeatures" name="text_max_features" value="1000" min="100" max="10000" step="100">
                         <small>Maximum number of features to extract from text</small>
-                    </div>
-
-                    <!-- Word2Vec/GloVe options -->
-                    <div class="form-group" id="embeddingOptions" style="display: none;">
-                        <label for="vectorSize">Vector Size</label>
-                        <input type="number" id="vectorSize" name="text_vector_size" value="100" min="50" max="300" step="50">
-                        <small>Dimension of word embeddings</small>
                     </div>
                 </div>
             </div>
@@ -288,6 +514,8 @@
                 <button type="submit" class="btn btn-primary" onclick="preprocess(event)">Run Preprocessing</button>
             </div>
         </form>
+        {% endif %}
+
         <div id="spinner" class="spinner hidden"></div>
         <div id="preprocessingStatus" class="alert hidden"></div>
     </div>
@@ -297,6 +525,108 @@
 {% block scripts %}
 {{ super() }}
 <script>
+    // Image preprocessing function
+    async function preprocessImage(event) {
+        event.preventDefault();
+
+        const form = document.getElementById('imagePreprocessingForm');
+        const formData = new FormData(form);
+        const preprocessingStatus = document.getElementById('preprocessingStatus');
+
+        // Convert form data to JSON for image preprocessing
+        const imageConfig = {
+            resize_images: formData.get('resize_images') === 'true',
+            target_size: [
+                parseInt(formData.get('target_width')) || 224,
+                parseInt(formData.get('target_height')) || 224
+            ],
+            maintain_aspect_ratio: formData.get('maintain_aspect_ratio') === 'true',
+            padding_color: [0, 0, 0], // Default black padding
+
+            normalize: formData.get('normalize') === 'true',
+            normalization_method: formData.get('normalization_method') || 'standard',
+            mean: [0.485, 0.456, 0.406], // ImageNet defaults
+            std: [0.229, 0.224, 0.225],
+
+            noise_reduction: formData.get('noise_reduction') === 'true',
+            noise_method: formData.get('noise_method') || 'gaussian',
+            kernel_size: parseInt(formData.get('kernel_size')) || 5,
+
+            enhance_images: formData.get('enhance_images') === 'true',
+            enhance_brightness: parseFloat(formData.get('enhance_brightness')) || 1.0,
+            enhance_contrast: parseFloat(formData.get('enhance_contrast')) || 1.0,
+            enhance_sharpness: parseFloat(formData.get('enhance_sharpness')) || 1.0,
+            enhance_color: parseFloat(formData.get('enhance_color')) || 1.0,
+
+            roi_extraction: formData.get('roi_extraction') === 'true',
+            roi_method: formData.get('roi_method') || 'contour',
+            roi_threshold: parseInt(formData.get('roi_threshold')) || 127,
+
+            morphological_ops: formData.get('morphological_ops') === 'true',
+            morph_operation: formData.get('morph_operation') || 'opening',
+            morph_kernel_size: parseInt(formData.get('morph_kernel_size')) || 5,
+            morph_iterations: parseInt(formData.get('morph_iterations')) || 1,
+
+            binarization: formData.get('binarization') === 'true',
+            threshold_method: formData.get('threshold_method') || 'otsu',
+            threshold_value: parseInt(formData.get('threshold_value')) || 127,
+
+            augmentation: formData.get('augmentation') === 'true',
+            augmentation_factor: parseFloat(formData.get('augmentation_factor')) || 1.0,
+            horizontal_flip: formData.get('horizontal_flip') === 'on',
+            vertical_flip: formData.get('vertical_flip') === 'on',
+            rotation_range: parseFloat(formData.get('rotation_range')) || 0.0,
+            zoom_range: parseFloat(formData.get('zoom_range')) || 0.0,
+            brightness_range: parseFloat(formData.get('brightness_range')) || 0.0,
+            contrast_range: parseFloat(formData.get('contrast_range')) || 0.0,
+            blur_limit: parseInt(formData.get('blur_limit')) || 0,
+            random_crop: formData.get('random_crop') === 'on',
+            elastic_transform: formData.get('elastic_transform') === 'on',
+            noise_augmentation: formData.get('noise_augmentation') === 'on'
+        };
+
+        const requestData = {
+            image_preprocessing: imageConfig
+        };
+
+        preprocessingStatus.className = 'alert hidden';
+        showSpinner();
+
+        try {
+            const response = await fetch('/api/preprocess', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                preprocessingStatus.innerHTML = `
+                    <h4>${result.message}</h4>
+                    <p><strong>Original Images:</strong> ${result.processed_images.original_train_images} (train), ${result.processed_images.original_test_images} (test)</p>
+                    <p><strong>Processed Images:</strong> ${result.processed_images.processed_train_images} (train), ${result.processed_images.processed_test_images} (test)</p>
+                    <p><strong>Augmentation Factor:</strong> ${result.processed_images.augmentation_factor.toFixed(2)}x</p>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <a href="/feature-engineering" class="btn btn-success">Continue to Feature Engineering</a>
+                    </div>
+                `;
+                preprocessingStatus.className = 'alert alert-success';
+            } else {
+                preprocessingStatus.textContent = result.detail || 'Image preprocessing failed';
+                preprocessingStatus.className = 'alert alert-danger';
+            }
+        } catch (error) {
+            preprocessingStatus.textContent = 'Error: ' + error.message;
+            preprocessingStatus.className = 'alert alert-danger';
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    // Tabular/textual preprocessing function (existing)
     async function preprocess(event) {
         event.preventDefault();
 
@@ -338,14 +668,6 @@
                 max_features: parseInt(jsonData['text_max_features']) || 1000,
                 vector_size: parseInt(jsonData['text_vector_size']) || 100
             };
-
-            // Handle n-gram range
-            if (jsonData['text_tokenization_method'] === 'ngrams') {
-                textConfig.ngram_range = [
-                    parseInt(jsonData['text_ngram_min']) || 1,
-                    parseInt(jsonData['text_ngram_max']) || 2
-                ];
-            }
 
             jsonData['text_preprocessing'] = textConfig;
         }
@@ -395,14 +717,78 @@
 
     // Show/hide options based on selections
     document.addEventListener('DOMContentLoaded', function() {
+        // Image preprocessing option handlers
+        const resizeImages = document.getElementById('resizeImages');
+        const resizeOptions = document.getElementById('resizeOptions');
+        const normalize = document.getElementById('normalize');
+        const normalizationOptions = document.getElementById('normalizationOptions');
+        const noiseReduction = document.getElementById('noiseReduction');
+        const noiseOptions = document.getElementById('noiseOptions');
+        const enhanceImages = document.getElementById('enhanceImages');
+        const enhancementOptions = document.getElementById('enhancementOptions');
+        const roiExtraction = document.getElementById('roiExtraction');
+        const roiOptions = document.getElementById('roiOptions');
+        const morphologicalOps = document.getElementById('morphologicalOps');
+        const morphOptions = document.getElementById('morphOptions');
+        const binarization = document.getElementById('binarization');
+        const binarizationOptions = document.getElementById('binarizationOptions');
+        const augmentation = document.getElementById('augmentation');
+        const augmentationOptions = document.getElementById('augmentationOptions');
+
+        // Image preprocessing toggles
+        if (resizeImages && resizeOptions) {
+            resizeImages.addEventListener('change', function() {
+                resizeOptions.style.display = this.value === 'true' ? 'block' : 'none';
+            });
+        }
+
+        if (normalize && normalizationOptions) {
+            normalize.addEventListener('change', function() {
+                normalizationOptions.style.display = this.value === 'true' ? 'block' : 'none';
+            });
+        }
+
+        if (noiseReduction && noiseOptions) {
+            noiseReduction.addEventListener('change', function() {
+                noiseOptions.style.display = this.value === 'true' ? 'block' : 'none';
+            });
+        }
+
+        if (enhanceImages && enhancementOptions) {
+            enhanceImages.addEventListener('change', function() {
+                enhancementOptions.style.display = this.value === 'true' ? 'block' : 'none';
+            });
+        }
+
+        if (roiExtraction && roiOptions) {
+            roiExtraction.addEventListener('change', function() {
+                roiOptions.style.display = this.value === 'true' ? 'block' : 'none';
+            });
+        }
+
+        if (morphologicalOps && morphOptions) {
+            morphologicalOps.addEventListener('change', function() {
+                morphOptions.style.display = this.value === 'true' ? 'block' : 'none';
+            });
+        }
+
+        if (binarization && binarizationOptions) {
+            binarization.addEventListener('change', function() {
+                binarizationOptions.style.display = this.value === 'true' ? 'block' : 'none';
+            });
+        }
+
+        if (augmentation && augmentationOptions) {
+            augmentation.addEventListener('change', function() {
+                augmentationOptions.style.display = this.value === 'true' ? 'block' : 'none';
+            });
+        }
+
+        // Tabular preprocessing option handlers (existing code)
         const encodingSelect = document.getElementById('encoding');
         const dropFirstGroup = document.getElementById('dropFirst');
         const enableTextPreprocessing = document.getElementById('enableTextPreprocessing');
         const textPreprocessingOptions = document.getElementById('textPreprocessingOptions');
-        const tokenizationMethod = document.getElementById('tokenizationMethod');
-        const ngramOptions = document.getElementById('ngramOptions');
-        const vectorizationOptions = document.getElementById('vectorizationOptions');
-        const embeddingOptions = document.getElementById('embeddingOptions');
 
         // Handle encoding dropdown
         if (encodingSelect && dropFirstGroup) {
@@ -431,31 +817,115 @@
             enableTextPreprocessing.addEventListener('change', updateTextPreprocessing);
             updateTextPreprocessing(); // Run on page load
         }
-
-        // Handle tokenization method changes
-        if (tokenizationMethod) {
-            function updateTokenizationOptions() {
-                const method = tokenizationMethod.value;
-
-                // Hide all options first
-                if (ngramOptions) ngramOptions.style.display = 'none';
-                if (vectorizationOptions) vectorizationOptions.style.display = 'none';
-                if (embeddingOptions) embeddingOptions.style.display = 'none';
-
-                // Show relevant options
-                if (method === 'ngrams') {
-                    if (ngramOptions) ngramOptions.style.display = 'block';
-                    if (vectorizationOptions) vectorizationOptions.style.display = 'block';
-                } else if (method === 'bow' || method === 'tfidf') {
-                    if (vectorizationOptions) vectorizationOptions.style.display = 'block';
-                } else if (method === 'word2vec' || method === 'glove') {
-                    if (embeddingOptions) embeddingOptions.style.display = 'block';
-                }
-            }
-
-            tokenizationMethod.addEventListener('change', updateTokenizationOptions);
-            updateTokenizationOptions(); // Run on page load
-        }
     });
+
+    function showSpinner() {
+        const spinner = document.getElementById('spinner');
+        if (spinner) {
+            spinner.classList.remove('hidden');
+        }
+    }
+
+    function hideSpinner() {
+        const spinner = document.getElementById('spinner');
+        if (spinner) {
+            spinner.classList.add('hidden');
+        }
+    }
 </script>
+
+<style>
+    .form-section {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 5px;
+        background-color: #fafafa;
+    }
+
+    .form-section h4 {
+        color: #333;
+        margin-top: 0;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 10px 0;
+    }
+
+    .checkbox-group label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .metric-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        text-align: center;
+        min-width: 150px;
+    }
+
+    .metric-title {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .metric-value {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .metrics-container {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin: 15px 0;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 20px auto;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .alert {
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+</style>
 {% endblock %}

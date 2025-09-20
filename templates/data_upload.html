@@ -5,32 +5,57 @@
 {% block content %}
 <div class="main-content">
     <h1 class="section-title">Data Upload</h1>
-    <p>Upload your dataset to begin the Classification analysis process. Our system supports multiple data types including tabular, textual, and mixed datasets.</p>
+    <p>Upload your dataset to begin the Classification analysis process. Our system supports multiple data types including tabular, textual, and image datasets.</p>
 
     <div class="card">
         <div class="card-header">Upload Dataset</div>
         <form id="uploadForm" enctype="multipart/form-data">
             <div class="form-group">
-                <label for="datasetFile">Dataset File (CSV format only)</label>
-                <input type="file" id="datasetFile" name="file" accept=".csv" required>
-                <small>Supported: CSV files with tabular, textual, or mixed content</small>
-            </div>
-
-            <div class="form-group">
-                <label for="targetColumn">Target Column</label>
-                <input type="text" id="targetColumn" name="target_column" required placeholder="Enter the name of your target variable">
-                <small>This is the variable you want to predict.</small>
-            </div>
-
-            <div class="form-group">
                 <label for="processingMode">Processing Mode</label>
-                <select id="processingMode" name="processing_mode">
+                <select id="processingMode" name="processing_mode" onchange="toggleUploadFields()">
                     <option value="auto" selected>Auto-detect (Recommended)</option>
                     <option value="tabular">Tabular - Traditional structured data</option>
                     <option value="textual">Textual - Text-heavy data for NLP</option>
+                    <option value="image">Image - Computer vision tasks</option>
                     <option value="mixed">Mixed - Both tabular and textual features</option>
                 </select>
                 <small>Choose how to process your data. Auto-detect will analyze your data and select the best mode.</small>
+            </div>
+
+            <!-- Tabular/Textual Upload Section -->
+            <div id="tabularUploadSection">
+                <div class="form-group">
+                    <label for="datasetFile">Dataset File (CSV format only)</label>
+                    <input type="file" id="datasetFile" name="file" accept=".csv">
+                    <small>Supported: CSV files with tabular, textual, or mixed content</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetColumn">Target Column</label>
+                    <input type="text" id="targetColumn" name="target_column" placeholder="Enter the name of your target variable">
+                    <small>This is the variable you want to predict.</small>
+                </div>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div id="imageUploadSection" class="hidden">
+                <div class="form-group">
+                    <label for="imagesZip">Images Zip File</label>
+                    <input type="file" id="imagesZip" name="images_zip" accept=".zip">
+                    <small>Upload a zip file containing all your images</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="labelsCSV">Labels CSV File</label>
+                    <input type="file" id="labelsCSV" name="labels_csv" accept=".csv">
+                    <small>Upload a CSV file with image filenames and their corresponding labels</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetColumn">Target Column (in Labels CSV)</label>
+                    <input type="text" id="targetColumnImage" name="target_column" placeholder="Enter the name of the label column">
+                    <small>This is the column in your CSV that contains the class labels for classification</small>
+                </div>
             </div>
 
             <div class="form-group">
@@ -66,8 +91,59 @@
                 <p>For text-heavy datasets suitable for NLP tasks. Focuses on text analysis, feature extraction from text, and text classification.</p>
             </div>
             <div class="info-item">
+                <h4>Image</h4>
+                <p>For computer vision tasks with image data. Upload a zip file of images and a CSV file containing image filenames with their labels for classification.</p>
+            </div>
+            <div class="info-item">
                 <h4>Mixed</h4>
                 <p>For datasets containing both structured features and significant text content. Combines tabular and textual processing approaches.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Upload Instructions -->
+    <div class="card" id="imageInstructions">
+        <div class="card-header">Image Data Format Requirements</div>
+        <div class="format-requirements">
+            <h4>For Image Classification:</h4>
+            <ol>
+                <li><strong>Images Zip File:</strong> A zip file containing all your image files (JPG, PNG, BMP, TIFF, GIF formats supported)</li>
+                <li><strong>Labels CSV File:</strong> A CSV file with at least two columns:
+                    <ul>
+                        <li>One column containing image filenames (e.g., "image1.jpg", "photo_001.png")</li>
+                        <li>One column containing class labels (e.g., "cat", "dog", "airplane")</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <div class="example-format">
+                <h5>Example Labels CSV:</h5>
+                <table class="format-table">
+                    <thead>
+                        <tr>
+                            <th>filename</th>
+                            <th>label</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>cat_001.jpg</td>
+                            <td>cat</td>
+                        </tr>
+                        <tr>
+                            <td>dog_001.jpg</td>
+                            <td>dog</td>
+                        </tr>
+                        <tr>
+                            <td>airplane_001.png</td>
+                            <td>airplane</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note">
+                <strong>Note:</strong> The system will automatically detect which column contains filenames and which contains labels. Make sure all image filenames in the CSV exist in your zip file.
             </div>
         </div>
     </div>
@@ -99,6 +175,55 @@
     font-size: 0.9rem;
     color: #666;
     line-height: 1.4;
+}
+
+.format-requirements {
+    padding: 1rem 0;
+}
+
+.format-requirements ol, .format-requirements ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.format-requirements li {
+    margin: 0.5rem 0;
+    line-height: 1.4;
+}
+
+.example-format {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.format-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.format-table th, .format-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border: 1px solid #dee2e6;
+}
+
+.format-table th {
+    background-color: #e9ecef;
+    font-weight: bold;
+}
+
+.note {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    font-size: 0.9rem;
 }
 
 .processing-mode-info {
@@ -160,6 +285,23 @@
 {% block scripts %}
 {{ super() }}
 <script>
+    function toggleUploadFields() {
+        const processingMode = document.getElementById('processingMode').value;
+        const tabularSection = document.getElementById('tabularUploadSection');
+        const imageSection = document.getElementById('imageUploadSection');
+        const imageInstructions = document.getElementById('imageInstructions');
+
+        if (processingMode === 'image') {
+            tabularSection.classList.add('hidden');
+            imageSection.classList.remove('hidden');
+            imageInstructions.style.display = 'block';
+        } else {
+            tabularSection.classList.remove('hidden');
+            imageSection.classList.add('hidden');
+            imageInstructions.style.display = 'none';
+        }
+    }
+
     async function uploadData(event) {
         event.preventDefault();
 
@@ -168,6 +310,7 @@
         const uploadStatus = document.getElementById('uploadStatus');
         const dataOverview = document.getElementById('dataOverview');
         const dataDetails = document.getElementById('dataDetails');
+        const processingMode = document.getElementById('processingMode').value;
 
         uploadStatus.className = 'alert hidden';
         showSpinner();
@@ -184,49 +327,106 @@
                 uploadStatus.textContent = result.message;
                 uploadStatus.className = 'alert alert-success';
 
-                // Create processing mode info
-                const processingModeInfo = `
-                    <div class="processing-mode-info">
-                        <h4>Detected Processing Mode: <span class="detected-mode">${result.processing_mode.toUpperCase()}</span></h4>
-                        <p>${getProcessingModeDescription(result.processing_mode)}</p>
-                    </div>
-                `;
+                let dataDetailsHTML = '';
 
-                // Create column breakdown
-                const datasetInfo = result.dataset_info || {};
-                const columnBreakdown = `
-                    <div class="column-breakdown">
-                        <div class="column-type">
-                            <h5>Numerical Columns (${datasetInfo.numerical_columns?.length || 0})</h5>
+                if (result.processing_mode === 'image') {
+                    // Image-specific display
+                    const datasetInfo = result.dataset_info || {};
+                    const processingModeInfo = `
+                        <div class="processing-mode-info">
+                            <h4>Processing Mode: <span class="detected-mode">${result.processing_mode.toUpperCase()}</span></h4>
+                            <p>Image classification dataset successfully processed.</p>
+                        </div>
+                    `;
+
+                    const imageBreakdown = `
+                        <div class="column-breakdown">
+                            <div class="column-type">
+                                <h5>Dataset Statistics</h5>
+                                <ul>
+                                    <li>Total Images: ${datasetInfo.total_images || 0}</li>
+                                    <li>Total Labels: ${datasetInfo.total_labels || 0}</li>
+                                    <li>Number of Classes: ${datasetInfo.classes ? datasetInfo.classes.length : 0}</li>
+                                </ul>
+                            </div>
+                            <div class="column-type">
+                                <h5>Image Formats</h5>
+                                <ul>
+                                    ${Object.entries(datasetInfo.image_formats || {}).map(([format, count]) =>
+                                        `<li>${format.toUpperCase()}: ${count} files</li>`
+                                    ).join('') || '<li>No format data</li>'}
+                                </ul>
+                            </div>
+                            <div class="column-type">
+                                <h5>Detected Columns</h5>
+                                <ul>
+                                    <li>Image Column: ${datasetInfo.image_column || 'Not detected'}</li>
+                                    <li>Target Column: ${datasetInfo.target_column || 'Not detected'}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+
+                    const classDistribution = datasetInfo.class_distribution ? `
+                        <div class="column-type" style="width: 100%; margin-top: 1rem;">
+                            <h5>Class Distribution</h5>
                             <ul>
-                                ${(datasetInfo.numerical_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
+                                ${Object.entries(datasetInfo.class_distribution).map(([className, count]) =>
+                                    `<li>${className}: ${count} images</li>`
+                                ).join('')}
                             </ul>
                         </div>
-                        <div class="column-type">
-                            <h5>Categorical Columns (${datasetInfo.categorical_columns?.length || 0})</h5>
-                            <ul>
-                                ${(datasetInfo.categorical_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
-                            </ul>
+                    ` : '';
+
+                    dataDetailsHTML = `
+                        <p><strong>Image dataset uploaded successfully!</strong></p>
+                        ${processingModeInfo}
+                        ${imageBreakdown}
+                        ${classDistribution}
+                    `;
+                } else {
+                    // Tabular/textual display
+                    const datasetInfo = result.dataset_info || {};
+                    const processingModeInfo = `
+                        <div class="processing-mode-info">
+                            <h4>Detected Processing Mode: <span class="detected-mode">${result.processing_mode.toUpperCase()}</span></h4>
+                            <p>${getProcessingModeDescription(result.processing_mode)}</p>
                         </div>
-                        <div class="column-type">
-                            <h5>Textual Columns (${datasetInfo.textual_columns?.length || 0})</h5>
-                            <ul>
-                                ${(datasetInfo.textual_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
-                            </ul>
+                    `;
+
+                    const columnBreakdown = `
+                        <div class="column-breakdown">
+                            <div class="column-type">
+                                <h5>Numerical Columns (${datasetInfo.numerical_columns?.length || 0})</h5>
+                                <ul>
+                                    ${(datasetInfo.numerical_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
+                                </ul>
+                            </div>
+                            <div class="column-type">
+                                <h5>Categorical Columns (${datasetInfo.categorical_columns?.length || 0})</h5>
+                                <ul>
+                                    ${(datasetInfo.categorical_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
+                                </ul>
+                            </div>
+                            <div class="column-type">
+                                <h5>Textual Columns (${datasetInfo.textual_columns?.length || 0})</h5>
+                                <ul>
+                                    ${(datasetInfo.textual_columns || []).map(col => `<li>${col}</li>`).join('') || '<li>None detected</li>'}
+                                </ul>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
 
-                // Display data overview
-                dataDetails.innerHTML = `
-                    <p><strong>Dataset uploaded successfully!</strong></p>
-                    <p><strong>Dataset Shape:</strong> ${datasetInfo.shape ? datasetInfo.shape[0] + ' rows × ' + datasetInfo.shape[1] + ' columns' : 'Unknown'}</p>
-                    <p><strong>Target Column:</strong> ${formData.get('target_column')}</p>
+                    dataDetailsHTML = `
+                        <p><strong>Dataset uploaded successfully!</strong></p>
+                        <p><strong>Dataset Shape:</strong> ${datasetInfo.shape ? datasetInfo.shape[0] + ' rows × ' + datasetInfo.shape[1] + ' columns' : 'Unknown'}</p>
+                        <p><strong>Target Column:</strong> ${formData.get('target_column')}</p>
+                        ${processingModeInfo}
+                        ${columnBreakdown}
+                    `;
+                }
 
-                    ${processingModeInfo}
-                    ${columnBreakdown}
-                `;
-
+                dataDetails.innerHTML = dataDetailsHTML;
                 dataOverview.classList.remove('hidden');
             } else {
                 uploadStatus.textContent = result.detail || 'Upload failed';
@@ -244,19 +444,16 @@
         const descriptions = {
             'tabular': 'Your data appears to be traditional structured data with numerical and categorical features.',
             'textual': 'Your data contains significant text content suitable for NLP tasks and text analysis.',
+            'image': 'Your data contains images suitable for computer vision tasks and image classification.',
             'mixed': 'Your data contains both structured features and significant text content, enabling hybrid analysis approaches.',
             'auto': 'Processing mode was automatically determined based on data characteristics.'
         };
         return descriptions[mode] || 'Unknown processing mode.';
     }
 
-    // Add processing mode change handler
-    document.getElementById('processingMode').addEventListener('change', function() {
-        const selectedMode = this.value;
-        const description = getProcessingModeDescription(selectedMode);
-
-        // You could show a dynamic description here if needed
-        console.log(`Selected mode: ${selectedMode} - ${description}`);
+    // Initialize the form
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleUploadFields();
     });
 </script>
 {% endblock %}
